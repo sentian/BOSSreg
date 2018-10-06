@@ -4,8 +4,7 @@
 \alias{cv.boss}
 \title{Cross validation for BOSS.}
 \usage{
-cv.boss(x, y, intercept = FALSE, fs.only = FALSE, hdf.ic.boss = TRUE,
-  n.folds = 10, n.rep = 1)
+cv.boss(x, y, n.folds=10, n.rep=1, ...)
 }
 \arguments{
 \item{x}{A matrix of predictors, see \code{boss}.}

@@ -18,7 +18,7 @@ BIC ('bic'), BICc ('bicc'), GCV ('gcv') and Mallows' Cp ('cp').}
 \item{df}{A number if y_hat is a vector, or a vector with \code{length(df)=ncol(y_hat)=m} if y_hat is
 a matrix. df represents the degrees of freedom for each fit.}
 
-\item{sigma:}{Standard deviation of the error term. It only needs to be specified if \code{method='cp'}.}
+\item{sigma}{Standard deviation of the error term. It only needs to be specified if \code{method='cp'}.}
 }
 \value{
 The value(s) of the specified IC for each fit.
