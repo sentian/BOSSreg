@@ -1,0 +1,124 @@
+### functions that are called by the main functions, but invisible to users unless using namespace ':::'
+
+## update the QR decomposition when a column is added to X -------------------------
+# here's a reference for the algorithms
+# http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.142.2571&rep=rep1&type=pdf
+
+# X_before = Q_before R_before, X_before1:n*l, Q_before:n*n, R_before:n*l
+# Q_before = [Ql_before Qr_before], where Ql_before: n*l and Qr_before: n*(n-l)
+# add a column u to X_active_update: X_after=[X_before u], and update Q_before and R_before, get X_after=Q_after R_after
+# X_after: n*(r+1), Q_after = [Ql_after Qr_after] where Ql_after = [Ql_before Ql_newcol]
+# algorithm 2.19 in the reference
+# function updateQR calls function updateQv which is written in C++
+
+#' @useDynLib boss
+#' @importFrom Rcpp sourceCpp
+updateQR <- function(Ql, Qr, R, newcol){
+  n = dim(Ql)[1]
+  l = dim(Ql)[2]
+  v = t(cbind(Ql, Qr)) %*% newcol
+  updateQv_result = updateQv(v[(l+1):n], Qr)
+  # update v
+  v[(l+1):n] = updateQv_result$v
+  # update Q
+  Ql = cbind(Ql, updateQv_result$Qr[, 1])
+  Qr = updateQv_result$Qr[, -1]
+  # update R
+  R = rbind(R, rep(0, l))
+  R = cbind(R, v[1:(l+1)] )
+  return(list(Ql=Ql, Qr=Qr, R=R))
+}
+
+## standardize the data ------------------------------------------------------------
+# standardize x to be mean 0 and norm 1
+# standardize y to be mean 0
+std <- function(x, y){
+  mean_x = colMeans(x)
+  x = scale(x, center = mean_x, scale = FALSE)
+  sd_demeanedx = sqrt(colSums(x^2))
+  x = scale(x, center = FALSE, scale = sd_demeanedx)
+
+  mean_y = mean(y)
+  y = scale(y, center = mean_y, scale = FALSE)
+
+  return(list(x_std = x, y_std = y, mean_x=mean_x, sd_demeanedx=sd_demeanedx, mean_y=mean_y))
+}
+
+## calculate various information criteria: AIC, BIC, AICc, BICc, GCV, Cp -----------
+calc.ic.all <- function(coef, x, y, df, sigma=NULL){
+  # unify dimensions
+  y = matrix(y, ncol=1)
+  df = matrix(df, nrow=1)
+  # sanity check
+  if(ncol(coef) != ncol(df)){
+    stop('the number of coef vectors does not match the number of df')
+  }
+  if(is.null(sigma)){
+    stop("need to specify sigma for Mallow's Cp")
+  }
+
+  n <- nrow(y)
+  nfit <- ncol(coef)
+  fit = x %*% coef
+  y = matrix(rep(y,each=nfit),ncol=nfit,byrow=TRUE)
+  fit_wellness = colSums((y - fit)^2)
+
+  ic = list()
+  ic$aic = log(fit_wellness/n)  + 2*df/n
+  ic$bic = log(fit_wellness/n)  + log(n)*df/n
+  ic$gcv = fit_wellness / (n-df)^2
+  ic$cp = fit_wellness + 2*sigma^2*df
+
+  # for AICc and BICc df larger than n-2 will cause trouble, round it
+  df[which(df>=n-2)]=n-3
+  ic$aicc = log(fit_wellness/n) + 2*(df+1)/(n-df-2)
+  ic$bicc = log(fit_wellness/n) + log(n)*(df+1)/(n-df-2)
+  return(ic)
+}
+
+## Heuristic df for BOSS ------------------------------------------------------------
+# @param Q An orthogonal matrix, with \code{nrow(Q)=length(y)=n} and
+#   \code{ncol(Q)=p}. For BOSS, Q is obtained by QR decomposition upon
+#   an ordered design matrix.
+# @param y A vector of response variable, with \code{length(y)=n}.
+# @param sigma,mu The standard deviation and mean vector of the true model.
+#   In practice, if not specified, they are calculated via full multiple
+#   regression of y upon Q.
+
+calc.hdf <- function(Q, y, sigma=NULL, mu=NULL){
+  n = dim(Q)[1]
+  p = dim(Q)[2]
+  if(p>=n){
+    stop('hdf is undefined when p>=n')
+  }
+  if(xor(is.null(sigma), is.null(mu))){
+    stop('either sigma or beta is specified, need both or none')
+  }
+
+  beta_hat = t(Q) %*% y # the multiple regression coef
+  # the sequence of lambda to be plugged into the expression of hdf
+  sqrt_2lambda = sort(abs(beta_hat), decreasing = T)
+  sqrt_2lambda = sort(c(exp(seq(log(0.000001*max(sqrt_2lambda)), log(1.1*max(sqrt_2lambda)), length.out=100)),  seq(1.1*max(sqrt_2lambda), 0, length.out=100), sqrt_2lambda), decreasing=T)
+  nlambda = length(sqrt_2lambda)
+  sqrt_2lambda_matrix = matrix(rep(sqrt_2lambda,each=p), nrow=p, byrow=F)
+
+  # if mu and sigma are not specified, use the full multiple regression
+  if(is.null(sigma)){
+    resid = y - Q %*% beta_hat
+    sigma = sqrt(sum(resid^2)/(n-p))
+    xtmu_matrix = matrix(rep(beta_hat,each=nlambda), ncol=nlambda, byrow=T)
+  }else{
+    xtmu_matrix = matrix(rep(t(Q)%*%mu,each=nlambda), ncol=nlambda, byrow=T)
+  }
+
+  a = stats::dnorm((sqrt_2lambda_matrix-xtmu_matrix) / sigma)
+  b = stats::dnorm((-sqrt_2lambda_matrix-xtmu_matrix) / sigma)
+  c = stats::pnorm((sqrt_2lambda_matrix-xtmu_matrix) / sigma)
+  d = stats::pnorm((-sqrt_2lambda_matrix-xtmu_matrix) / sigma)
+
+  size = colSums(1 - c + d)
+  sdf = (sqrt_2lambda/sigma) * colSums(a + b)
+  df = size + sdf
+  # use linear interpolation to get the df for integer values of subset size
+  return(list(hdf=c(0, stats::approx(size, df, seq(1,p-1))$y, p), sigma=sigma))
+}

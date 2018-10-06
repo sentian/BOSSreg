@@ -1,0 +1,22 @@
+# Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
+set.seed(11)
+n = 20
+p = 5
+x = matrix(rnorm(n*p), nrow=n, ncol=p)
+x = scale(x, center = colMeans(x))
+x = scale(x, scale = sqrt(colSums(x^2)))
+beta = c(1, 1, 0, 0, 0)
+y = x%*%beta + scale(rnorm(20, sd=0.01), center = TRUE, scale = FALSE)
+
+
+# perform 10-fold CV without replication
+boss_cv_result = cv.boss(x, y, n.folds = 2)
+boss_result = boss_cv_result$boss
+# select the best candidate based on minimum CV OSS score
+beta_boss_cv = boss_result$beta_boss[,boss_cv_result$i.min.boss]
+# we can compare with the subset selected via IC
+# AICc
+beta_boss_aicc = boss_result$beta_boss[,which.min(boss_result$IC_boss$aicc)]
+# Mallow's Cp
+beta_boss_cp = boss_result$beta_boss[,which.min(boss_result$IC_boss$cp)]
+
