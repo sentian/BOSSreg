@@ -24,3 +24,5 @@ VignetteBuilder: knitr
 LinkingTo: 
     Rcpp,
     RcppArmadillo
+URL: http://github.com/sentian/boss
+BugReports: http://github.com/sentian/boss/issues
