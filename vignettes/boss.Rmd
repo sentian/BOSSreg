@@ -16,50 +16,90 @@ knitr::opts_chunk$set(
 )
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+## Installation
+```{r, eval=FALSE}
+library(devtools)
+install_github('https://github.com/sentian/boss')
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+```{r}
+library(MASS)
+library(boss)
 ```
 
-Also a quote using `>`:
+## Similate some data
+We create a case, where the true active predictors are pairwise negatively correlated, 
+while being uncorrelated to the inactive predictors. 
+```{r}
+n = 200 # number of observations
+p = 30 # number of predictors
+p0 = 6 # number of active predictors
+rho = 0.9 # correlation
+nrep = 1 # only one replication of y is generated
+# true beta
+beta = rep(0,p)
+beta = c(rep(c(1,-1),p0/2),rep(0,p-p0))
+# covariance matrix
+covmatrix  = matrix(0,nrow=p,ncol=p)
+diag(covmatrix) = 1
+for(i in 1:(p0/2)){
+  covmatrix[2*i-1,2*i] = covmatrix[2*i,2*i-1] = rho
+}
+# start generating the data
+# to make life easier, x has mean 0 and norm 1
+# y has mean 0
+set.seed(65)
+x = mvrnorm(n,mu=rep(0,p),Sigma=covmatrix)
+x = scale(x,center=TRUE,scale=FALSE)
+colnorm = apply(x,2,function(m){sqrt(sum(m^2))}) 
+x = scale(x,center=FALSE,scale=colnorm) # standardization
+# signal-to-noise ratio
+SNR = 7
+sd = sqrt(t(beta/colnorm)%*%covmatrix%*%(beta/colnorm)/ SNR)
+mu = x%*%beta 
+y = matrix(rep(mu,each=nrep),ncol=nrep,byrow=TRUE) + scale(matrix(rnorm(n*nrep,mean=0,sd=sd),nrow=n,ncol=nrep),center=TRUE,scale=FALSE)
+```
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+
+## Perform 10-fold CV on both BOSS and FS
+Since x and y are standardized, we do not fit the intercept.
+```{r}
+cv_result = cv.boss(x, y)
+```
+
+## Results
+### What's the ordering of predictors, i.e. which predictor joins at each step in FS
+```{r}
+print(cv_result$boss$steps_fs)
+```
+### Let's first look at the entire coefficient matrix (coefficient vector for all the steps)
+Note how different the coefficients of BOSS and FS are
+```{r}
+# first step coefficient vector for FS
+print(cbind(cv_result$boss$beta_fs[,2], cv_result$boss$beta_boss[,2]))
+```
+
+### The coefficient vector chosen by 10-fold CV
+CV chooses the same coefficient vector for both methods. They both overfits (we have 6 true active predictors).
+```{r}
+beta_cv_result = coef(cv_result)
+beta_cv = cbind(beta_cv_result$fs, beta_cv_result$boss)
+colnames(beta_cv) = c('FS', 'BOSS')
+print(beta_cv)
+```
+
+### The coefficient vector of BOSS chosen by AICc-hdf
+Only the 6 true active predictors are spotted.
+```{r}
+beta_aicc = coef(cv_result$boss)$boss
+print(as.numeric(beta_aicc))
+```
+
+### If AICc is this good, can we apply it with FS?
+Unfortunately, it does not seems to work well. Why? Naively using subset size as df to be plugged into the calculation of information criterion causes trouble. And that's why we derive hdf for BOSS. 
+```{r}
+# use subset size (naive df) as df
+IC_fs = calc.ic(x%*%cv_result$boss$beta_fs, y, df=Matrix::colSums(cv_result$boss$beta_fs!=0))
+print(as.numeric(coef(cv_result$boss, select.fs=which.min(IC_fs))$fs))
+```
