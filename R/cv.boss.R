@@ -29,7 +29,22 @@
 #'   in least squares based subset selection problems. (Link to be added)
 #' @example R/example/eg.cv.boss.R
 #' @export
-cv.boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE, n.folds=10, n.rep=1){
+cv.boss <- function(x, y, n.folds=10, n.rep=1, ...){
+  # # arguments
+  argu = list(...)
+  # argu_boss = c('intercept', 'fs.only', 'hdf.ic.boss') # arguments that boss accepts
+  # # arguments that user specify but unused
+  # argu_unused = setdiff(names(argu), argu_boss)
+  # if(length(argu_unused) > 0){
+  #   warning(paste(argu_unused, ' are not valid arguments for boss, check spelling maybe?', sep=''))
+  # }
+
+  if(is.null(argu$fs.only)) argu$fs.only = FALSE
+
+  # overide hdf.ic.boss option in '...', to be used in CV
+  boss.nohdf <- function(x, y, ..., hdf.ic.boss) boss(x, y, ..., hdf.ic.boss=FALSE)
+
+  # start the CV process
   n = dim(x)[1]
   p = dim(x)[2]
   maxstep = trunc(min(n - n/n.folds, p))
@@ -39,14 +54,14 @@ cv.boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE, n.fo
 
   # matrix to store the CV error
   cv_rep_boss = NULL
-  if(!fs.only){
+  if(!argu$fs.only){
     cv_rep_boss = cv_rep_fs = matrix(NA, nrow=n.rep, ncol=maxstep+1)
   }
 
   for(replication in 1:n.rep){
     fold.index = sample(rep(1:n.folds, length.out=n)) # randomly assign a fold to each observation
     cv_tmp_boss = NULL
-    if(!fs.only){
+    if(!argu$fs.only){
       cv_tmp_boss = cv_tmp_fs = matrix(NA, nrow=n.folds, ncol=maxstep+1)
     }
     for(fold in 1:n.folds){
@@ -56,28 +71,36 @@ cv.boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE, n.fo
       y.test = y[test.index]
       x.train = x[-test.index, ]
       y.train = y[-test.index]
-      boss_result <- boss(x.train, y.train, intercept, fs.only, hdf.ic.boss=FALSE)
+      boss_result <- boss.nohdf(x.train, y.train, ...)
       beta_fs= boss_result$beta_fs
       beta_boss = boss_result$beta_boss
       cv_tmp_fs[fold, ] = Matrix::colMeans((matrix(rep(y.test,each=maxstep+1), ncol=maxstep+1, byrow=T) - x.test%*%beta_fs)^2)
-      if(!fs.only){
+      if(!argu$fs.only){
         cv_tmp_boss[fold, ] = Matrix::colMeans((matrix(rep(y.test,each=maxstep+1), ncol=maxstep+1, byrow=T) - x.test%*%beta_boss)^2)
       }
     }
     cv_rep_fs[replication, ] = Matrix::colMeans(cv_tmp_fs)
-    if(!fs.only){
+    if(!argu$fs.only){
       cv_rep_boss[replication, ] = Matrix::colMeans(cv_tmp_boss)
     }
   }
 
   cv_boss=NULL
   cv_fs = Matrix::colMeans(cv_rep_fs)
-  if(!fs.only){
+  if(!argu$fs.only){
     cv_boss = Matrix::colMeans(cv_rep_boss)
   }
 
   # fit on the full sample
-  boss_result <- boss(x, y, intercept, fs.only, hdf.ic.boss)
+  boss_result <- boss(x, y, ...)
 
-  return(list(boss=boss_result, n.folds=n.folds, cvm.fs=cv_fs, cvm.boss=cv_boss, i.min.fs=which.min(cv_fs), i.min.boss=which.min(cv_boss)))
+  # output
+  out = list(boss=boss_result,
+             n.folds=n.folds,
+             cvm.fs=cv_fs,
+             cvm.boss=cv_boss,
+             i.min.fs=which.min(cv_fs),
+             i.min.boss=which.min(cv_boss))
+  class(out) = 'cv.boss'
+  invisible(out)
 }

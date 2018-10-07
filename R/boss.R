@@ -14,6 +14,8 @@
 #' @param hdf.ic.boss Whether to calculate the heuristic degrees of freedom (hdf)
 #'   and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 #'   Cp. Note that if the option fs.only=TRUE or n<=p, \code{hdf.ic.boss=FALSE} no matter what.
+#' @param ... Extra parameters to allow flexibility. Currently none argument allows or requires, just for
+#'   the convinience of call from other parent functions like cv.boss.
 #'
 #' @return
 #' \itemize{
@@ -47,7 +49,7 @@
 #'   in least squares based subset selection problems. (Link to be added)
 #' @example R/example/eg.boss.R
 #' @export
-boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE){
+boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE, ...){
   n = dim(x)[1]
   p = dim(x)[2]
 
@@ -135,7 +137,6 @@ boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE){
     }
     # scale back
     beta_boss = diag(1/sd_demanedx) %*% beta_boss
-    #beta_boss = cbind(0,beta_boss)
     if(intercept){
       beta_boss = rbind((mean_y - mean_x %*% beta_boss), beta_boss)
     }
@@ -150,9 +151,160 @@ boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE){
     }
 
   }
-
-  return(list(beta_fs=beta_fs, beta_boss=beta_boss, steps_fs=steps, hdf_boss=hdf_result$hdf, IC_boss=IC_result))
+  # output
+  out = list(beta_fs=beta_fs,
+             beta_boss=beta_boss,
+             steps_fs=steps,
+             hdf_boss=hdf_result$hdf,
+             IC_boss=IC_result,
+             call=list(intercept=intercept, fs.only=fs.only))
+  class(out) = 'boss'
+  invisible(out)
 }
+
+
+
+
+
+#' Select coefficient vector(s) from boss object.
+#'
+#' This function returns coefficient vector(s) for given step(s) of FS and BOSS.
+#' For BOSS, it can also return the optimal coefficient vector selected by AICc
+#' (by default) or other IC.
+#'
+#' @param object The boss object, returned from calling 'boss' function.
+#' @param select.fs Given step(s) of FS, corresponding to columns in the coefficient
+#' matrix. For example, the first column in beta_fs corresponds to step 1, the second
+#' column corresponds to step 2, etc. We enforce the first column, that has all 0 entries,
+#' to be step 1, just for convinicence of usage.
+#' @param select.boss Given columns(s) in beta_boss, similar to select.fs.
+#' @param method.boss Which IC is used to select the optimal coefficient vector for BOSS.
+#' @param ... Extra arguments (unused for now)
+#'
+#' @return
+#' \itemize{
+#'   \item fs: The chosen coefficient vector(s) for FS.
+#'   \item boss: The chosen coefficient vector(s) for FS.
+#' }
+#' @details If \code{select.fs} or \code{select.boss} is specified, the function returns
+#' corresponding column(s) in the coefficient matrix.
+#'
+#' If \code{select.fs} is unspecified,
+#' we return the entire coefficient matrix (\code{beta_fs}) for FS, since we currently do
+#' not have a hands-on way of calculating IC for FS. But user can use their own rules and
+#' specify e.g. \code{select.fs=which.min(rule)} in order to pick the optimal coefficient
+#' vector.
+#'
+#' If \code{select.boss} is unspecified, we will try to return the optimal coefficient
+#' vector selected by AICc-hdf (other choice of IC can be specified in \code{method.boss}).
+#' The only exception is when n>=p, where hdf is not well defined, and we will return the
+#' entire coefficient matrix.
+#'
+#' @examples See the example in the section of \code{boss}. Or type ?boss in R.
+#'
+#' @export coef.boss
+coef.boss <- function(object, select.fs=NULL, select.boss=NULL, method.boss=c('aicc','bicc','aic','bic','gcv','cp'), ...){
+  # for fs, return the full coef matrix if not specified the columns
+  if(is.null(select.fs)){
+    select.fs = 1:ncol(object$beta_fs)
+  }else if(select.fs == 0){
+    select.fs = 1:ncol(object$beta_fs)
+  }
+  select.fs[select.fs > ncol(object$beta_fs)] = ncol(object$beta_fs)
+  beta_fs_opt = object$beta_fs[, select.fs, drop=FALSE]
+
+  # for boss, the default is to return coef selected by AICc
+  # if fs only
+  if(object$call$fs.only){
+    beta_boss_opt = NULL
+  }else{
+    if(is.null(select.boss)){
+      if(is.null(object$IC_boss)){
+        # if we are in the case where n>=p
+        if(dim(object$beta_boss)[1]+1 >= dim(object$beta_boss)[2]){
+          warning('hdf does not work when n>=p, full coef matrix returned')
+        }else{
+          # this is where hdf.ic.boss is flagged FALSE
+          warning("rerun boss with argument 'hdf.ic.boss=TRUE', and call coef.boss again")
+        }
+        select.boss = 1:ncol(object$beta_boss)
+      }else{
+        method.boss = match.arg(method.boss)
+        select.boss = which.min(object$IC_boss[[method.boss]])
+      }
+    }else if(select.boss == 0){
+      select.boss = 1:ncol(object$select.boss)
+    }
+    select.boss[select.boss > ncol(object$beta_boss)] = ncol(object$beta_boss)
+    beta_boss_opt = object$beta_boss[, select.boss, drop=FALSE]
+  }
+  return(list(fs=beta_fs_opt, boss=beta_boss_opt))
+}
+
+
+#' Prediction given new data entries.
+#'
+#' This function returns the prediction(s) given new observation(s), for FS and BOSS.
+#'
+#' @param object The boss object, returned from calling 'boss' function.
+#' @param newx A new data entry or several entries. It can be a vector, or a matrix with
+#' \code{nrow(newx)} being the number of new entries and \code{ncol(newx)=p} being the
+#' number of predictors. The function takes care of the intercept, NO need to add \code{1}
+#' to \code{newx}.
+#' @param ... Extra arguments to be plugged into \code{coef}, such as \code{select.boss},
+#' see the description of \code{coef} for more details.
+#'
+#' @return
+#' \itemize{
+#'   \item fs: The prediction(s) for FS.
+#'   \item boss: The prediction(s) for BOSS.
+#' }
+#' @details The function applies the same default arguments as function \code{coef},
+#' such as \code{select.fs} and \code{select.boss}. See the description of \code{coef}
+#' for more details.
+#'
+#' @examples See the example in the section of \code{boss}. Or type ?boss in R.
+#'
+#' @export predict.boss
+predict.boss <- function(object, newx, ...){
+  # coefficients
+  coef_result = coef(object, ...)
+  beta_fs_opt = coef_result$fs
+  beta_boss_opt = coef_result$boss
+
+  # make newx a matrix
+  # if newx is an array or a column vector, make it a row vector
+  if(is.null(dim(newx))){
+    newx = matrix(newx, nrow=1)
+  }else if(dim(newx)[2] == 1){
+    newx = t(newx)
+  }
+  # if intercept, add 1 to newx
+  if(object$call$intercept){
+    newx = cbind(rep(1,nrow(newx)), newx)
+  }
+
+  # check the dimension
+  if(ncol(newx) != nrow(beta_fs_opt)){
+    stop('Mismatch dimension of newx and coef for FS. Note do NOT add 1 to newx when intercept=TRUE')
+  }else{
+    mu_fs_opt = newx %*% beta_fs_opt
+  }
+  if(is.null(beta_boss_opt)){
+    mu_boss_opt = NULL
+  }else{
+    if(ncol(newx) != nrow(beta_boss_opt)){
+      stop('Mismatch dimension of newx and coef for BOSS. Note do NOT add 1 to newx when intercept=TRUE')
+    }else{
+      mu_boss_opt = newx %*% beta_boss_opt
+    }
+  }
+  return(list(fs=mu_fs_opt, boss=mu_boss_opt))
+
+}
+
+
+
 
 
 

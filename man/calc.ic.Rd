@@ -4,7 +4,8 @@
 \alias{calc.ic}
 \title{Calculate information criterion.}
 \usage{
-calc.ic(y_hat, y, method = "aicc", df, sigma = NULL)
+calc.ic(y_hat, y, method = c("aicc", "bicc", "aic", "bic", "gcv", "cp"),
+  df, sigma = NULL)
 }
 \arguments{
 \item{y_hat}{A vector of fitted values with \code{length(y_hat)=length(y)=n}, or
@@ -56,7 +57,7 @@ boss_result = boss(x, y)
 # what are the values of AICc for all candidates of BOSS?
 print(boss_result$IC_boss$aicc)
 # calculate them manually using the calc.ic function
-print(calc.ic(x\%*\%boss_result$beta_boss, y, 'aicc', boss_result$hdf_boss))
+print(calc.ic(x\%*\%boss_result$beta_boss, y, df=boss_result$hdf_boss))
 # they shall match
 }
 \author{

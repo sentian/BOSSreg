@@ -29,10 +29,10 @@
 #' @author Sen Tian
 #' @example R/example/eg.ic.R
 #' @export
-calc.ic <- function(y_hat, y, method='aicc', df, sigma=NULL){
-  if(! method %in% c('aic','bic','aicc','bicc','gcv','cp')){
-    stop("the IC specified is not among ('aic','bic','aicc','bicc','gcv','cp')")
-  }
+calc.ic <- function(y_hat, y, method=c('aicc','bicc','aic','bic','gcv','cp'), df, sigma=NULL){
+  # match the argument
+  method = match.arg(method)
+
   # unify dimensions
   y = matrix(y, ncol=1)
   df = matrix(df, nrow=1)

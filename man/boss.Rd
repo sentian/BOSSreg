@@ -4,7 +4,8 @@
 \alias{boss}
 \title{Best orthogonalized subset selection (BOSS).}
 \usage{
-boss(x, y, intercept = FALSE, fs.only = FALSE, hdf.ic.boss = TRUE)
+boss(x, y, intercept = FALSE, fs.only = FALSE, hdf.ic.boss = TRUE,
+  ...)
 }
 \arguments{
 \item{x}{A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
@@ -19,6 +20,9 @@ boss(x, y, intercept = FALSE, fs.only = FALSE, hdf.ic.boss = TRUE)
 \item{hdf.ic.boss}{Whether to calculate the heuristic degrees of freedom (hdf)
 and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 Cp. Note that if the option fs.only=TRUE or n<=p, \code{hdf.ic.boss=FALSE} no matter what.}
+
+\item{...}{Extra parameters to allow flexibility. Currently none argument allows or requires, just for
+the convinience of call from other parent functions like cv.boss.}
 }
 \value{
 \itemize{
@@ -73,9 +77,16 @@ boss_result = boss(x, y)
 # select the best candidate along the path based on IC
 # AICc
 beta_boss_aicc = boss_result$beta_boss[,which.min(boss_result$IC_boss$aicc)]
+# Same purpose, use the S3 function
+beta_boss_aicc = coef(boss_result)$boss
+# prediction
+mu_boss_aicc = predict(boss_result, newx=x[1,])$boss
 # Mallow's Cp
 beta_boss_cp = boss_result$beta_boss[,which.min(boss_result$IC_boss$cp)]
-
+# Same purpose, use the S3 function
+beta_boss_cp = coef(boss_result, method.boss='cp')
+# prediction
+mu_boss_cp = predict(boss_result, method.boss='cp')$boss
 }
 \references{
 Tian, Hurvich and Simonoff (2018), On the use of information criterion

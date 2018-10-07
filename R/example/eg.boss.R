@@ -13,7 +13,18 @@ y = x%*%beta + scale(rnorm(20, sd=0.01), center = TRUE, scale = FALSE)
 boss_result = boss(x, y)
 # select the best candidate along the path based on IC
 # AICc
-beta_boss_aicc = boss_result$beta_boss[,which.min(boss_result$IC_boss$aicc)]
+beta_boss_aicc = boss_result$beta_boss[, which.min(boss_result$IC_boss$aicc), drop=FALSE]
+# Same purpose, use the S3 function
+beta_boss_aicc = coef(boss_result)$boss
+# fitted values for the first observation
+mu_boss_aicc = x[1,] %*% beta_boss_aicc
+# Same purpose, use the S3 function
+mu_boss_aicc = predict(boss_result, newx=x[1,])$boss
 # Mallow's Cp
-beta_boss_cp = boss_result$beta_boss[,which.min(boss_result$IC_boss$cp)]
-
+beta_boss_cp = boss_result$beta_boss[, which.min(boss_result$IC_boss$cp), drop=FALSE]
+# Same purpose, use the S3 function
+beta_boss_cp = coef(boss_result, method.boss='cp')$boss
+# fitted values for the first observation
+mu_boss_cp = x[1,] %*% beta_boss_cp
+# Same purpose, use the S3 function
+mu_boss_cp = predict(boss_result, newx=x[1,], method.boss='cp')$boss

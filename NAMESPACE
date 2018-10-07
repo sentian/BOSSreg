@@ -2,6 +2,8 @@
 
 export(boss)
 export(calc.ic)
+export(coef.boss)
 export(cv.boss)
+export(predict.boss)
 importFrom(Rcpp,sourceCpp)
 useDynLib(boss)
