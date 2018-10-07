@@ -8,7 +8,7 @@ Authors@R: c(person("Sen", "Tian", email = "stian@stern.nyu.edu", role = c("aut"
 	person("Jeffrey", "Simonoff", email = "jsimonof@stern.nyu.edu", role = c("aut")))
 Maintainer: Sen Tian <stian@stern.nyu.edu>
 Description: An implementation of best orthogonalized subset selection (BOSS) and forward stepwise selection (fs), together with feasible selection rules to choose the best candidate subset. 
-License: GPL (>=2)
+License: GPL (>=2) | file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 

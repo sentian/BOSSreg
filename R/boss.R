@@ -200,9 +200,11 @@ boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE, ...){
 #' The only exception is when n>=p, where hdf is not well defined, and we will return the
 #' entire coefficient matrix.
 #'
-#' @examples See the example in the section of \code{boss}. Or type ?boss in R.
+#' @examples
+#' # See the example in the section of \code{boss}. Or type ?boss in R.
 #'
-#' @export coef.boss
+#' @importFrom stats coef
+#' @export
 coef.boss <- function(object, select.fs=NULL, select.boss=NULL, method.boss=c('aicc','bicc','aic','bic','gcv','cp'), ...){
   # for fs, return the full coef matrix if not specified the columns
   if(is.null(select.fs)){
@@ -244,7 +246,8 @@ coef.boss <- function(object, select.fs=NULL, select.boss=NULL, method.boss=c('a
 
 #' Prediction given new data entries.
 #'
-#' This function returns the prediction(s) given new observation(s), for FS and BOSS.
+#' This function returns the prediction(s) given new observation(s), for FS and BOSS,
+#' where the optimal coefficient vector is chosen via certain selection rule.
 #'
 #' @param object The boss object, returned from calling 'boss' function.
 #' @param newx A new data entry or several entries. It can be a vector, or a matrix with
@@ -259,13 +262,16 @@ coef.boss <- function(object, select.fs=NULL, select.boss=NULL, method.boss=c('a
 #'   \item fs: The prediction(s) for FS.
 #'   \item boss: The prediction(s) for BOSS.
 #' }
-#' @details The function applies the same default arguments as function \code{coef},
-#' such as \code{select.fs} and \code{select.boss}. See the description of \code{coef}
-#' for more details.
 #'
-#' @examples See the example in the section of \code{boss}. Or type ?boss in R.
+#' @details The function basically calculates \eqn{x * coef}, where \code{coef}
+#' is a coefficient vector chosen by a selection rule. See more details about the default
+#' and available choices of the selection rule in the description of \code{coef.boss}.
 #'
-#' @export predict.boss
+#' @examples
+#' #See the example in the section of \code{boss}. Or type ?boss in R.
+#'
+#' @importFrom stats predict
+#' @export
 predict.boss <- function(object, newx, ...){
   # coefficients
   coef_result = coef(object, ...)

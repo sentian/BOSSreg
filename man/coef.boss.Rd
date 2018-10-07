@@ -48,6 +48,6 @@ The only exception is when n>=p, where hdf is not well defined, and we will retu
 entire coefficient matrix.
 }
 \examples{
-See the example in the section of \\code{boss}. Or type ?boss in R.
+# See the example in the section of \\code{boss}. Or type ?boss in R.
 
 }

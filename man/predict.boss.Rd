@@ -24,14 +24,15 @@ see the description of \code{coef} for more details.}
 }
 }
 \description{
-This function returns the prediction(s) given new observation(s), for FS and BOSS.
+This function returns the prediction(s) given new observation(s), for FS and BOSS,
+where the optimal coefficient vector is chosen via certain selection rule.
 }
 \details{
-The function applies the same default arguments as function \code{coef},
-such as \code{select.fs} and \code{select.boss}. See the description of \code{coef}
-for more details.
+The function basically calculates \eqn{x * coef}, where \code{coef}
+is a coefficient vector chosen by a selection rule. See more details about the default
+and available choices of the selection rule in the description of \code{coef.boss}.
 }
 \examples{
-See the example in the section of \\code{boss}. Or type ?boss in R.
+#See the example in the section of \\code{boss}. Or type ?boss in R.
 
 }

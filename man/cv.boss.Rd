@@ -51,12 +51,13 @@ y = x\%*\%beta + scale(rnorm(20, sd=0.01), center = TRUE, scale = FALSE)
 boss_cv_result = cv.boss(x, y, n.folds = 2)
 boss_result = boss_cv_result$boss
 # select the best candidate based on minimum CV OSS score
-beta_boss_cv = boss_result$beta_boss[,boss_cv_result$i.min.boss]
-# we can compare with the subset selected via IC
-# AICc
-beta_boss_aicc = boss_result$beta_boss[,which.min(boss_result$IC_boss$aicc)]
-# Mallow's Cp
-beta_boss_cp = boss_result$beta_boss[,which.min(boss_result$IC_boss$cp)]
+beta_boss_cv = boss_result$beta_boss[, boss_cv_result$i.min.boss, drop=FALSE]
+# Same purpose, using the S3 function
+beta_boss_cv = coef(boss_cv_result)$boss
+# fitted values for the first observation
+mu_boss_cv = x[1,] \%*\% beta_boss_cv
+# Same purpose, use the S3 function
+mu_boss_cv = predict(boss_cv_result, newx=x[1,])$boss
 
 }
 \references{

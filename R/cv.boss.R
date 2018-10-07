@@ -104,3 +104,60 @@ cv.boss <- function(x, y, n.folds=10, n.rep=1, ...){
   class(out) = 'cv.boss'
   invisible(out)
 }
+
+
+#' Select coefficient vector based on cross validation (CV).
+#'
+#' This function returns coefficient vector that minimizes out-of-sample (OOS) cross
+#' validation score.
+#'
+#' @param object The cv.boss object, returned from calling 'cv.boss' function.
+#' @param ... Extra arguments (unused for now).
+#'
+#' @return
+#' \itemize{
+#'   \item fs: The chosen coefficient vector for FS.
+#'   \item boss: The chosen coefficient vector for FS.
+#' }
+#'
+#' @examples
+#' # See the example in the section of \code{cv.boss}. Or type ?cv.boss in R.
+#'
+#' @importFrom stats coef
+#' @export
+coef.cv.boss <- function(object, ...){
+  coef_result = coef(object$boss, select.fs=object$i.min.fs, select.boss=object$i.min.boss)
+  beta_fs_opt = coef_result$fs
+  beta_boss_opt = coef_result$boss
+  return(list(fs=beta_fs_opt, boss=beta_boss_opt))
+}
+
+#' Prediction given new data entries.
+#'
+#' This function returns the prediction(s) given new observation(s), for FS and BOSS,
+#' where the optimal coefficient vector is chosen via cross-validation.
+#'
+#' @param object The cv.boss object, returned from calling 'cv.boss' function.
+#' @param newx A new data entry or several entries. It can be a vector, or a matrix with
+#' \code{nrow(newx)} being the number of new entries and \code{ncol(newx)=p} being the
+#' number of predictors. The function takes care of the intercept, NO need to add \code{1}
+#' to \code{newx}.
+#' @param ... Extra arguments (unused for now).
+#'
+#' @return
+#' \itemize{
+#'   \item fs: The prediction for FS.
+#'   \item boss: The prediction for BOSS.
+#' }
+#'
+#' @examples
+#' # See the example in the section of \code{cv.boss}. Or type ?cv.boss in R.
+#'
+#' @importFrom stats predict
+#' @export
+predict.cv.boss <- function(object, newx, ...){
+  predict_result = predict(object$boss, newx, select.fs=object$i.min.fs, select.boss=object$i.min.boss)
+  mu_fs_opt = predict_result$fs
+  mu_boss_opt = predict_result$boss
+  return(list(fs=mu_fs_opt, boss=mu_boss_opt))
+}
