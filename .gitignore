@@ -4,3 +4,6 @@ inst/doc
 .RData
 .Ruserdata
 *.Rproj
+.Rbuildignore
+.gitignore
+.DS_Store
