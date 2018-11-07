@@ -14,6 +14,11 @@
 #' @param hdf.ic.boss Whether to calculate the heuristic degrees of freedom (hdf)
 #'   and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 #'   Cp. Note that if the option fs.only=TRUE or n<=p, \code{hdf.ic.boss=FALSE} no matter what.
+#' @param mu True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via full OLS.
+#' @param sigma True standard deviation of the error, used in the calculation of hdf. Default is NULL,
+#'   and is estimated via full OLS.
+#' @param use.lasso.sigma Whether to use LASSO (10 fold CV) based estimates of sigma, rather than full OLS,
+#'   to be plugged into hdf. Details about LASSO based sigma can be found in Reid et al. (2016).
 #' @param ... Extra parameters to allow flexibility. Currently none argument allows or requires, just for
 #'   the convinience of call from other parent functions like cv.boss.
 #'
@@ -47,9 +52,11 @@
 #' @author Sen Tian
 #' @references Tian, Hurvich and Simonoff (2018), On the use of information criterion
 #'   in least squares based subset selection problems. (Link to be added)
+#' @references Reid, Tibshirani and Friedman (2016), A study of error variance estimation
+#'   in LASSO regression.
 #' @example R/example/eg.boss.R
 #' @export
-boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE, ...){
+boss <- function(x, y, intercept=TRUE, fs.only=FALSE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, use.lasso.sigma=FALSE, ...){
   n = dim(x)[1]
   p = dim(x)[2]
 
@@ -146,8 +153,16 @@ boss <- function(x, y, intercept=FALSE, fs.only=FALSE, hdf.ic.boss=TRUE, ...){
     if(n<=p & hdf.ic.boss){
       warning('hdf not available when n<=p')
     }else if(hdf.ic.boss){
-      hdf_result = calc.hdf(Ql, y)
-      IC_result = calc.ic.all(beta_q, Ql, y, hdf_result$hdf, hdf_result$sigma)
+      hdf_result = calc.hdf(Ql, y, mu, sigma)
+      if(intercept){
+        hdf_result$hdf = hdf_result$hdf + 1
+      }
+      if(is.null(sigma)){
+        IC_result = calc.ic.all(beta_q, Ql, y, hdf_result$hdf, hdf_result$sigma)
+      }else{
+        IC_result = calc.ic.all(beta_q, Ql, y, hdf_result$hdf, sigma)
+      }
+
     }
 
   }

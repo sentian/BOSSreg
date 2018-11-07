@@ -4,8 +4,8 @@
 \alias{boss}
 \title{Best orthogonalized subset selection (BOSS).}
 \usage{
-boss(x, y, intercept = FALSE, fs.only = FALSE, hdf.ic.boss = TRUE,
-  ...)
+boss(x, y, intercept = TRUE, fs.only = FALSE, hdf.ic.boss = TRUE,
+  mu = NULL, sigma = NULL, use.lasso.sigma = FALSE, ...)
 }
 \arguments{
 \item{x}{A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
@@ -20,6 +20,14 @@ boss(x, y, intercept = FALSE, fs.only = FALSE, hdf.ic.boss = TRUE,
 \item{hdf.ic.boss}{Whether to calculate the heuristic degrees of freedom (hdf)
 and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 Cp. Note that if the option fs.only=TRUE or n<=p, \code{hdf.ic.boss=FALSE} no matter what.}
+
+\item{mu}{True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via full OLS.}
+
+\item{sigma}{True standard deviation of the error, used in the calculation of hdf. Default is NULL,
+and is estimated via full OLS.}
+
+\item{use.lasso.sigma}{Whether to use LASSO (10 fold CV) based estimates of sigma, rather than full OLS,
+to be plugged into hdf. Details about LASSO based sigma can be found in Reid et al. (2016).}
 
 \item{...}{Extra parameters to allow flexibility. Currently none argument allows or requires, just for
 the convinience of call from other parent functions like cv.boss.}
@@ -95,6 +103,9 @@ mu_boss_cp = predict(boss_result, newx=x[1,], method.boss='cp')$boss
 \references{
 Tian, Hurvich and Simonoff (2018), On the use of information criterion
   in least squares based subset selection problems. (Link to be added)
+
+Reid, Tibshirani and Friedman (2016), A study of error variance estimation
+  in LASSO regression.
 }
 \author{
 Sen Tian

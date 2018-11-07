@@ -5,5 +5,5 @@ This repository contains the **R package** that implements the best orthogonaliz
 To install the **boss** package, run the following:
 ```
 library(devtools)
-install_github(repo="sentian/boss", subdir="rpackage")
+install_github(repo="sentian/boss", subdir="r-package")
 ```

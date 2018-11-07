@@ -67,13 +67,17 @@ cv.boss <- function(x, y, n.folds=10, n.rep=1, ...){
     for(fold in 1:n.folds){
       # split the training and testing sets
       test.index = which(fold.index==fold)
-      x.test = x[test.index, ]
+      x.test = x[test.index, , drop=FALSE]
       y.test = y[test.index]
-      x.train = x[-test.index, ]
+      x.train = x[-test.index, , drop=FALSE]
       y.train = y[-test.index]
       boss_result <- boss.nohdf(x.train, y.train, ...)
       beta_fs= boss_result$beta_fs
       beta_boss = boss_result$beta_boss
+      # if intercept
+      if(dim(beta_fs)[1] == p+1){
+        x.test = cbind(rep(1,nrow(x.test)), x.test)
+      }
       cv_tmp_fs[fold, ] = Matrix::colMeans((matrix(rep(y.test,each=maxstep+1), ncol=maxstep+1, byrow=T) - x.test%*%beta_fs)^2)
       if(!argu$fs.only){
         cv_tmp_boss[fold, ] = Matrix::colMeans((matrix(rep(y.test,each=maxstep+1), ncol=maxstep+1, byrow=T) - x.test%*%beta_boss)^2)
