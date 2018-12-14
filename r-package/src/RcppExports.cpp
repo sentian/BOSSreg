@@ -6,21 +6,22 @@
 
 using namespace Rcpp;
 
-// updateQv
-List updateQv(arma::vec v, arma::mat Qr);
-RcppExport SEXP _boss_updateQv(SEXP vSEXP, SEXP QrSEXP) {
+// guideQR
+List guideQR(arma::mat x, arma::vec y, int maxstep);
+RcppExport SEXP _boss_guideQR(SEXP xSEXP, SEXP ySEXP, SEXP maxstepSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type v(vSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Qr(QrSEXP);
-    rcpp_result_gen = Rcpp::wrap(updateQv(v, Qr));
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type maxstep(maxstepSEXP);
+    rcpp_result_gen = Rcpp::wrap(guideQR(x, y, maxstep));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_boss_updateQv", (DL_FUNC) &_boss_updateQv, 2},
+    {"_boss_guideQR", (DL_FUNC) &_boss_guideQR, 3},
     {NULL, NULL, 0}
 };
 

@@ -57,7 +57,7 @@ boss_result = boss(x, y)
 # what are the values of AICc for all candidates of BOSS?
 print(boss_result$IC_boss$aicc)
 # calculate them manually using the calc.ic function
-print(calc.ic(x\%*\%boss_result$beta_boss, y, df=boss_result$hdf_boss))
+print(calc.ic(cbind(rep(1,n),x)\%*\%boss_result$beta_boss, y, df=boss_result$hdf_boss))
 # they shall match
 }
 \author{

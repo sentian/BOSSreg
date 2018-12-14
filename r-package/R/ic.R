@@ -49,13 +49,13 @@ calc.ic <- function(y_hat, y, method=c('aicc','bicc','aic','bic','gcv','cp'), df
     stop("need to specify sigma for Mallow's Cp")
   }
 
+  n <- nrow(y)
+  nfit <- ncol(y_hat)
   # for AICc and BICc df larger than n-2 will cause trouble, round it
   if(method=='aicc' | method=='bicc'){
     df[which(df>=n-2)]=n-3
   }
 
-  n <- nrow(y)
-  nfit <- ncol(y_hat)
   if(nfit>1){
     y = matrix(rep(y,each=nfit),ncol=nfit,byrow=TRUE)
   }

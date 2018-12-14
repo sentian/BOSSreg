@@ -55,60 +55,30 @@
 #' @references Reid, Tibshirani and Friedman (2016), A study of error variance estimation
 #'   in LASSO regression.
 #' @example R/example/eg.boss.R
+#' @useDynLib boss
+#' @importFrom Rcpp sourceCpp
 #' @export
 boss <- function(x, y, intercept=TRUE, fs.only=FALSE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, use.lasso.sigma=FALSE, ...){
   n = dim(x)[1]
   p = dim(x)[2]
 
   maxstep = min(n, p)
-
+  varnames = colnames(x)
   # standardize x (mean 0 and norm 1) and y (mean 0)
   std_result = std(x, y)
   x = std_result$x_std
-  colnames(x) = seq(1, p)
   y = std_result$y_std
   mean_x = std_result$mean_x
   mean_y = std_result$mean_y
   sd_demanedx = std_result$sd_demeanedx
 
-  steps = rep(NA, maxstep) # the step in order of the variables
-  # determine the first variable to step in
-  steps[1] = which.max(abs(t(x) %*% y))
-  #x_active = x[,steps[1]]
-  x_remain = x[, -steps[1]]
-  qr_result = qr(x[, steps[1]])
-  Q = qr.Q(qr_result, complete=T)
-  Ql = Q[, 1, drop=FALSE]
-  Qr = Q[, -1, drop=FALSE]
-  R = qr.R(qr_result, complete=F)
-
-  resid_tmp = x_remain # residuals of regressing x_remain on Ql
-  # following steps
-  for(i in 2:maxstep){
-    # determine which variable to step in, based on partial correlation
-    if(i < p){
-      resid_tmp = resid_tmp - Ql[, dim(Ql)[2]] %*% t(Ql[, dim(Ql)[2]]) %*% x_remain
-      j_remain = which.max(abs(t(y) %*% scale(resid_tmp, center=F, scale=sqrt(colSums(resid_tmp^2)))))
-    }else{
-      j_remain = 1
-    }
-
-    steps[i] = as.numeric(colnames(x_remain)[j_remain])
-    # update QR
-    updateQR_result = updateQR(Ql, Qr, R, x[, steps[i]])
-    Ql = updateQR_result$Ql
-    Qr = updateQR_result$Qr
-    R = updateQR_result$R
-
-    # update others
-    if(i < p){
-      resid_tmp = resid_tmp[, -j_remain,drop=FALSE]
-      x_remain = x_remain[, -j_remain,drop=FALSE]
-    }
-  }
+  guideQR_result = guideQR(x, y, maxstep)
+  Q = guideQR_result$Q
+  R = guideQR_result$R
+  steps = as.numeric(guideQR_result$steps)
 
   # coefficients
-  z = t(Ql) %*% y
+  z = t(Q) %*% y
 
   # fs
   beta_q = matrix(rep(z, maxstep), nrow=maxstep, byrow=F)
@@ -153,18 +123,34 @@ boss <- function(x, y, intercept=TRUE, fs.only=FALSE, hdf.ic.boss=TRUE, mu=NULL,
     if(n<=p & hdf.ic.boss){
       warning('hdf not available when n<=p')
     }else if(hdf.ic.boss){
-      hdf_result = calc.hdf(Ql, y, mu, sigma)
+      hdf_result = calc.hdf(Q, y, mu, sigma)
       if(intercept){
         hdf_result$hdf = hdf_result$hdf + 1
       }
       if(is.null(sigma)){
-        IC_result = calc.ic.all(beta_q, Ql, y, hdf_result$hdf, hdf_result$sigma)
+        IC_result = calc.ic.all(beta_q, Q, y, hdf_result$hdf, hdf_result$sigma)
       }else{
-        IC_result = calc.ic.all(beta_q, Ql, y, hdf_result$hdf, sigma)
+        IC_result = calc.ic.all(beta_q, Q, y, hdf_result$hdf, sigma)
       }
 
     }
 
+  }
+  # take care the variable names
+  if(is.null(varnames)){
+    if(intercept){
+      rownames(beta_fs) = rownames(beta_boss) = c('intercept', paste('X',seq(1,p),sep=''))
+    }else{
+      rownames(beta_fs) = rownames(beta_boss) = paste('X',seq(1,p),sep='')
+    }
+    names(steps) = paste('X',steps,sep='')
+  }else{
+    if(intercept){
+      rownames(beta_fs) = rownames(beta_boss) = c('intercept', varnames)
+    }else{
+      rownames(beta_fs) = rownames(beta_boss) = varnames
+    }
+    names(steps) = varnames[steps]
   }
   # output
   out = list(beta_fs=beta_fs,

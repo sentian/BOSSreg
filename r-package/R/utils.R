@@ -1,34 +1,5 @@
 ### functions that are called by the main functions, but invisible to users unless using namespace ':::'
 
-## update the QR decomposition when a column is added to X -------------------------
-# here's a reference for the algorithms
-# http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.142.2571&rep=rep1&type=pdf
-
-# X_before = Q_before R_before, X_before1:n*l, Q_before:n*n, R_before:n*l
-# Q_before = [Ql_before Qr_before], where Ql_before: n*l and Qr_before: n*(n-l)
-# add a column u to X_active_update: X_after=[X_before u], and update Q_before and R_before, get X_after=Q_after R_after
-# X_after: n*(r+1), Q_after = [Ql_after Qr_after] where Ql_after = [Ql_before Ql_newcol]
-# algorithm 2.19 in the reference
-# function updateQR calls function updateQv which is written in C++
-
-#' @useDynLib boss
-#' @importFrom Rcpp sourceCpp
-updateQR <- function(Ql, Qr, R, newcol){
-  n = dim(Ql)[1]
-  l = dim(Ql)[2]
-  v = t(cbind(Ql, Qr)) %*% newcol
-  updateQv_result = updateQv(v[(l+1):n], Qr)
-  # update v
-  v[(l+1):n] = updateQv_result$v
-  # update Q
-  Ql = cbind(Ql, updateQv_result$Qr[, 1])
-  Qr = updateQv_result$Qr[, -1]
-  # update R
-  R = rbind(R, rep(0, l))
-  R = cbind(R, v[1:(l+1)] )
-  return(list(Ql=Ql, Qr=Qr, R=R))
-}
-
 ## standardize the data ------------------------------------------------------------
 # standardize x to be mean 0 and norm 1
 # standardize y to be mean 0
@@ -117,7 +88,7 @@ calc.hdf <- function(Q, y, sigma=NULL, mu=NULL){
     d = stats::pnorm((-x-xtmu) / sigma)
     return( sum(1 - c + d) )
   }
-  inverse_exp_size = inverse(exp_size, 0, max(abs(xtmu)))
+  inverse_exp_size = inverse(exp_size, 0, 100*max(abs(xtmu)))
   sqrt_2lambda = unlist(lapply(1:(p-1), inverse_exp_size))
   sqrt_2lambda_matrix = matrix(rep(sqrt_2lambda,each=p), nrow=p, byrow=F)
 

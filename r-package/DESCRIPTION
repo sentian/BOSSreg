@@ -15,7 +15,8 @@ Imports:
     Matrix,
     Rcpp,
     RcppArmadillo,
-    stats
+    stats,
+    MASS
 RoxygenNote: 6.1.0.9000
 Suggests: 
     knitr,

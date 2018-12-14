@@ -17,7 +17,7 @@ beta_boss_cv = boss_result$beta_boss[, boss_cv_result$i.min.boss, drop=FALSE]
 # Same purpose, using the S3 function
 beta_boss_cv = coef(boss_cv_result)$boss
 # fitted values for the first observation
-mu_boss_cv = x[1,] %*% beta_boss_cv
+mu_boss_cv = c(1,x[1,]) %*% beta_boss_cv
 # Same purpose, use the S3 function
 mu_boss_cv = predict(boss_cv_result, newx=x[1,])$boss
 

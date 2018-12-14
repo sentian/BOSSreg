@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 ## Installation
 ```{r, eval=FALSE}
 library(devtools)
-install_github('https://github.com/sentian/boss')
+install_github(repo="sentian/boss", subdir="r-package")
 ```
 
 ```{r}
@@ -100,6 +100,6 @@ print(as.numeric(beta_aicc))
 Unfortunately, it does not seems to work well. Why? Naively using subset size as df to be plugged into the calculation of information criterion causes trouble. And that's why we derive hdf for BOSS. 
 ```{r}
 # use subset size (naive df) as df
-IC_fs = calc.ic(x%*%cv_result$boss$beta_fs, y, df=Matrix::colSums(cv_result$boss$beta_fs!=0))
+IC_fs = calc.ic(cbind(rep(1,n),x)%*%cv_result$boss$beta_fs, y, df=Matrix::colSums(cv_result$boss$beta_fs!=0))
 print(as.numeric(coef(cv_result$boss, select.fs=which.min(IC_fs))$fs))
 ```
