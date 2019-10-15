@@ -36,7 +36,7 @@ This function fits BOSS and FS (\code{boss}) on the full dataset, and performs \
   out-of-sample (OOS) performance for the candidate subsets given by both methods.
 }
 \examples{
-# Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
+## Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
 set.seed(11)
 n = 20
 p = 5
@@ -46,23 +46,29 @@ x = scale(x, scale = sqrt(colSums(x^2)))
 beta = c(1, 1, 0, 0, 0)
 y = x\%*\%beta + scale(rnorm(20, sd=0.01), center = TRUE, scale = FALSE)
 
-
-# perform 10-fold CV without replication
-boss_cv_result = cv.boss(x, y, n.folds = 2)
-boss_result = boss_cv_result$boss
-# select the best candidate based on minimum CV OSS score
-beta_boss_cv = boss_result$beta_boss[, boss_cv_result$i.min.boss, drop=FALSE]
-# Same purpose, using the S3 function
+## Perform 10-fold CV without replication
+boss_cv_result = cv.boss(x, y)
+## Get the coefficient vector of BOSS that gives minimum CV OSS score (S3 method for cv.boss)
 beta_boss_cv = coef(boss_cv_result)$boss
-# fitted values for the first observation
-mu_boss_cv = c(1,x[1,]) \%*\% beta_boss_cv
-# Same purpose, use the S3 function
-mu_boss_cv = predict(boss_cv_result, newx=x[1,])$boss
+# the above is equivalent to
+boss_result = boss_cv_result$boss
+beta_boss_cv = boss_result$beta_boss[, boss_cv_result$i.min.boss, drop=FALSE]
+## Get the fitted values of BOSS-CV (S3 method for cv.boss)
+mu_boss_cv = predict(boss_cv_result, newx=x)$boss
+# the above is equivalent to
+mu_boss_cv = cbind(1,x) \%*\% beta_boss_cv
 
+## Get the coefficient vector of FS that gives minimum CV OSS score (S3 method for cv.boss)
+beta_fs_cv = coef(boss_cv_result)$fs
+## Get the fitted values of FS-CV (S3 method for cv.boss)
+mu_fs_cv = predict(boss_cv_result, newx=x)$fs
 }
 \references{
-Tian, Hurvich and Simonoff (2018), On the use of information criterion
+Tian, Hurvich and Simonoff (2019), On the use of information criterion
   in least squares based subset selection problems. (Link to be added)
+}
+\seealso{
+\code{predict} and \code{coef} methods for "cv.boss" object, and the \code{boss} function
 }
 \author{
 Sen Tian

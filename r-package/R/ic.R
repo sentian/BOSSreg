@@ -16,8 +16,8 @@
 #'
 #' @details This function enables the computation of various common IC for model fits, which can
 #'   further be used to choose the optimal fit. This allows user comparing the effect of different IC.
-#'   In order to calculate IC, df needs to be specified. To be more specific, here are the formulas used
-#'   to calculate each IC:
+#'   In order to calculate an IC, degrees of freedoms (df) needs to be specified. To be more specific,
+#'   here are the formulas used to calculate each IC:
 #'
 #'   \deqn{AIC = \log(\frac{RSS}{n}) + 2\frac{df}{n}}{AIC = log(RSS/n) + 2*df/n}
 #'   \deqn{BIC = \log(\frac{RSS}{n}) + \log(n)\frac{df}{n}}{BIC = log(RSS/n) + log(n)*df/n}

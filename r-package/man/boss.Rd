@@ -5,7 +5,7 @@
 \title{Best orthogonalized subset selection (BOSS).}
 \usage{
 boss(x, y, intercept = TRUE, fs.only = FALSE, hdf.ic.boss = TRUE,
-  mu = NULL, sigma = NULL, use.lasso.sigma = FALSE, ...)
+  mu = NULL, sigma = NULL, ...)
 }
 \arguments{
 \item{x}{A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
@@ -25,9 +25,6 @@ Cp. Note that if the option fs.only=TRUE or n<=p, \code{hdf.ic.boss=FALSE} no ma
 
 \item{sigma}{True standard deviation of the error, used in the calculation of hdf. Default is NULL,
 and is estimated via full OLS.}
-
-\item{use.lasso.sigma}{Whether to use LASSO (10 fold CV) based estimates of sigma, rather than full OLS,
-to be plugged into hdf. Details about LASSO based sigma can be found in Reid et al. (2016).}
 
 \item{...}{Extra parameters to allow flexibility. Currently none argument allows or requires, just for
 the convinience of call from other parent functions like cv.boss.}
@@ -69,7 +66,7 @@ This function computes the full solution path given by FS and (or) BOSS on a giv
   for implementation details and Tian et al. (2018) for methodology details.
 }
 \examples{
-# Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
+## Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
 set.seed(11)
 n = 20
 p = 5
@@ -79,33 +76,32 @@ x = scale(x, scale = sqrt(colSums(x^2)))
 beta = c(1, 1, 0, 0, 0)
 y = x\%*\%beta + scale(rnorm(n, sd=0.01), center = TRUE, scale = FALSE)
 
-
-# run the model
+## Fit the model
 boss_result = boss(x, y)
-# select the best candidate along the path based on IC
-# AICc
-beta_boss_aicc = boss_result$beta_boss[, which.min(boss_result$IC_boss$aicc), drop=FALSE]
-# Same purpose, use the S3 function
+
+## Get the coefficient vector selected by AICc-hdf (S3 method for boss)
 beta_boss_aicc = coef(boss_result)$boss
-# fitted values for the first observation
-mu_boss_aicc = c(1,x[1,]) \%*\% beta_boss_aicc
-# Same purpose, use the S3 function
-mu_boss_aicc = predict(boss_result, newx=x[1,])$boss
-# Mallow's Cp
-beta_boss_cp = boss_result$beta_boss[, which.min(boss_result$IC_boss$cp), drop=FALSE]
-# Same purpose, use the S3 function
+# the above is equivalent to the following
+beta_boss_aicc = boss_result$beta_boss[, which.min(boss_result$IC_boss$aicc), drop=FALSE]
+## Get the fitted values of BOSS-AICc-hdf (S3 method for boss)
+mu_boss_aicc = predict(boss_result, newx=x)$boss
+# the above is equivalent to the following
+mu_boss_aicc = cbind(1,x) \%*\% beta_boss_aicc
+
+## Repeat the above process, but using Cp-hdf instead of AICc-hdf
+## coefficient vector
 beta_boss_cp = coef(boss_result, method.boss='cp')$boss
-# fitted values for the first observation
-mu_boss_cp = c(1,x[1,]) \%*\% beta_boss_cp
-# Same purpose, use the S3 function
-mu_boss_cp = predict(boss_result, newx=x[1,], method.boss='cp')$boss
+beta_boss_cp = boss_result$beta_boss[, which.min(boss_result$IC_boss$cp), drop=FALSE]
+## fitted values of BOSS-Cp-hdf
+mu_boss_cp = predict(boss_result, newx=x, method.boss='cp')$boss
+mu_boss_cp = cbind(1,x) \%*\% beta_boss_cp
 }
 \references{
-Tian, Hurvich and Simonoff (2018), On the use of information criterion
+Tian, Hurvich and Simonoff (2019), On the use of information criterion
   in least squares based subset selection problems. (Link to be added)
-
-Reid, Tibshirani and Friedman (2016), A study of error variance estimation
-  in LASSO regression.
+}
+\seealso{
+\code{predict} and  \code{coef} methods for "boss" object, and the \code{cv.boss} function
 }
 \author{
 Sen Tian

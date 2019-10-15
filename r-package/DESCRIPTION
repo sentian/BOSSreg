@@ -2,12 +2,12 @@ Package: boss
 Type: Package
 Title: Best orthogonalized subset selection (BOSS)
 Version: 0.1.0
-Date: 2018-10-04
+Date: 2019-11-01
 Authors@R: c(person("Sen", "Tian", email = "stian@stern.nyu.edu", role = c("aut", "cre")),
 	person("Clifford", "Hurvich", email = "churvich@stern.nyu.edu", role = c("aut")),
 	person("Jeffrey", "Simonoff", email = "jsimonof@stern.nyu.edu", role = c("aut")))
 Maintainer: Sen Tian <stian@stern.nyu.edu>
-Description: An implementation of best orthogonalized subset selection (BOSS) and forward stepwise selection (fs), together with feasible selection rules to choose the best candidate subset. 
+Description: An implementation of best orthogonalized subset selection (BOSS) and forward stepwise selection (fs), together with feasible selection rules to choose the optimal candidate subset. 
 License: GPL (>=2) | file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -17,7 +17,7 @@ Imports:
     RcppArmadillo,
     stats,
     MASS
-RoxygenNote: 6.1.0.9000
+RoxygenNote: 6.1.1
 Suggests: 
     knitr,
     rmarkdown

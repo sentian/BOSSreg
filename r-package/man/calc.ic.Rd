@@ -31,8 +31,8 @@ Such IC includes AIC, BIC, AICc, BICc, GCV and Mallows' Cp.
 \details{
 This function enables the computation of various common IC for model fits, which can
   further be used to choose the optimal fit. This allows user comparing the effect of different IC.
-  In order to calculate IC, df needs to be specified. To be more specific, here are the formulas used
-  to calculate each IC:
+  In order to calculate an IC, degrees of freedoms (df) needs to be specified. To be more specific,
+  here are the formulas used to calculate each IC:
 
   \deqn{AIC = \log(\frac{RSS}{n}) + 2\frac{df}{n}}{AIC = log(RSS/n) + 2*df/n}
   \deqn{BIC = \log(\frac{RSS}{n}) + \log(n)\frac{df}{n}}{BIC = log(RSS/n) + log(n)*df/n}
@@ -42,7 +42,7 @@ This function enables the computation of various common IC for model fits, which
   \deqn{Mallows' Cp = RSS + 2\times \sigma^2 \times df}{AIC = RSS + 2*\sigma^2*df}
 }
 \examples{
-# Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
+## Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
 set.seed(11)
 n = 20
 p = 5
@@ -52,13 +52,13 @@ x = scale(x, scale = sqrt(colSums(x^2)))
 beta = c(1, 1, 0, 0, 0)
 y = x\%*\%beta + scale(rnorm(20, sd=0.01), center = TRUE, scale = FALSE)
 
-# run the model
+## Fit the model
 boss_result = boss(x, y)
-# what are the values of AICc for all candidates of BOSS?
+## Print the values of AICc-hdf for all subsets given by BOSS
 print(boss_result$IC_boss$aicc)
-# calculate them manually using the calc.ic function
-print(calc.ic(cbind(rep(1,n),x)\%*\%boss_result$beta_boss, y, df=boss_result$hdf_boss))
-# they shall match
+## calculate them manually using the calc.ic function
+y_hat = cbind(rep(1,n),x)\%*\%boss_result$beta_boss
+print(calc.ic(y_hat, y, df=boss_result$hdf_boss))
 }
 \author{
 Sen Tian

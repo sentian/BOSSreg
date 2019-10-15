@@ -55,8 +55,6 @@ calc.ic.all <- function(coef, x, y, df, sigma=NULL){
 # @param sigma,mu The standard deviation and mean vector of the true model.
 #   In practice, if not specified, they are calculated via full multiple
 #   regression of y upon Q.
-# @param use.lasso.sigma Whether to use LASSO (10-fold CV) based estimates of
-#   sigma. (Not yet implemented)
 
 calc.hdf <- function(Q, y, sigma=NULL, mu=NULL){
   n = dim(Q)[1]
@@ -78,27 +76,31 @@ calc.hdf <- function(Q, y, sigma=NULL, mu=NULL){
     xtmu = t(Q)%*%mu
     xtmu_matrix = matrix(rep(xtmu,each=p-1), ncol=p-1, byrow=T)
   }
+  tryCatch({
+    # calculate the inverse function of E(k(lambda))=k, where k=1,...p-1
+    inverse = function(f, lower, upper) {
+      function(y) stats::uniroot(function(x){f(x) - y}, lower=lower, upper=upper)[1]
+    }
+    exp_size <- function(x){
+      c = stats::pnorm((x-xtmu) / sigma)
+      d = stats::pnorm((-x-xtmu) / sigma)
+      return( sum(1 - c + d) )
+    }
+    inverse_exp_size = inverse(exp_size, 0, 100*max(abs(xtmu)))
+    sqrt_2lambda = unlist(lapply(1:(p-1), inverse_exp_size))
+    sqrt_2lambda_matrix = matrix(rep(sqrt_2lambda,each=p), nrow=p, byrow=F)
 
-  # calculate the inverse function of E(k(lambda))=k, where k=1,...p-1
-  inverse = function(f, lower, upper) {
-    function(y) stats::uniroot(function(x){f(x) - y}, lower=lower, upper=upper)[1]
-  }
-  exp_size <- function(x){
-    c = stats::pnorm((x-xtmu) / sigma)
-    d = stats::pnorm((-x-xtmu) / sigma)
-    return( sum(1 - c + d) )
-  }
-  inverse_exp_size = inverse(exp_size, 0, 100*max(abs(xtmu)))
-  sqrt_2lambda = unlist(lapply(1:(p-1), inverse_exp_size))
-  sqrt_2lambda_matrix = matrix(rep(sqrt_2lambda,each=p), nrow=p, byrow=F)
+    # plug the sequence of lambda into the expression of df(lambda)
+    a = stats::dnorm((sqrt_2lambda_matrix-xtmu_matrix) / sigma)
+    b = stats::dnorm((-sqrt_2lambda_matrix-xtmu_matrix) / sigma)
 
-  # plug the sequence of lambda into the expression of df(lambda)
-  a = stats::dnorm((sqrt_2lambda_matrix-xtmu_matrix) / sigma)
-  b = stats::dnorm((-sqrt_2lambda_matrix-xtmu_matrix) / sigma)
-
-  size = 1:(p-1)
-  sdf = (sqrt_2lambda/sigma) * colSums(a + b)
-  df = size + sdf
-  names(df) = NULL
-  return(list(hdf=c(0, df, p), sigma=sigma))
+    size = 1:(p-1)
+    sdf = (sqrt_2lambda/sigma) * colSums(a + b)
+    df = size + sdf
+    names(df) = NULL
+    return(list(hdf=c(0, df, p), sigma=sigma))
+  }, error=function(e){
+    warning('returns the df for a null model')
+    return(list(hdf=c(0, 1:p + 2*p*stats::qnorm(1-1:p/(2*p))*stats::dnorm(stats::qnorm(1-1:p/(2*p)))), sigma=sigma))
+  })
 }

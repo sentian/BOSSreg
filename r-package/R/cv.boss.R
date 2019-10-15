@@ -25,8 +25,9 @@
 #'   out-of-sample (OOS) performance for the candidate subsets given by both methods.
 #'
 #' @author Sen Tian
-#' @references Tian, Hurvich and Simonoff (2018), On the use of information criterion
+#' @references Tian, Hurvich and Simonoff (2019), On the use of information criterion
 #'   in least squares based subset selection problems. (Link to be added)
+#' @seealso \code{predict} and \code{coef} methods for "cv.boss" object, and the \code{boss} function
 #' @example R/example/eg.cv.boss.R
 #' @export
 cv.boss <- function(x, y, n.folds=10, n.rep=1, ...){
