@@ -7,23 +7,21 @@
 \method{predict}{cv.boss}(object, newx, ...)
 }
 \arguments{
-\item{object}{The cv.boss object, returned from calling 'cv.boss' function.}
+\item{object}{The cv.boss object, returned from calling \code{cv.boss} function.}
 
 \item{newx}{A new data entry or several entries. It can be a vector, or a matrix with
 \code{nrow(newx)} being the number of new entries and \code{ncol(newx)=p} being the
 number of predictors. The function takes care of the intercept, NO need to add \code{1}
 to \code{newx}.}
 
-\item{...}{Extra arguments (unused for now).}
+\item{...}{Extra arguments to be plugged into \code{coef}, such as \code{method},
+see the description of \code{coef.cv.boss} for more details.}
 }
 \value{
-\itemize{
-  \item fs: The prediction for FS.
-  \item boss: The prediction for BOSS.
-}
+The prediction for BOSS or FS.
 }
 \description{
-This function returns the prediction(s) given new observation(s), for FS and BOSS,
+This function returns the prediction(s) given new observation(s) for BOSS or FS,
 where the optimal coefficient vector is chosen via cross-validation.
 }
 \examples{

@@ -15,16 +15,13 @@ number of predictors. The function takes care of the intercept, NO need to add \
 to \code{newx}.}
 
 \item{...}{Extra arguments to be plugged into \code{coef}, such as \code{select.boss},
-see the description of \code{coef} for more details.}
+see the description of \code{coef.boss} for more details.}
 }
 \value{
-\itemize{
-  \item fs: The prediction(s) for FS.
-  \item boss: The prediction(s) for BOSS.
-}
+The prediction(s) for BOSS.
 }
 \description{
-This function returns the prediction(s) given new observation(s), for FS and BOSS,
+This function returns the prediction(s) given new observation(s), for BOSS,
 where the optimal coefficient vector is chosen via certain selection rule.
 }
 \details{

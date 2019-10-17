@@ -2,50 +2,38 @@
 % Please edit documentation in R/boss.R
 \name{coef.boss}
 \alias{coef.boss}
-\title{Select coefficient vector(s) from boss object.}
+\title{Select coefficient vector(s) for BOSS.}
 \usage{
-\method{coef}{boss}(object, select.fs = NULL, select.boss = NULL,
-  method.boss = c("aicc", "bicc", "aic", "bic", "gcv", "cp"), ...)
+\method{coef}{boss}(object, ic = c("aicc", "bicc", "aic", "bic", "gcv",
+  "cp"), select.boss = NULL, ...)
 }
 \arguments{
-\item{object}{The boss object, returned from calling 'boss' function.}
+\item{object}{The boss object, returned from calling the \code{boss} function.}
 
-\item{select.fs}{Given step(s) of FS, corresponding to columns in the coefficient
-matrix. For example, the first column in beta_fs corresponds to step 1, the second
-column corresponds to step 2, etc. We enforce the first column, that has all 0 entries,
-to be step 1, just for convinicence of usage.}
+\item{ic}{Which information criterion is used to select the optimal coefficient vector for BOSS.
+The default is AICc-hdf.}
 
-\item{select.boss}{Given columns(s) in beta_boss, similar to select.fs.}
-
-\item{method.boss}{Which IC is used to select the optimal coefficient vector for BOSS.}
+\item{select.boss}{The index (or indicies) of columns in the coefficient matrix for which
+one wants to select. By default (NULL) it's selected by the information criterion specified in
+'ic'.}
 
 \item{...}{Extra arguments (unused for now)}
 }
 \value{
-\itemize{
-  \item fs: The chosen coefficient vector(s) for FS.
-  \item boss: The chosen coefficient vector(s) for FS.
-}
+The chosen coefficient vector(s) for BOSS.
 }
 \description{
-This function returns coefficient vector(s) for given step(s) of FS and BOSS.
-For BOSS, it can also return the optimal coefficient vector selected by AICc
-(by default) or other IC.
+This function returns the optimal coefficient vector of BOSS selected by AICc
+(by default) or other types of information criterion.
 }
 \details{
-If \code{select.fs} or \code{select.boss} is specified, the function returns
+If \code{select.boss} is specified, the function returns
 corresponding column(s) in the coefficient matrix.
 
-If \code{select.fs} is unspecified,
-we return the entire coefficient matrix (\code{beta_fs}) for FS, since we currently do
-not have a hands-on way of calculating IC for FS. But user can use their own rules and
-specify e.g. \code{select.fs=which.min(rule)} in order to pick the optimal coefficient
-vector.
-
-If \code{select.boss} is unspecified, we will try to return the optimal coefficient
-vector selected by AICc-hdf (other choice of IC can be specified in \code{method.boss}).
-The only exception is when n>=p, where hdf is not well defined, and we will return the
-entire coefficient matrix.
+If \code{select.boss} is unspecified, the function returns the optimal coefficient
+vector selected by AICc-hdf (other choice of IC can be specified in \code{ic}).
+The only exception is when n>=p, where hdf is not well defined, and the entire coefficient matrix
+is returned.
 }
 \examples{
 # See the example in the section of \\code{boss}. Or type ?boss in R.

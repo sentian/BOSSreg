@@ -4,8 +4,8 @@
 \alias{boss}
 \title{Best orthogonalized subset selection (BOSS).}
 \usage{
-boss(x, y, intercept = TRUE, fs.only = FALSE, hdf.ic.boss = TRUE,
-  mu = NULL, sigma = NULL, ...)
+boss(x, y, intercept = TRUE, hdf.ic.boss = TRUE, mu = NULL,
+  sigma = NULL, ...)
 }
 \arguments{
 \item{x}{A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
@@ -13,13 +13,11 @@ boss(x, y, intercept = TRUE, fs.only = FALSE, hdf.ic.boss = TRUE,
 
 \item{y}{A vector of response variable, with \code{length(y)=n}.}
 
-\item{intercept}{Whether to include an intercept term.}
+\item{intercept}{Logical, whether to include an intercept term. Default is TRUE.}
 
-\item{fs.only}{Whether to ignore BOSS and perform FS only.}
-
-\item{hdf.ic.boss}{Whether to calculate the heuristic degrees of freedom (hdf)
+\item{hdf.ic.boss}{Logical, whether to calculate the heuristic degrees of freedom (hdf)
 and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
-Cp. Note that if the option fs.only=TRUE or n<=p, \code{hdf.ic.boss=FALSE} no matter what.}
+Cp. Note that if n<=p, \code{hdf.ic.boss=FALSE} no matter what. Default is TRUE.}
 
 \item{mu}{True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via full OLS.}
 
@@ -32,13 +30,12 @@ the convinience of call from other parent functions like cv.boss.}
 \value{
 \itemize{
   \item beta_fs: A matrix of regression coefficients for each step performed by FS,
-  from a null model until stop, with \code{nrow=p} and \code{ncol=min(n,p)+1}, where min(n,p) is
+  from a null model until stop, with \code{nrow=p} and \code{ncol=min(n,p)+1}, where \code{min(n,p)} is
   the maximum number of steps performed.
   \item beta_boss: A matrix of regression coefficients for each step performed by
   BOSS, with \code{nrow=p} and \code{ncol=min(n,p)+1}. Note that unlike beta_fs and due to the nature of BOSS,
   the number of non-zero components in columns of beta_boss may not be unique, i.e.
-  there maybe multiple columns corresponding to the same size of subset. \code{beta_boss=NULL}
-  if the option \code{fs.only=TRUE}.
+  there maybe multiple columns corresponding to the same size of subset.
   \item steps_fs: A vector of numbers representing which predictor joins at each step,
   with \code{length(steps_fs)=min(n,p)}.
   \item hdf_boss: A vector of heuristic degrees of freedom (hdf) for BOSS, with
@@ -80,20 +77,20 @@ y = x\%*\%beta + scale(rnorm(n, sd=0.01), center = TRUE, scale = FALSE)
 boss_result = boss(x, y)
 
 ## Get the coefficient vector selected by AICc-hdf (S3 method for boss)
-beta_boss_aicc = coef(boss_result)$boss
+beta_boss_aicc = coef(boss_result)
 # the above is equivalent to the following
 beta_boss_aicc = boss_result$beta_boss[, which.min(boss_result$IC_boss$aicc), drop=FALSE]
 ## Get the fitted values of BOSS-AICc-hdf (S3 method for boss)
-mu_boss_aicc = predict(boss_result, newx=x)$boss
+mu_boss_aicc = predict(boss_result, newx=x)
 # the above is equivalent to the following
 mu_boss_aicc = cbind(1,x) \%*\% beta_boss_aicc
 
 ## Repeat the above process, but using Cp-hdf instead of AICc-hdf
 ## coefficient vector
-beta_boss_cp = coef(boss_result, method.boss='cp')$boss
+beta_boss_cp = coef(boss_result, method.boss='cp')
 beta_boss_cp = boss_result$beta_boss[, which.min(boss_result$IC_boss$cp), drop=FALSE]
 ## fitted values of BOSS-Cp-hdf
-mu_boss_cp = predict(boss_result, newx=x, method.boss='cp')$boss
+mu_boss_cp = predict(boss_result, newx=x, method.boss='cp')
 mu_boss_cp = cbind(1,x) \%*\% beta_boss_cp
 }
 \references{

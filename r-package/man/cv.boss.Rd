@@ -4,18 +4,20 @@
 \alias{cv.boss}
 \title{Cross validation for BOSS.}
 \usage{
-cv.boss(x, y, n.folds=10, n.rep=1, ...)
+cv.boss(x, y, n.folds = 10, n.rep = 1, intercept = TRUE, ...)
 }
 \arguments{
 \item{x}{A matrix of predictors, see \code{boss}.}
 
 \item{y}{A vector of response variable, see \code{boss}.}
 
-\item{n.folds}{The number of cross validation folds.}
+\item{n.folds}{The number of cross validation folds. Default is 10.}
 
-\item{n.rep}{The number of replications of cross validation.}
+\item{n.rep}{The number of replications of cross validation. Default is 1.}
 
-\item{...}{Arguments to \code{boss}.}
+\item{intercept}{Logical, whether to fit an intercept term. Default is TRUE.}
+
+\item{...}{Arguments to \code{boss}, such as \code{hdf.ic.boss}.}
 }
 \value{
 \itemize{
@@ -49,26 +51,26 @@ y = x\%*\%beta + scale(rnorm(20, sd=0.01), center = TRUE, scale = FALSE)
 ## Perform 10-fold CV without replication
 boss_cv_result = cv.boss(x, y)
 ## Get the coefficient vector of BOSS that gives minimum CV OSS score (S3 method for cv.boss)
-beta_boss_cv = coef(boss_cv_result)$boss
+beta_boss_cv = coef(boss_cv_result)
 # the above is equivalent to
 boss_result = boss_cv_result$boss
 beta_boss_cv = boss_result$beta_boss[, boss_cv_result$i.min.boss, drop=FALSE]
 ## Get the fitted values of BOSS-CV (S3 method for cv.boss)
-mu_boss_cv = predict(boss_cv_result, newx=x)$boss
+mu_boss_cv = predict(boss_cv_result, newx=x)
 # the above is equivalent to
 mu_boss_cv = cbind(1,x) \%*\% beta_boss_cv
 
 ## Get the coefficient vector of FS that gives minimum CV OSS score (S3 method for cv.boss)
-beta_fs_cv = coef(boss_cv_result)$fs
+beta_fs_cv = coef(boss_cv_result, method='fs')
 ## Get the fitted values of FS-CV (S3 method for cv.boss)
-mu_fs_cv = predict(boss_cv_result, newx=x)$fs
+mu_fs_cv = predict(boss_cv_result, newx=x, method='fs')
 }
 \references{
 Tian, Hurvich and Simonoff (2019), On the use of information criterion
   in least squares based subset selection problems. (Link to be added)
 }
 \seealso{
-\code{predict} and \code{coef} methods for "cv.boss" object, and the \code{boss} function
+\code{predict} and \code{coef} methods for \code{cv.boss} object, and the \code{boss} function
 }
 \author{
 Sen Tian

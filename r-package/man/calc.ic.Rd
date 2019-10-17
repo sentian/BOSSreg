@@ -4,8 +4,8 @@
 \alias{calc.ic}
 \title{Calculate information criterion.}
 \usage{
-calc.ic(y_hat, y, method = c("aicc", "bicc", "aic", "bic", "gcv", "cp"),
-  df, sigma = NULL)
+calc.ic(y_hat, y, ic = c("aicc", "bicc", "aic", "bic", "gcv", "cp"), df,
+  sigma = NULL)
 }
 \arguments{
 \item{y_hat}{A vector of fitted values with \code{length(y_hat)=length(y)=n}, or
@@ -13,13 +13,13 @@ a matrix, with \code{nrow(coef)=length(y)=n} and \code{ncol(y_hat)=m}, containin
 
 \item{y}{A vector of response variable, with \code{length(y)=n}.}
 
-\item{method}{A specified IC to calculate. Default is AICc ('aicc'). Other choices include AIC ('aic'),
+\item{ic}{A specified IC to calculate. Default is AICc ('aicc'). Other choices include AIC ('aic'),
 BIC ('bic'), BICc ('bicc'), GCV ('gcv') and Mallows' Cp ('cp').}
 
 \item{df}{A number if y_hat is a vector, or a vector with \code{length(df)=ncol(y_hat)=m} if y_hat is
 a matrix. df represents the degrees of freedom for each fit.}
 
-\item{sigma}{Standard deviation of the error term. It only needs to be specified if \code{method='cp'}.}
+\item{sigma}{Standard deviation of the error term. It only needs to be specified if \code{ic='cp'}.}
 }
 \value{
 The value(s) of the specified IC for each fit.

@@ -2,20 +2,19 @@
 % Please edit documentation in R/cv.boss.R
 \name{coef.cv.boss}
 \alias{coef.cv.boss}
-\title{Select coefficient vector based on cross validation (CV).}
+\title{Select coefficient vector based on cross validation (CV) for BOSS or FS.}
 \usage{
-\method{coef}{cv.boss}(object, ...)
+\method{coef}{cv.boss}(object, method = c("boss", "fs"), ...)
 }
 \arguments{
-\item{object}{The cv.boss object, returned from calling 'cv.boss' function.}
+\item{object}{The cv.boss object, returned from calling \code{cv.boss} function.}
+
+\item{method}{It can either be 'fs' or 'boss'. The default is 'boss'.}
 
 \item{...}{Extra arguments (unused for now).}
 }
 \value{
-\itemize{
-  \item fs: The chosen coefficient vector for FS.
-  \item boss: The chosen coefficient vector for FS.
-}
+The chosen coefficient vector for BOSS or FS.
 }
 \description{
 This function returns coefficient vector that minimizes out-of-sample (OOS) cross
