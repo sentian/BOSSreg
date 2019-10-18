@@ -15,6 +15,7 @@ install_github(repo="sentian/boss", subdir="r-package")
 
 ## Documentation and Vignette of the R package
 [Documentation](https://github.com/sentian/boss/blob/master/boss_0.1.0.pdf)
+
 [Vigette](https://github.com/sentian/boss/blob/master/r-package/vignettes/boss.pdf)
 
 
