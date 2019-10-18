@@ -20,7 +20,9 @@ Imports:
 RoxygenNote: 6.1.1
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    ISLR,
+    kableExtra
 VignetteBuilder: knitr
 LinkingTo: 
     Rcpp,

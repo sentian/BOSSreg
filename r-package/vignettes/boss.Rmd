@@ -126,7 +126,7 @@ print(dim(betahat))
 ```
 
 By default, it also calculates the hdf for BOSS and multiple information criteria. 
-```{r, fig.width=3, fig.height=3,fig.show='hold'}
+```{r, fig.width=3, fig.height=3, fig.show='hold'}
 # the heuristic degrees of freedom
 plot(0:p, boss_model$hdf, main='hdf', ylab='', xlab='subset size')
 abline(0,1)
@@ -173,21 +173,294 @@ print(tmp)
 ## Compare the solution paths of BOSS and FS
 
 We see that FS gives a denser solution than BOSS. In fact, under the specific design of the true model, 
-the true active predictors are pairwise correlated with opposite effects. Predictors say $(X_1,X_2)$ together 
+the true active predictors ($X_1,\cdots, X_6$) are pairwise correlated with opposite effects. Predictors say $(X_1,X_2)$ together 
 lead to a high $R^2$ but each single one of them contributes little.
 Therefore, FS has trouble stepping in all the true active predictors in the early stage. For example,
-as indicated below, the inactive predictor $X_9$ joins in the first step. This can potentially lead to overfit 
-since the subset containing all $p_0=6$ active predictors may have size larger than $p_0$. 
+as indicated below, the inactive predictor $X_9$ joins in the first step.
 ```{r}
 print(boss_model$steps_fs)
 ```
 
-Let's set aside the selection rule for now, and 
+Let's set aside the selection rule for now, and compare the solution paths of the two methods. 
+We calculate the average RMSE at each subset size based on $1000$ replications. The RMSE is defined as
 
+\begin{equation*}
+  \text{RMSE} = \sqrt{\frac{1}{n} \lVert \hat{\mu} - X\beta \rVert_2^2}.
+\end{equation*}
+
+```{r, cache=TRUE}
+# function to calculate RMSE
+calc.rmse <- function(muhat){
+  sqrt( Matrix::colSums(sweep(muhat, 1, mu)^2) / n )
+}
+rmse_solutionpath = list(boss=list(), fs=list())
+rmse = nvar = list(boss=c(), fs=c())
+for(rep in 1:nrep){
+  boss_cv_model = cv.boss(x, y[,rep], intercept=FALSE)
+  # RMSE along the solution path
+  rmse_solutionpath[['boss']][[rep]] = calc.rmse(x %*% boss_cv_model$boss$beta_boss)
+  rmse_solutionpath[['fs']][[rep]] = calc.rmse(x %*% boss_cv_model$boss$beta_fs)
+  # RMSE for the optimal subset selected via a selection rule
+  rmse[['boss']][rep] = calc.rmse(predict(boss_cv_model$boss, newx = x)) # AICc
+  rmse[['fs']][rep] = calc.rmse(predict(boss_cv_model, newx = x, method = 'fs')) # CV
+  # number of variables
+  nvar[['boss']][rep] = sum(coef(boss_cv_model$boss)!=0)
+  nvar[['fs']][rep] = sum(coef(boss_cv_model, method='fs')!=0)
+}
+```
+
+BOSS clearly provides a better solution path than FS in steps less than $8$.
+```{r, fig.width=5, fig.height=4}
+# average RMSE over replications
+rmse_avg = lapply(rmse_solutionpath, function(xx){colMeans(do.call(rbind, xx))})
+plot(0:p, rmse_avg$fs, col='blue', pch=1, main='average RMSE along the solution path', ylab='RMSE', xlab='subset size')
+points(0:p, rmse_avg$boss, col='red', pch=3)
+legend('topright', legend = c('FS', 'BOSS'), col=c('blue', 'red'), pch=c(1,3))
+```
+
+Next, we bring back the selection rule and compare their performances. The selection rule for 
+BOSS is AICc-hdf and it's 10-fold CV for FS. BOSS shows better predictive performance, and it provides 
+more sparse solutions than FS.
+```{r,  fig.width=3, fig.height=3, fig.show='hold'}
+boxplot(rmse, outline=FALSE, main='RMSE')
+boxplot(nvar, outline=FALSE, main='number of variables')
+```
 
 
 ## Real data examples
+We compare the performance of BOSS with FS and some popular regularization methods, through some real datasets. 
+We consider four datasets from the [StatLib library](http://lib.stat.cmu.edu/datasets/), that are the 'boston housing', 'hitters', 'auto' and 'college'. An intercept term is included in all the procedures. We present the result first and show the simulation code in the Appendix at the end of this document.
+
+The selection rule is AICc for BOSS and LASSO, and 10-fold CV for FS and SparseNet. We see that BOSS is the best for 'hitters' and 'auto' datasets, while LASSO is the best for 'boston housing' and 'college'. LASSO based on the coordinate descent algorithm, is the fastest method among all. BOSS is also considerably computationally efficient by comparing with FS and SparseNet.
+
+```{r, include=FALSE}
+library(ISLR)
+dataset = list()
+# Boston Housing data
+tmp = Boston
+tmp = na.omit(tmp)
+tmp$chas = as.factor(tmp$chas)
+dataset$boston$x = data.matrix(tmp[,!names(tmp) %in% 'medv'])
+dataset$boston$y = tmp$medv
+
+# MLB hitters salary
+tmp = Hitters
+tmp = na.omit(tmp)
+tmp[,c('League', 'Division', 'NewLeague')] = lapply(tmp[,c('League', 'Division', 'NewLeague')], as.factor)
+dataset$hitters$x = data.matrix(tmp[,!(names(tmp) %in% c('Salary'))])
+dataset$hitters$y = tmp$Salary
+
+# # College data
+tmp = College
+tmp$Private = as.factor(tmp$Private)
+dataset$college$x = data.matrix(tmp[,!(names(tmp) %in% c('Outstate'))])
+dataset$college$y = tmp$Outstate
+
+# Auto data
+tmp = Auto
+dataset$auto$x = data.matrix(tmp[,!(names(tmp) %in% c('mpg','name','origin'))])
+dataset$auto$y = tmp$mpg
+```
+
+```{r, cache=TRUE, include=FALSE}
+library(glmnet)
+library(sparsenet)
+rmse <- function(y_hat, y){
+  sqrt(sum( (y_hat - y)^2 / length(y)) )
+}
+rdresult <- function(x, y, nrep){
+  p = dim(x)[2]
+  
+  allmethods = c('lasso','sparsenet','boss','fs')
+  error = numvar = time = replicate(length(allmethods), rep(NA,nrep), simplify=F)
+  names(error) = names(numvar) = names(time) = allmethods
+
+  for(i in 1:nrep){
+    index = 1:nrow(x)
+    index = index[-i]
+
+    x.train = x[index, , drop=FALSE]
+    y.train = y[index]
+    x.test = x[-index, , drop=FALSE]
+    x.test.withint = cbind(rep(1,nrow(x.test)), x.test)
+    y.test = y[-index]
+
+    # BOSS
+    ptm = proc.time()
+    boss_model = boss(x.train, y.train, intercept = TRUE)
+    time_tmp = proc.time() - ptm
+    boss_pred = as.numeric( predict(boss_model, newx=x.test) )
+    error$boss[i] = rmse(boss_pred, y.test)
+    numvar$boss[i] = sum(coef(boss_model)!=0)
+    time$boss[i] = time_tmp[3]
+    
+    # FS
+    ptm = proc.time()
+    boss_cv_model = cv.boss(x.train, y.train)
+    time_tmp = proc.time() - ptm
+    fs_pred = as.numeric( predict(boss_cv_model, newx=x.test, method='fs') )
+    error$fs[i] = rmse(fs_pred, y.test)
+    numvar$fs[i] = sum(coef(boss_cv_model, method='fs')!=0)
+    time$fs[i] = time_tmp[3]
+    
+    # LASSO
+    ptm = proc.time()
+    lasso_model = glmnet(x.train, y.train, intercept=TRUE)
+    lasso_aicc = as.numeric(calc.ic(predict(lasso_model, newx=x.train), y.train, ic='aicc', df=lasso_model$df+1))
+    lasso_pred = predict(lasso_model, newx=x.test, s=lasso_model$lambda[which.min(lasso_aicc)])
+    time_tmp = proc.time() - ptm
+    error$lasso[i] = rmse(lasso_pred, y.test)
+    numvar$lasso[i] = sum(coef(lasso_model, s=lasso_model$lambda[which.min(lasso_aicc)])!=0)
+    time$lasso[i] = time_tmp[3]
+    
+    # Sparsenet
+    ptm = proc.time()
+    sparsenet_cv_model = cv.sparsenet(x.train, y.train)
+    time_tmp = proc.time() - ptm
+    sparsenet_pred = predict(sparsenet_cv_model, newx=x.test, which='parms.min')
+    error$sparsenet[i] = rmse(sparsenet_pred, y.test)
+    numvar$sparsenet[i] = sum(coef(sparsenet_cv_model, which='parms.min')!=0)
+    time$sparsenet[i] = time_tmp[3]
+  }
+  return(list(error=error, numvar=numvar, time=time))
+}
+result = lapply(dataset, function(xx){rdresult(xx$x, xx$y, nrow(xx$x))})
+```
 
 
+```{r, echo=FALSE}
+library(knitr)
+library(kableExtra)
+tmp = data.frame(Dataset = rep(names(result), each=3),
+           "n, p" = rep(unlist(lapply(dataset, function(xx){paste(dim(xx$x), collapse = ', ')})) , each=3),
+           Metrics = rep(c('RMSE', '# predictors', 'running time (s)'), length(result)),
+           BOSS = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$boss), 3)}))})),
+           FS = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$fs), 3)}))})),
+           LASSO = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$lasso), 3)}))})),
+           SparseNet = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$sparsenet), 3)}))})))
+rownames(tmp) = NULL
+kable(tmp, align = "c") %>%
+  kable_styling(full_width = F) %>%
+  column_spec(1, bold = T) %>%
+  collapse_rows(columns = 1:2, valign = "middle")
+```
 
+
+## Appendix: simulation code for the real data examples
+
+Code to process the datasets. We remove all the entries with 'NA' values. And we recast binary category variables 
+into $\{0,1\}$ and remove category variableswith more than $2$ categories.
+```{r, eval=FALSE}
+library(ISLR)
+dataset = list()
+# Boston Housing data
+tmp = Boston
+tmp = na.omit(tmp)
+tmp$chas = as.factor(tmp$chas)
+dataset$boston$x = data.matrix(tmp[,!names(tmp) %in% 'medv'])
+dataset$boston$y = tmp$medv
+
+# MLB hitters salary
+tmp = Hitters
+tmp = na.omit(tmp)
+tmp[,c('League', 'Division', 'NewLeague')] = lapply(tmp[,c('League', 'Division', 'NewLeague')], as.factor)
+dataset$hitters$x = data.matrix(tmp[,!(names(tmp) %in% c('Salary'))])
+dataset$hitters$y = tmp$Salary
+
+# # College data
+tmp = College
+tmp$Private = as.factor(tmp$Private)
+dataset$college$x = data.matrix(tmp[,!(names(tmp) %in% c('Outstate'))])
+dataset$college$y = tmp$Outstate
+
+# Auto data
+tmp = Auto
+dataset$auto$x = data.matrix(tmp[,!(names(tmp) %in% c('mpg','name','origin'))])
+dataset$auto$y = tmp$mpg
+```
+
+Code to calculate LOO error, number of variables and timing for each fitting procedure.
+```{r, eval=FALSE}
+# The following will take about 30 minutes to run
+library(glmnet)
+library(sparsenet)
+rmse <- function(y_hat, y){
+  sqrt(sum( (y_hat - y)^2 / length(y)) )
+}
+rdresult <- function(x, y, nrep){
+  p = dim(x)[2]
+  
+  allmethods = c('lasso','sparsenet','boss','fs')
+  error = numvar = time = replicate(length(allmethods), rep(NA,nrep), simplify=F)
+  names(error) = names(numvar) = names(time) = allmethods
+
+  for(i in 1:nrep){
+    index = 1:nrow(x)
+    index = index[-i]
+
+    x.train = x[index, , drop=FALSE]
+    y.train = y[index]
+    x.test = x[-index, , drop=FALSE]
+    x.test.withint = cbind(rep(1,nrow(x.test)), x.test)
+    y.test = y[-index]
+
+    # BOSS
+    ptm = proc.time()
+    boss_model = boss(x.train, y.train, intercept = TRUE)
+    time_tmp = proc.time() - ptm
+    boss_pred = as.numeric( predict(boss_model, newx=x.test) )
+    error$boss[i] = rmse(boss_pred, y.test)
+    numvar$boss[i] = sum(coef(boss_model)!=0)
+    time$boss[i] = time_tmp[3]
+    
+    # FS
+    ptm = proc.time()
+    boss_cv_model = cv.boss(x.train, y.train)
+    time_tmp = proc.time() - ptm
+    fs_pred = as.numeric( predict(boss_cv_model, newx=x.test, method='fs') )
+    error$fs[i] = rmse(fs_pred, y.test)
+    numvar$fs[i] = sum(coef(boss_cv_model, method='fs')!=0)
+    time$fs[i] = time_tmp[3]
+    
+    # LASSO
+    ptm = proc.time()
+    lasso_model = glmnet(x.train, y.train, intercept=TRUE)
+    lasso_aicc = as.numeric(calc.ic(predict(lasso_model, newx=x.train), y.train, ic='aicc', df=lasso_model$df+1))
+    lasso_pred = predict(lasso_model, newx=x.test, s=lasso_model$lambda[which.min(lasso_aicc)])
+    time_tmp = proc.time() - ptm
+    error$lasso[i] = rmse(lasso_pred, y.test)
+    numvar$lasso[i] = sum(coef(lasso_model, s=lasso_model$lambda[which.min(lasso_aicc)])!=0)
+    time$lasso[i] = time_tmp[3]
+    
+    # Sparsenet
+    ptm = proc.time()
+    sparsenet_cv_model = cv.sparsenet(x.train, y.train)
+    time_tmp = proc.time() - ptm
+    sparsenet_pred = predict(sparsenet_cv_model, newx=x.test, which='parms.min')
+    error$sparsenet[i] = rmse(sparsenet_pred, y.test)
+    numvar$sparsenet[i] = sum(coef(sparsenet_cv_model, which='parms.min')!=0)
+    time$sparsenet[i] = time_tmp[3]
+  }
+  return(list(error=error, numvar=numvar, time=time))
+}
+result = lapply(dataset, function(xx){rdresult(xx$x, xx$y, nrow(xx$x))})
+```
+
+Code to make the table
+```{r, eval=FALSE}
+library(knitr)
+library(kableExtra)
+tmp = data.frame(Dataset = rep(names(result), each=3),
+           "n, p" = rep(unlist(lapply(dataset, function(xx){paste(dim(xx$x), collapse = ', ')})) , each=3),
+           Metrics = rep(c('RMSE', '# predictors', 'running time (s)'), length(result)),
+           BOSS = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$boss), 3)}))})),
+           FS = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$fs), 3)}))})),
+           LASSO = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$lasso), 3)}))})),
+           SparseNet = unlist(lapply(result, function(xx){unlist(lapply(xx, function(yy){round(mean(yy$sparsenet), 3)}))})))
+rownames(tmp) = NULL
+kable(tmp, align = "c") %>%
+  kable_styling(full_width = F) %>%
+  column_spec(1, bold = T) %>%
+  collapse_rows(columns = 1:2, valign = "middle")
+```
 
