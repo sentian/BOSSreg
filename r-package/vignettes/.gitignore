@@ -1,1 +1,5 @@
 *.R
+*.html
+*.log
+boss_cache
+boss_files
