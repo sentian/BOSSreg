@@ -28,8 +28,14 @@
 #'   BOSS, with \code{nrow=p} and \code{ncol=min(n,p)+1}. Note that unlike beta_fs and due to the nature of BOSS,
 #'   the number of non-zero components in columns of beta_boss may not be unique, i.e.
 #'   there maybe multiple columns corresponding to the same size of subset.
-#'   \item steps_fs: A vector of numbers representing which predictor joins at each step,
-#'   with \code{length(steps_fs)=min(n,p)}.
+#'   \item steps_x: A vector of numbers representing which predictor joins at each step,
+#'   with \code{length(steps)=min(n,p)}. The ordering is determined by the partial correlation between a predictor \eqn{x_j}
+#'   and the response \code{y}.
+#'   \item steps_q: A vector of numbers representing which predictor joins at each step in the orthogonal basis,
+#'   with \code{length(steps)=min(n,p)}. BOSS takes the ordered predictors (ordering given in \code{steps_x}) and performs best
+#'   subset regression upon their orthogonal basis, which is essentially ordering the orthogonalized predictors by their
+#'   marginal correlations with the response \code{y}. For example, \code{steps_q=c(2,1)} indicates that the orthogonal basis of
+#'   \code{x_2} joins first.
 #'   \item hdf_boss: A vector of heuristic degrees of freedom (hdf) for BOSS, with
 #'   \code{length(hdf_boss)=p+1}. Note that \code{hdf_boss=NULL} if n<=p or \code{hdf.ic.boss=FALSE}.
 #'   \item IC_boss: A list of information criteria (IC) for BOSS, where each element
@@ -70,7 +76,7 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
   guideQR_result = guideQR(x, y, maxstep)
   Q = guideQR_result$Q
   R = guideQR_result$R
-  steps = as.numeric(guideQR_result$steps)
+  steps_x = as.numeric(guideQR_result$steps)
 
   # coefficients
   z = t(Q) %*% y
@@ -80,10 +86,10 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
   beta_q = beta_q * upper.tri(beta_q, diag=T)
   beta_q = cbind(0, beta_q)
   if(n<p){
-    steps_expand = c(steps, setdiff(seq(1, p),steps))
-    beta_fs = rbind(backsolve(R, beta_q)[order(steps),], matrix(0, nrow=p-n, ncol=maxstep+1))[order(steps_expand), ]
+    steps_expand = c(steps_x, setdiff(seq(1, p),steps_x))
+    beta_fs = rbind(backsolve(R, beta_q)[order(steps_x),], matrix(0, nrow=p-n, ncol=maxstep+1))[order(steps_expand), ]
   }else{
-    beta_fs = backsolve(R, beta_q)[order(steps), ]
+    beta_fs = backsolve(R, beta_q)[order(steps_x), ]
   }
   # scale back
   beta_fs = diag(1/sd_demanedx) %*% beta_fs
@@ -98,14 +104,16 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
 
   # boss
   beta_q = matrix(0, nrow=p, ncol=maxstep+1)
+  order_q = order(-z^2)
+  steps_q = steps_x[order_q]
   for(j in 1:maxstep){
-    beta_q[order(-z^2)[1:j], (j+1)] = z[order(-z^2)[1:j]]
+    beta_q[order_q[1:j], (j+1)] = z[order_q[1:j]]
   }
   # project back and change the order
   if(n<p){
     beta_boss = rbind(backsolve(R, beta_q), matrix(0, nrow=p-n, ncol=maxstep+1))[order(steps_expand), ]
   }else{
-    beta_boss = backsolve(R, beta_q)[order(steps), ]
+    beta_boss = backsolve(R, beta_q)[order(steps_x), ]
   }
   # scale back
   beta_boss = diag(1/sd_demanedx) %*% beta_boss
@@ -136,19 +144,22 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
     }else{
       rownames(beta_fs) = rownames(beta_boss) = paste('X',seq(1,p),sep='')
     }
-    names(steps) = paste('X',steps,sep='')
+    names(steps_x) = paste('X',steps_x,sep='')
+    names(steps_q) = paste('X',steps_q,sep='')
   }else{
     if(intercept){
       rownames(beta_fs) = rownames(beta_boss) = c('intercept', varnames)
     }else{
       rownames(beta_fs) = rownames(beta_boss) = varnames
     }
-    names(steps) = varnames[steps]
+    names(steps_x) = varnames[steps_x]
+    names(steps_q) = varnames[steps_q]
   }
   # output
   out = list(beta_fs=beta_fs,
              beta_boss=beta_boss,
-             steps_fs=steps,
+             steps_x=steps_x,
+             steps_q=steps_q,
              hdf_boss=hdf_result$hdf,
              IC_boss=IC_result,
              call=list(intercept=intercept))

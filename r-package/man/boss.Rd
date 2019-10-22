@@ -36,8 +36,14 @@ the convinience of call from other parent functions like cv.boss.}
   BOSS, with \code{nrow=p} and \code{ncol=min(n,p)+1}. Note that unlike beta_fs and due to the nature of BOSS,
   the number of non-zero components in columns of beta_boss may not be unique, i.e.
   there maybe multiple columns corresponding to the same size of subset.
-  \item steps_fs: A vector of numbers representing which predictor joins at each step,
-  with \code{length(steps_fs)=min(n,p)}.
+  \item steps_x: A vector of numbers representing which predictor joins at each step,
+  with \code{length(steps)=min(n,p)}. The ordering is determined by the partial correlation between a predictor \eqn{x_j}
+  and the response \code{y}.
+  \item steps_q: A vector of numbers representing which predictor joins at each step in the orthogonal basis,
+  with \code{length(steps)=min(n,p)}. BOSS takes the ordered predictors (ordering given in \code{steps_x}) and performs best
+  subset regression upon their orthogonal basis, which is essentially ordering the orthogonalized predictors by their
+  marginal correlations with the response \code{y}. For example, \code{steps_q=c(2,1)} indicates that the orthogonal basis of
+  \code{x_2} joins first.
   \item hdf_boss: A vector of heuristic degrees of freedom (hdf) for BOSS, with
   \code{length(hdf_boss)=p+1}. Note that \code{hdf_boss=NULL} if n<=p or \code{hdf.ic.boss=FALSE}.
   \item IC_boss: A list of information criteria (IC) for BOSS, where each element

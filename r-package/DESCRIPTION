@@ -3,9 +3,19 @@ Type: Package
 Title: Best orthogonalized subset selection (BOSS)
 Version: 0.1.0
 Date: 2019-11-01
-Authors@R: c(person("Sen", "Tian", email = "stian@stern.nyu.edu", role = c("aut", "cre")),
-	person("Clifford", "Hurvich", email = "churvich@stern.nyu.edu", role = c("aut")),
-	person("Jeffrey", "Simonoff", email = "jsimonof@stern.nyu.edu", role = c("aut")))
+Authors@R: 
+    c(person(given = "Sen",
+             family = "Tian",
+             role = c("aut", "cre"),
+             email = "stian@stern.nyu.edu"),
+      person(given = "Clifford",
+             family = "Hurvich",
+             role = "aut",
+             email = "churvich@stern.nyu.edu"),
+      person(given = "Jeffrey",
+             family = "Simonoff",
+             role = "aut",
+             email = "jsimonof@stern.nyu.edu"))
 Maintainer: Sen Tian <stian@stern.nyu.edu>
 Description: An implementation of best orthogonalized subset selection (BOSS) and forward stepwise selection (FS), together with feasible selection rules to choose the optimal candidate subset. 
 License: GPL (>=2) | file LICENSE

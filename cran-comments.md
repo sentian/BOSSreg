@@ -1,0 +1,10 @@
+## Test environments
+* local MAC OS 10.15 install, R 3.6.1
+* ubuntu 16.04 (on travis-ci), R 3.6.0
+* win-builder (devel and release)
+
+## R CMD check results
+There were no ERRORs, WARNINGs or NOTES. 
+
+## Downstream dependencies
+There are currently no downstream dependencies for this package
