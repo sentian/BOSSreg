@@ -1,5 +1,5 @@
 # Best orthogonalized subset selection (BOSS)
-This repository contains the **R package** that implements the best orthogonalized subset selection (BOSS), a least squares based subset selection algorithm.
+This repository contains the **R package** that implements the Best Orthogonalized Subset Selection (BOSS) and Forward Stepwise regression (FS), with feasible selection rules to choose the optimal subset.
 
 ### Install the R package
 To install the **boss** package, run the following:

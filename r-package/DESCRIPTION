@@ -17,7 +17,7 @@ Authors@R:
              role = "aut",
              email = "jsimonof@stern.nyu.edu"))
 Maintainer: Sen Tian <stian@stern.nyu.edu>
-Description: An implementation of best orthogonalized subset selection (BOSS) and forward stepwise selection (FS), together with feasible selection rules to choose the optimal candidate subset. 
+Description: An implementation of the Best Orthogonalized Subset Selection (BOSS) and Forward Stepwise regression (FS), with feasible selection rules to choose the optimal subset. 
 Depends: R (>= 3.5.0)
 License: GPL (>=2) | file LICENSE
 Encoding: UTF-8
