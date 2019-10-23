@@ -16,8 +16,8 @@ install_github(repo="sentian/BOSSreg", subdir="r-package")
 ### Simulation code to reproduce results in the paper
 
 ### Documentation and Vignette of the R package
-[Documentation](https://github.com/sentian/BOSSreg/blob/master/boss_0.1.0.pdf)
+[Documentation](https://github.com/sentian/BOSSreg/blob/master/BOSSreg_0.1.0.pdf)
 
-[Vigette](https://github.com/sentian/boss/BOSSreg/master/r-package/vignettes/boss.pdf)
+[Vigette](https://github.com/sentian/BOSSreg/master/r-package/vignettes/boss.pdf)
 
 
