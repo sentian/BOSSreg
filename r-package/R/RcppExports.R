@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 guideQR <- function(x, y, maxstep) {
-    .Call('_boss_guideQR', PACKAGE = 'boss', x, y, maxstep)
+    .Call('_BOSSreg_guideQR', PACKAGE = 'BOSSreg', x, y, maxstep)
 }
 

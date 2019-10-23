@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // guideQR
 List guideQR(arma::mat x, arma::vec y, int maxstep);
-RcppExport SEXP _boss_guideQR(SEXP xSEXP, SEXP ySEXP, SEXP maxstepSEXP) {
+RcppExport SEXP _BOSSreg_guideQR(SEXP xSEXP, SEXP ySEXP, SEXP maxstepSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,11 +21,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_boss_guideQR", (DL_FUNC) &_boss_guideQR, 3},
+    {"_BOSSreg_guideQR", (DL_FUNC) &_BOSSreg_guideQR, 3},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_boss(DllInfo *dll) {
+RcppExport void R_init_BOSSreg(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

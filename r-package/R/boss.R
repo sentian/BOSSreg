@@ -56,7 +56,7 @@
 #'   in least squares based subset selection problems. (Link to be added)
 #' @seealso \code{predict} and  \code{coef} methods for "boss" object, and the \code{cv.boss} function
 #' @example R/example/eg.boss.R
-#' @useDynLib boss
+#' @useDynLib BOSSreg
 #' @importFrom Rcpp sourceCpp
 #' @export
 boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ...){

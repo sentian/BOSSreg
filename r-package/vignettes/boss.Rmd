@@ -112,7 +112,7 @@ print(beta)
 ## An illustration of the package
 Fitting the model is simple.
 ```{r}
-library(boss)
+library(BOSSreg)
 # choose a single replication as illustration
 rep = seed
 # fit the model
