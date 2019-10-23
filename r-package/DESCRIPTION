@@ -1,6 +1,6 @@
-Package: boss
+Package: BOSSreg
 Type: Package
-Title: Best orthogonalized subset selection (BOSS)
+Title: Best Orthogonalized Subset Selection (BOSS)
 Version: 0.1.0
 Date: 2019-11-01
 Authors@R: 
@@ -18,21 +18,23 @@ Authors@R:
              email = "jsimonof@stern.nyu.edu"))
 Maintainer: Sen Tian <stian@stern.nyu.edu>
 Description: An implementation of best orthogonalized subset selection (BOSS) and forward stepwise selection (FS), together with feasible selection rules to choose the optimal candidate subset. 
+Depends: R (>= 3.5.0)
 License: GPL (>=2) | file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
     Matrix,
     Rcpp,
-    RcppArmadillo,
-    stats,
-    MASS
+    stats
 RoxygenNote: 6.1.1
 Suggests: 
-    knitr,
-    rmarkdown,
+    glmnet,
     ISLR,
-    kableExtra
+    kableExtra,
+    knitr,
+    MASS,
+    rmarkdown,
+    sparsenet
 VignetteBuilder: knitr
 LinkingTo: 
     Rcpp,

@@ -22,11 +22,11 @@ We maintain a Github page for the package and keep the most updated version ther
 To install, simply run the following commands in the console:
 ```{r, eval=FALSE}
 library(devtools)
-install_github(repo="sentian/boss", subdir="r-package")
+install_github(repo="sentian/BOSSreg", subdir="r-package")
 ```
 A stable version can be installed from CRAN using
 ```{r, eval=FALSE}
-install.packages(repo="boss", repos = "http://cran.us.r-project.org")
+install.packages(repo="BOSSreg", repos = "http://cran.us.r-project.org")
 ```
 
 ## Introduction
