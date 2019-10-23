@@ -18,6 +18,6 @@ install_github(repo="sentian/BOSSreg", subdir="r-package")
 ### Documentation and Vignette of the R package
 [Documentation](https://github.com/sentian/BOSSreg/blob/master/BOSSreg_0.1.0.pdf)
 
-[Vigette](https://github.com/sentian/BOSSreg/master/r-package/vignettes/boss.pdf)
+[Vigette](https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf)
 
 

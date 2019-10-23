@@ -61,7 +61,7 @@ p0 = 6 # number of active predictors (beta_j=0)
 rho = 0.9 # correlation between predictors
 nrep = 1000 # number of replications of y to be generated
 SNR = 7 # signal-to-noise ratio
-seed = 11 # the seed for reproducibility
+seed = 65 # the seed for reproducibility
 ```
 
 We make the predictors with $\beta_j \ne 0$ pairwisely correlated with opposite effects.
@@ -182,7 +182,7 @@ As a result, FS can have trouble stepping in the true active predictors in an ea
 as indicated below, the inactive predictor $X_{12}$ joins in the first step. On the contrary, BOSS takes the same order of predictors as FS, 
 and performs best subset regression on their orthogonal basis, providing the chance to re-evaluate (or re-order) each predictor.
 ```{r}
-# X12 joins first
+# X9 joins first
 print(boss_model$steps_x)
 ```
 
