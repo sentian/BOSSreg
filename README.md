@@ -9,7 +9,7 @@ install_github(repo="sentian/BOSSreg", subdir="r-package")
 ```
 
 ### Reference
-[Tian, Hurvich and Simonoff (2019): "On the use of information criterion for least squares based subset selection methods"](https://github.com/sentian/BOSSreg/blob/master/paper/Tian2019.pdf)
+Tian, Hurvich and Simonoff (2019): "On the use of information criterion for least squares based subset selection methods"
 
 ### Supplemental material
 

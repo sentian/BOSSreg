@@ -173,7 +173,7 @@ dimnames(tmp) = list(dimnames(tmp)[[1]], c('boss_aicc', 'boss_cp', 'boss_cv', 'b
 print(tmp)
 ```
 
-## Comparing the solution paths of BOSS and FS
+## Comparing the solutions of BOSS and FS at every subset size
 
 We see that FS gives a denser solution than BOSS in this case. Under the specific design of the true model, 
 the true active predictors ($X_1,\cdots, X_6$) are pairwisely correlated with opposite effects. Predictors (e.g. $(X_1,X_2)$) together 
@@ -186,7 +186,8 @@ and performs best subset regression on their orthogonal basis, providing the cha
 print(boss_model$steps_x)
 ```
 
-Let's set aside the selection rule for now, and compare the solution paths of the two methods. 
+Let's set aside the selection rule for now, and compare the solutions of the two methods at every subset size.
+The subset size is the number of predictors $k$ for FS, and it is the number of 
 We calculate the average RMSE at each subset size based on $1000$ replications. The RMSE is defined as
 
 \begin{equation*}
