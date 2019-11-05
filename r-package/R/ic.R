@@ -41,6 +41,7 @@ calc.ic <- function(y_hat, y, ic=c('aicc','bicc','aic','bic','gcv','cp'), df, si
   }else if(dim(y_hat)[1]==1){
     y_hat = matrix(y_hat, ncol=1)
   }
+
   # sanity check
   if(ncol(y_hat) != ncol(df)){
     stop('the number of fits does not match the number of df')
@@ -49,22 +50,19 @@ calc.ic <- function(y_hat, y, ic=c('aicc','bicc','aic','bic','gcv','cp'), df, si
     stop("need to specify sigma for Mallow's Cp")
   }
 
-  n <- nrow(y)
-  nfit <- ncol(y_hat)
+  n = nrow(y)
+  nfit = ncol(y_hat)
   # for AICc and BICc df larger than n-2 will cause trouble, round it
   if(ic=='aicc' | ic=='bicc'){
     df[which(df>=n-2)]=n-3
   }
 
-  if(nfit>1){
-    y = matrix(rep(y,each=nfit),ncol=nfit,byrow=TRUE)
-  }
-  fit_wellness = Matrix::colSums((y - y_hat)^2)
+  rss = Matrix::colSums(sweep(y_hat, 1, y, '-')^2)
 
-  if(ic=='aic'){return(log(fit_wellness/n)  + 2*df/n)}
-  else if(ic=='bic'){return(log(fit_wellness/n)  + log(n)*df/n)}
-  else if(ic=='aicc'){return(log(fit_wellness/n) + 2*(df+1)/(n-df-2))}
-  else if(ic=='bicc'){return(log(fit_wellness/n) + log(n)*(df+1)/(n-df-2))}
-  else if(ic=='gcv'){return(fit_wellness / (n-df)^2)}
-  else if(ic=='cp'){return(fit_wellness + 2*sigma^2*df)}
+  if(ic=='aic'){return(log(rss/n)  + 2*df/n)}
+  else if(ic=='bic'){return(log(rss/n)  + log(n)*df/n)}
+  else if(ic=='aicc'){return(log(rss/n) + 2*(df+1)/(n-df-2))}
+  else if(ic=='bicc'){return(log(rss/n) + log(n)*(df+1)/(n-df-2))}
+  else if(ic=='gcv'){return(rss / (n-df)^2)}
+  else if(ic=='cp'){return(rss + 2*sigma^2*df)}
 }

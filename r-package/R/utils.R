@@ -4,9 +4,9 @@
 # standardize x to be mean 0 and norm 1
 # standardize y to be mean 0
 std <- function(x, y){
-  mean_x = colMeans(x)
+  mean_x = Matrix::colMeans(x)
   x = scale(x, center = mean_x, scale = FALSE)
-  sd_demeanedx = sqrt(colSums(x^2))
+  sd_demeanedx = sqrt(Matrix::colSums(x^2))
   x = scale(x, center = FALSE, scale = sd_demeanedx)
 
   mean_y = mean(y)
@@ -28,22 +28,21 @@ calc.ic.all <- function(coef, x, y, df, sigma=NULL){
     stop("need to specify sigma for Mallow's Cp")
   }
 
-  n <- nrow(y)
-  nfit <- ncol(coef)
+  n = nrow(y)
+  nfit = ncol(coef)
   fit = x %*% coef
-  y = matrix(rep(y,each=nfit),ncol=nfit,byrow=TRUE)
-  fit_wellness = colSums((y - fit)^2)
+  rss = Matrix::colSums(sweep(fit, 1, y, '-')^2)
 
   ic = list()
-  ic$aic = log(fit_wellness/n)  + 2*df/n
-  ic$bic = log(fit_wellness/n)  + log(n)*df/n
-  ic$gcv = fit_wellness / (n-df)^2
-  ic$cp = fit_wellness + 2*sigma^2*df
+  ic$aic = log(rss/n)  + 2*df/n
+  ic$bic = log(rss/n)  + log(n)*df/n
+  ic$gcv = rss / (n-df)^2
+  ic$cp = rss + 2*sigma^2*df
 
   # for AICc and BICc df larger than n-2 will cause trouble, round it
   df[which(df>=n-2)]=n-3
-  ic$aicc = log(fit_wellness/n) + 2*(df+1)/(n-df-2)
-  ic$bicc = log(fit_wellness/n) + log(n)*(df+1)/(n-df-2)
+  ic$aicc = log(rss/n) + 2*(df+1)/(n-df-2)
+  ic$bicc = log(rss/n) + log(n)*(df+1)/(n-df-2)
   return(ic)
 }
 
@@ -95,7 +94,7 @@ calc.hdf <- function(Q, y, sigma=NULL, mu=NULL){
     b = stats::dnorm((-sqrt_2lambda_matrix-xtmu_matrix) / sigma)
 
     size = 1:(p-1)
-    sdf = (sqrt_2lambda/sigma) * colSums(a + b)
+    sdf = (sqrt_2lambda/sigma) * Matrix::colSums(a + b)
     df = size + sdf
     names(df) = NULL
     return(list(hdf=c(0, df, p), sigma=sigma))

@@ -94,40 +94,6 @@ hdf.bs <- function(Q, y, sigma=NULL, mu=NULL){
   })
 }
 
-## BS on orthogonal X
-bs.orthx <- function(x, y){
-  p = dim(x)[2]
-  z = t(x) %*% y
-  tmp = order(-z^2)
-  coef_bs_all = matrix(0, nrow=p, ncol=p+1)
-  for(j in 1:p){
-    coef_bs_all[tmp[1:j],j+1] = z[tmp[1:j]]
-  }
-  return(coef_bs_all)
-}
-
-## BS on general X
-leaps.fullsample <- function(x,y,intercept=TRUE){
-  p = dim(x)[2]
-  n = dim(x)[1]
-  # fit to the full data
-  outs = leaps(x=x, y=y, nbest=1,strictly.compatible=FALSE, int=intercept) # leaps
-  if(intercept){
-    ass_coef <- matrix(0,nrow=p+1,ncol=p+1)
-    ass_coef[1,1] = mean(y)
-    for(i in 1:nrow(outs$which)){
-      ass_coef[c(1,which(outs$which[i,])+1),i+1] = coef(lm(y~x[,outs$which[i,]]))
-    }
-  }else{
-    ass_coef <- matrix(0,nrow=p,ncol=p+1)
-    for(i in 1:nrow(outs$which)){
-      ass_coef[outs$which[i,],i+1] = coef(lm(y~x[,outs$which[i,]]-1))
-    }
-  }
-
-  return(ass_coef)
-}
-
 ### Figure 1: hdf(k) and edf(k) for BS --------
 plot.hdf.edf.bs <- function(){
   # parameters
@@ -524,7 +490,7 @@ plot.solpath.boss.fs <- function(){
       boss_model = boss(x, y[,rep], intercept = FALSE, hdf.ic.boss = FALSE)
       betahat$boss[[rep]] = as.matrix(boss_model$beta_boss)
       betahat$fs[[rep]] = as.matrix(boss_model$beta_fs)
-      betahat$bs[[rep]] = leaps.fullsample(x, y[,rep], intercept = FALSE)
+      betahat$bs[[rep]] = bs.generalx(x, y[,rep], intercept = FALSE)
     }
 
     rmse = lapply(betahat, function(xx){lapply(xx, function(yy){ sqrt(colSums(sweep(x%*%yy,1,mu,'-')^2)/n)  })})
@@ -538,7 +504,7 @@ plot.solpath.boss.fs <- function(){
     df_toplot$type = factor(df_toplot$type, levels = c('BOSS', 'BS', 'FS'))
 
     p1 <- ggplot() + geom_point(data=df_toplot, aes(y = rmse, x = k, colour = type, shape = type), stat="identity",size=1.5)
-    p1 <- p1 + xlab('subset size') + ylab('RMSE')
+    p1 <- p1 + xlab('Subset size') + ylab('RMSE')
     p1 <- p1 + scale_colour_manual(name  = "",
                                    breaks=c("BOSS", "BS", "FS"),
                                    labels=c("BOSS", "BS", "FS"),
@@ -565,10 +531,6 @@ plot.solpath.boss.fs <- function(){
   dev.off()
 }
 plot.solpath.boss.fs()
-
-
-
-
 ### Contingency table LBS vs BS --------
 categ_type = 'true_model/orthogonal/sparse/ex1/p0_6'
 snr = 'hsnr'
@@ -576,7 +538,6 @@ n = 200
 
 data_toplot = data.frame()
 for(p in c(30,180)){
-  count = count + 1
   if(n == 200){
     result <- readRDS(paste(base, '/code/as_gram/results/',categ_type,'/n_',n,'/p_',p,'/',snr,'/result_bs_cp.rds',sep=""))
   }else if(n == 2000){
@@ -602,21 +563,12 @@ for(p in c(30,180)){
   data_toplot = rbind(data_toplot, tmp)
 }
 data_toplot$type = factor(data_toplot$type, levels=c('p=30','p=180'))
-#names(data_toplot)[3] = 'percentage'
-
-ggplot(melt(tmp), aes(x=numvar_bs, y=numvar_lbs)) +
-  geom_tile(aes(fill = value)) +
-  geom_text(aes(label = value), color="white") +
-  scale_x_discrete(expand = c(0,0)) +
-  scale_y_discrete(expand = c(0,0)) +
-  theme_bw()
-
 
 p1 = ggplot(data = data_toplot, mapping = aes(x=numvar_bs,y=numvar_lbs)) + geom_tile(aes(fill = value)) +
   geom_text(aes(label = value), size = 3)
 p1 = p1 + scale_fill_gradient(low = "white", high = "red")
 p1 = p1 + facet_wrap(.~ type, ncol=2)
-p1 = p1 + xlab(label='optimal subset size, BS') + ylab(label='optimal subset size, LBS')
+p1 = p1 + xlab(label='Optimal subset size, BS') + ylab(label='Optimal subset size, LBS')
 p1 = p1 + theme(strip.text = element_text(size=10)) + theme(legend.position="none")
 p1 = p1 + theme(axis.text=element_text(size=12), axis.title=element_text(size=12,face="bold"))
 setEPS()
@@ -624,4 +576,37 @@ postscript(file=paste(base, '/paper/figures/numvar_bs_lbs.eps',sep=""), height=3
 print(p1)
 dev.off()
 
+
+
+
+### Sanity check of AICc
+n = 200
+p = 14
+p0 = 6
+nrep = 1000
+x = cbind(matrix(rnorm(n*p), nrow=n, ncol=p))
+beta = c(rep(1,p0), rep(0,p-p0))
+mu = x%*%beta
+sigma = 1
+y = sweep(matrix(rnorm(n*nrep, sd=sigma), nrow=n, ncol=nrep), 1, mu, '+')
+
+
+betahat = solve(t(x) %*% x) %*% t(x) %*% y
+muhat = x %*% betahat
+rss = colSums((y - muhat)^2)
+
+
+(tmp1 = mean(n^2 * sigma^2 / rss) + mean( n*(colSums(sweep(muhat, 1, mu, '-')^2)) / rss ))
+(tmp2 = n^2 / (n-p-2) + n*p/(n-p-2))
+
+categ_type = 'true_model/orthogonal/sparse/ex1/p0_6'
+indir = paste(categ_type,'/n_',n,'/p_',p, sep='')
+x = unname(as.matrix(read.table(file=paste(base, '/code/as_gram/data/',indir,'/x.txt',sep=""))))
+sigma = 1
+y = matrix(rnorm(n*nrep,mean=0,sd=sigma),nrow=n,ncol=nrep)
+mu = rep(0, n)
+
+betahat = t(x) %*% y
+muhat = x %*% betahat
+rss = colSums((y - muhat)^2)
 

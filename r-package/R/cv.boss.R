@@ -71,8 +71,9 @@ cv.boss <- function(x, y, n.folds=10, n.rep=1, intercept=TRUE, ...){
       if(intercept){
         x.test = cbind(rep(1,nrow(x.test)), x.test)
       }
-      cv_tmp_fs[fold, ] = Matrix::colMeans((matrix(rep(y.test,each=maxstep+1), ncol=maxstep+1, byrow=T) - x.test%*%beta_fs)^2)
-      cv_tmp_boss[fold, ] = Matrix::colMeans((matrix(rep(y.test,each=maxstep+1), ncol=maxstep+1, byrow=T) - x.test%*%beta_boss)^2)
+      sweep(x.test%*%beta_fs, 1, y.test, '-')
+      cv_tmp_fs[fold, ] = Matrix::colMeans(sweep(x.test%*%beta_fs, 1, y.test, '-')^2)
+      cv_tmp_boss[fold, ] = Matrix::colMeans(sweep(x.test%*%beta_boss, 1, y.test, '-')^2)
 
     }
     cv_rep_fs[replication, ] = Matrix::colMeans(cv_tmp_fs)

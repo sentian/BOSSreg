@@ -103,12 +103,20 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
 
 
   # boss
-  beta_q = matrix(0, nrow=p, ncol=maxstep+1)
   order_q = order(-z^2)
   steps_q = steps_x[order_q]
-  for(j in 1:maxstep){
-    beta_q[order_q[1:j], (j+1)] = z[order_q[1:j]]
-  }
+  row_i = rep(order_q, times=seq(p,1))
+  col_j = unlist(lapply(2:(p+1), function(xx){seq(xx,p+1)}))
+  beta_q = Matrix::sparseMatrix(row_i, col_j, x=z[row_i], dims=c(p, p+1))
+
+  # old version
+  # beta_q = matrix(0, nrow=p, ncol=maxstep+1)
+  # order_q = order(-z^2)
+  # steps_q = steps_x[order_q]
+  # for(j in 1:maxstep){
+  #   beta_q[order_q[1:j], (j+1)] = z[order_q[1:j]]
+  # }
+
   # project back and change the order
   if(n<p){
     beta_boss = rbind(backsolve(R, beta_q), matrix(0, nrow=p-n, ncol=maxstep+1))[order(steps_expand), ]
@@ -120,7 +128,7 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
   if(intercept){
     beta_boss = rbind((mean_y - mean_x %*% beta_boss), beta_boss)
   }
-  beta_boss = Matrix::Matrix(beta_boss, sparse=T)
+  # beta_boss = Matrix::Matrix(beta_boss, sparse=T)
 
   # hdf and IC
   if(n<=p & hdf.ic.boss){
