@@ -3,13 +3,20 @@
 ## standardize the data ------------------------------------------------------------
 # standardize x to be mean 0 and norm 1
 # standardize y to be mean 0
-std <- function(x, y){
-  mean_x = Matrix::colMeans(x)
+std <- function(x, y, intercept){
+  n = dim(x)[1]
+  p = dim(x)[2]
+  if(intercept){
+    mean_x = Matrix::colMeans(x)
+    mean_y = mean(y)
+  }else{
+    mean_x = rep(0, p)
+    mean_y = 0
+  }
   x = scale(x, center = mean_x, scale = FALSE)
   sd_demeanedx = sqrt(Matrix::colSums(x^2))
   x = scale(x, center = FALSE, scale = sd_demeanedx)
 
-  mean_y = mean(y)
   y = scale(y, center = mean_y, scale = FALSE)
 
   return(list(x_std = x, y_std = y, mean_x=mean_x, sd_demeanedx=sd_demeanedx, mean_y=mean_y))

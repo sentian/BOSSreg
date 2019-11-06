@@ -66,7 +66,7 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
   maxstep = min(n, p)
   varnames = colnames(x)
   # standardize x (mean 0 and norm 1) and y (mean 0)
-  std_result = std(x, y)
+  std_result = std(x, y, intercept)
   x = std_result$x_std
   y = std_result$y_std
   mean_x = std_result$mean_x

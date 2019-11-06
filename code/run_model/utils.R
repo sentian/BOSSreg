@@ -1,3 +1,5 @@
+### This file has all the required functions to generate simulated datasets, to fit the models, and to evaluate the models
+
 ###### Simulate datasets --------
 library(MASS)
 # Orthogonal X
@@ -33,17 +35,11 @@ gen.data.orthx <- function(n, p, snr, type, nrep=1000, seed=66, print.r2=FALSE){
       r.squares = r.squares + summary(lm(y[,rep]~x[,beta!=0]-1))$r.squared
     }
     r.squares <- r.squares/nrep
-    print(paste('Average R squares of regressing upon true predictors is', as.character(round(r.squares,2)),sep=''))
+    print(paste('Average R squares of regressing upon true predictors is ', as.character(round(r.squares,2)),sep=''))
   }
 
   return(list(x=x, y=y, beta=beta, sigma=sigma))
 }
-
-# n = c(200, 2000)
-# p = c(14, 30, 60, 180)
-# snr = c(0.2, 1.5, 7)
-# names(snr) = c('lsnr', 'msnr', 'hsnr')
-# type = c('Orth-Sparse-Ex1', 'Orth-Sparse-Ex2', 'Orth-Dense')
 # test = gen.data.orthx(n=200, p=14, snr=1.5, type='Orth-Sparse-Ex1')
 
 # General X
@@ -103,22 +99,14 @@ gen.data.generalx <- function(n, p, rho, snr, type, nrep=1000, seed=66, print.r2
       r.squares = r.squares + summary(lm(y[,rep]~x[,beta!=0]-1))$r.squared
     }
     r.squares <- r.squares/nrep
-    print(paste('Average R squares of regressing upon true predictors is', as.character(round(r.squares,2)),sep=''))
+    print(paste('Average R squares of regressing upon true predictors is ', as.character(round(r.squares,2)),sep=''))
   }
 
   return(list(x=x, y=y, beta=beta, sigma=sigma))
 }
-
-# n = c(200, 2000)
-# p = c(14, 30, 60, 180)
-# rho = c(0, 0.5, 0.9)
-# snr = c(0.2, 1.5, 7)
-# names(snr) = c('lsnr', 'msnr', 'hsnr')
-# type = c('Sparse-Ex1', 'Sparse-Ex2', 'Sparse-Ex4', 'Sparse-Ex5', 'Dense')
-#
 # test = gen.data.generalx(n=200, p=14, rho=0.5, snr=0.2, type='Sparse-Ex1')
 
-###### Run the models ---------
+###### Fit the models ---------
 library(Matrix)
 library(glmnet)
 library(sparsenet)
@@ -238,8 +226,16 @@ bdf.bs.orthx <- function(x, y, seed=66){
   return(bdf)
 }
 
+## Index of the minimum value in a two-dimensional matrix
+pick.best <- function(val){
+  ind_minloss = which(val == min(val), arr.ind=TRUE)
+  if(nrow(ind_minloss)>1){
+    ind_minloss = ind_minloss[1,]
+  }
+  as.numeric(ind_minloss)
+}
+
 ## Cross-validation for all methods, and all replications of y
-## Output: for each method, the index of subset that gives minimum CV error, and the entire coefficient matrix
 run.cv <- function(x, y, seed=66, orthx){
   n = dim(x)[1]
   p = dim(x)[2]
@@ -253,10 +249,12 @@ run.cv <- function(x, y, seed=66, orthx){
   }
   i.min.cv = betahat = replicate(length(allmethods), list(), simplify=FALSE)
   names(i.min.cv) = names(betahat) = allmethods
+  i.min.gamlr.aicc = ic_hdf_boss = list()
 
   set.seed(seed)
   for(rep in 1:nrep){
-    if(rep %% 100 == 0){print(rep)}
+    # if(rep %% 100 == 0){print(rep)}
+    print(rep)
     # BS
     if(p <= 30 | orthx){
       bs_cv = cv.bs(x, y[,rep], orthx = orthx, intercept.generalx=FALSE)
@@ -270,6 +268,7 @@ run.cv <- function(x, y, seed=66, orthx){
       i.min.cv$fs[[rep]] = boss_cv$i.min.fs
       betahat$boss[[rep]] = boss_cv$boss$beta_boss
       betahat$fs[[rep]] = boss_cv$boss$beta_fs
+      ic_hdf_boss[[rep]] = boss_cv$boss$IC_boss
     }
     # LASSO
     lasso_cv = cv.glmnet(x, y[,rep], intercept=FALSE)
@@ -277,23 +276,21 @@ run.cv <- function(x, y, seed=66, orthx){
     betahat$lasso[[rep]] = coef(lasso_cv$glmnet.fit)[-1,]
     # SparseNet
     sparsenet_cv = cv.sparsenet(x, y[,rep])
-    i.min.cv$sparsenet[[rep]] = sparsenet_cv$which.min
+    i.min.cv$sparsenet[[rep]] = rev(sparsenet_cv$which.min)
     betahat$sparsenet[[rep]] = lapply(coef(sparsenet_cv$sparsenet.fit), function(xx){xx[-1,]})
     # Gamma LASSO
     gamma_seq = c(0,1,10)
-    cvm = matrix(NA, nrow=length(gamma_seq), ncol=100)
+    cvm = aicc_gamlr = matrix(NA, nrow=length(gamma_seq), ncol=100)
     coef_tmp = list()
     for(j in 1:length(gamma_seq)){
       gamlr_cv_gamma = cv.gamlr(x, y[,rep], gamma=gamma_seq[j], nlambda=100, nfold=10)
       cvm[j,] = gamlr_cv_gamma$cvm
       coef_tmp[[j]] = gamlr_cv_gamma$gamlr$beta
+      aicc_gamlr[j,] = calc.ic(x%*%gamlr_cv_gamma$gamlr$beta, y[,rep], ic='aicc', df=gamlr_cv_gamma$gamlr$df)
     }
-    ind_minloss = which(cvm == min(cvm), arr.ind=TRUE)
-    if(nrow(ind_minloss)>1){
-      ind_minloss = ind_minloss[1,]
-    }
-    i.min.cv$gamlr[[rep]] = as.numeric(ind_minloss)
+    i.min.cv$gamlr[[rep]] = pick.best(cvm)
     betahat$gamlr[[rep]] = coef_tmp
+    i.min.gamlr.aicc[[rep]] = pick.best(aicc_gamlr)
     # Relaxed LASSO
     relaxlasso_cv = cvrelaxo(x, y[,rep], K=10, keep.data=FALSE)
     relaxlasso_fullsample = relaxo(x, y[,rep], keep.data=FALSE, phi = seq(0, 1, length = 10))
@@ -306,8 +303,12 @@ run.cv <- function(x, y, seed=66, orthx){
   }
 
   return(list(i.min.cv = i.min.cv,
+              i.min.gamlr.aicc = i.min.gamlr.aicc,
+              ic_hdf_boss = ic_hdf_boss,
               betahat = betahat))
 }
+
+####### Evaluate the models --------
 
 # betahat is p by nrep, selected coefficient vector
 rmse.sparsistency.extravariable <- function(betahat, x, beta){
@@ -318,61 +319,80 @@ rmse.sparsistency.extravariable <- function(betahat, x, beta){
   return(list(rmse=rmse, sparsistency=sparsistency, extravariable=extravariable))
 }
 
-eval.metrics <- function(x, y, beta, sigma, betahat, i.min.cv, orthx){
+## Evaluate the selected subsets for all methods
+eval.metrics <- function(x, y, beta, sigma, result.cv, bdf.bs, orthx){
+  betahat = result.cv$betahat
+  i.min.cv = result.cv$i.min.cv
+  i.min.gamlr.aicc = result.cv$i.min.gamlr.aicc
+  ic_hdf_boss = result.cv$ic_hdf_boss
+
   allmethods = names(betahat)
   mu = x%*%beta
   n = dim(x)[1]
   p = dim(x)[2]
   nrep = dim(y)[2]
 
-  # result$extravariable$bestsub$ic$cov$edf
   result = list()
-  # BS: IC with various types of df, CV and oracle (best possible)
-  rmse_bs_allrep = lapply(betahat$bs, function(xx){sqrt(colSums(sweep(x%*%xx,1,mu,'-')^2)/n)})
-  betahat_bs_best = do.call(cbind, Map(function(xx, yy){yy[,which.min(xx)]}, rmse_bs_allrep, betahat$bs))
-  result$bs$best = rmse.sparsistency.extravariable(betahat_bs_best, x, beta)
+  # Best possible BS or BOSS
+  if(orthx){
+    method = 'bs'
+  }else{
+    method = 'boss'
+  }
+  rmse_method_allrep = lapply(betahat[[method]], function(xx){sqrt(colSums(sweep(x%*%xx,1,mu,'-')^2)/n)})
+  betahat_method_best = do.call(cbind, Map(function(xx, yy){yy[,which.min(xx)]}, rmse_method_allrep, betahat[[method]]))
+  result[[method]][['best']] = rmse.sparsistency.extravariable(betahat_method_best, x, beta)
 
-  df_bs = list()
-  tmp = calc.edf(lapply(betahat$bs, function(xx){x %*% xx}), y, sigma)
-  df_bs$edf = replicate(nrep, tmp, simplify = FALSE)
-  tmp = lapply(split(y, rep(1:nrep, each=n)), function(yy){BOSSreg:::calc.hdf(x, yy)})
-  df_bs$hdf = lapply(tmp, function(xx){xx$hdf})
-  sigmahat = lapply(tmp, function(xx){xx$sigma})
-  df_bs$ndf = replicate(nrep, 0:p, simplify = FALSE)
-  df_bs$bdf = bdf.bs.orthx(x, y)
+  if(orthx){
+    # BS-IC-df
+    df_bs = list()
+    tmp = calc.edf(lapply(betahat$bs, function(xx){x %*% xx}), y, sigma)
+    df_bs$edf = replicate(nrep, tmp, simplify = FALSE)
+    tmp = lapply(split(y, rep(1:nrep, each=n)), function(yy){BOSSreg:::calc.hdf(x, yy)})
+    df_bs$hdf = lapply(tmp, function(xx){xx$hdf})
+    sigmahat = lapply(tmp, function(xx){xx$sigma})
+    df_bs$ndf = replicate(nrep, 0:p, simplify = FALSE)
+    df_bs$bdf = bdf.bs
 
-  ic_bs = list()
-  ic_bs = lapply(df_bs[c('hdf','ndf','bdf')], function(df){lapply(1:nrep, function(rep){BOSSreg:::calc.ic.all(betahat$bs[[rep]], x=x, y=y[,rep], df=df[[rep]], sigma=sigmahat[[rep]])})})
-  ic_bs$edf = lapply(1:nrep, function(rep){BOSSreg:::calc.ic.all(betahat$bs[[rep]], x=x, y=y[,rep], df=df_bs$edf[[rep]], sigma=sigma)})
+    ic_bs = list()
+    ic_bs = lapply(df_bs[c('hdf','ndf','bdf')], function(df){lapply(1:nrep, function(rep){BOSSreg:::calc.ic.all(betahat$bs[[rep]], x=x, y=y[,rep], df=df[[rep]], sigma=sigmahat[[rep]])})})
+    ic_bs$edf = lapply(1:nrep, function(rep){BOSSreg:::calc.ic.all(betahat$bs[[rep]], x=x, y=y[,rep], df=df_bs$edf[[rep]], sigma=sigma)})
 
+    ic_method = ic_bs
+  }else{
+    # BOSS-IC-hdf
+    ic_boss = list()
+    ic_boss$hdf = ic_hdf_boss
+    ic_method = ic_boss
+  }
 
+  tmp = lapply(ic_method, function(xx){lapply(1:nrep, function(rep){lapply(xx[[rep]], function(yy){betahat[[method]][[rep]][,which.min(yy)]})})})
+  df_names = names(tmp)
+  ic_names = names(tmp$hdf[[1]])
+  for(ic in ic_names){
+    for(df in df_names){
+      betahat_method_ic = do.call(cbind, lapply(tmp[[df]], function(xx){xx[[ic]]}) )
+      result[[method]][['ic']][[ic]][[df]] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
+    }
+  }
 
+  # LASSO-AICc
+  betahat_lasso_aicc = do.call(cbind, lapply(1:nrep, function(rep){betahat$lasso[[rep]][,which.min( calc.ic(x%*%betahat$lasso[[rep]], y[,rep], ic='aicc', df=colSums(betahat$lasso[[rep]]!=0)) )]} ))
+  result$lasso$ic$aicc = rmse.sparsistency.extravariable(betahat_lasso_aicc, x, beta)
+
+  # Gamma LASSO-AICc
+  betahat_gamlr_aicc = do.call(cbind, lapply(1:nrep, function(rep){ betahat$gamlr[[rep]][[i.min.gamlr.aicc[[rep]][1]]][,i.min.gamlr.aicc[[rep]][2]] }))
+  result$gamlr$ic$aicc = rmse.sparsistency.extravariable(betahat_gamlr_aicc, x, beta)
+
+  # CV for all the methods
+  for(method in allmethods){
+    if(method %in% c('sparsenet', 'gamlr')){
+      betahat_method_cv = do.call(cbind, lapply(1:nrep, function(rep){ betahat[[method]][[rep]][[i.min.cv[[method]][[rep]][1]]][,i.min.cv[[method]][[rep]][2]] }))
+    }else{
+      betahat_method_cv = do.call(cbind, lapply(1:nrep, function(rep){ betahat[[method]][[rep]][,i.min.cv[[method]][[rep]]] }))
+    }
+    result[[method]][['cv']] = rmse.sparsistency.extravariable(betahat_method_cv, x, beta)
+  }
+
+  return(result)
 }
-
-# test run
-x = unname(as.matrix(read.table('/home/st1864/model_selection/data/orthx/x.txt')))
-y = unname(as.matrix(read.table('/home/st1864/model_selection/data/orthx/y_hsnr.txt')))
-sigma = unname(as.numeric(read.table('/home/st1864/model_selection/data/orthx/sd_hsnr.txt')))
-beta = as.numeric(unname(as.matrix(read.table('/home/st1864/model_selection/data/orthx/beta.txt'))))
-
-# 15 minutes
-result = run.cv(x, y, orthx=TRUE)
-saveRDS(result$betahat, paste0('/scratch/st1864/boss/betahat/',type,'_n',n,'_p',p,'_',names(snr),'.rds')) # save in the tmp folder
-saveRDS(result$i.min.cv, paste0('/scratch/st1864/boss/tmp/cv/',type,'_n',n,'_p',p,'_',names(snr),'.rds')) # save in the tmp folder
-ptm = proc.time()
-bdf_bs = bdf.bs.orthx(x, y)
-proc.time() - ptm
-saveRDS(bdf_bs, paste0('/scratch/st1864/boss/tmp/bdf/',type,'_n',n,'_p',p,'_',names(snr),'.rds')) # save in the tmp folder
-
-betahat = readRDS(paste0('/scratch/st1864/boss/betahat/',type,'_n',n,'_p',p,'_',names(snr),'.rds')) # save in the tmp folder
-
-calc.edf(lapply(betahat$bs, function(xx){x %*% xx}), y, sigma)
-
-indir = paste('true_model/orthogonal/sparse/ex1/p0_6','/n_',200,'/p_',14, sep='')
-df = readRDS(paste(base, '/code/as_gram/results/',indir,'/hsnr/df_bs.rds',sep=""))
-
-n = c(200)
-p = c(14)
-snr = c(7)
-names(snr) = c('hsnr')
-type = c('Orth-Sparse-Ex1')

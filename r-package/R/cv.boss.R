@@ -64,14 +64,13 @@ cv.boss <- function(x, y, n.folds=10, n.rep=1, intercept=TRUE, ...){
       y.test = y[test.index]
       x.train = x[-test.index, , drop=FALSE]
       y.train = y[-test.index]
-      boss_result <- boss(x.train, y.train, intercept, hdf.ic.boss=FALSE)
-      beta_fs= boss_result$beta_fs
+      boss_result = boss(x.train, y.train, intercept, hdf.ic.boss=FALSE)
+      beta_fs = boss_result$beta_fs
       beta_boss = boss_result$beta_boss
       # if intercept
       if(intercept){
         x.test = cbind(rep(1,nrow(x.test)), x.test)
       }
-      sweep(x.test%*%beta_fs, 1, y.test, '-')
       cv_tmp_fs[fold, ] = Matrix::colMeans(sweep(x.test%*%beta_fs, 1, y.test, '-')^2)
       cv_tmp_boss[fold, ] = Matrix::colMeans(sweep(x.test%*%beta_boss, 1, y.test, '-')^2)
 
@@ -85,7 +84,7 @@ cv.boss <- function(x, y, n.folds=10, n.rep=1, intercept=TRUE, ...){
 
 
   # fit on the full sample
-  boss_result <- boss(x, y, intercept, ...)
+  boss_result = boss(x, y, intercept, ...)
 
   # output
   out = list(boss=boss_result,
