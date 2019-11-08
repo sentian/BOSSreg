@@ -9,13 +9,13 @@
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=4GB
+#SBATCH --mem=6GB
 
 
 module purge
 module load r/intel/3.6.0
 
 echo "My SLURM_ARRAY_TASK_ID: " $SLURM_ARRAY_TASK_ID
-cd /home/st1864/boss/code
+cd /home/st1864/boss/code/run_model
 
 Rscript run.R 'TRUE' $SLURM_ARRAY_TASK_ID
