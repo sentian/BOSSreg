@@ -21,23 +21,33 @@ For a simple guide of the functionalities of the package, please refer to the [B
 For a complete documentation of the package, please refer to the [BOSSreg's Documentation](https://github.com/sentian/BOSSreg/blob/master/BOSSreg_0.1.0.pdf).
 
 ### Reproduce the results in the paper
-The structure of the '*code*' directory is as follows. '*plots.R*' and '*tables.R*' generate the figures and tables that can be found in the *paper/figures* and *paper/tables* directories respectively
+The structure of the '*code*' directory is shown below.
+
+'*plots.R*' and '*tables.R*' generate the figures and tables that can be found in the *paper/figures* and *paper/tables* directories, respectively. Note that '*plots.R*' is self-contained and does not rely on the simulation or real data results. '*tables.R*' requires simulation and real data results as inputs, which can be found in '*code/run_model/simulation/results*' and '*code/run_model/realdata/results*' directories, respectively.
 
 ```bash
 code
-├── plots_tables         ## generate figures and tables in the paper
-│   ├── plots.R          # code that reproduces all the figures
-│   └── tables.R         # code that reproduces all the tables
-├── run_model            ## fit the models and evaluate their performances
-│   ├── para_forhpc      # parameters for each configuration
-│   │   ├── *
-│   ├── results          # simulation results
-│   │   ├── generalx     # results for a general X
-│   │   │   ├── *
-│   │   └── orthx        # results for an orthogonal X
-│   │       ├── *
-│   ├── run.R            # code to fit and evaluate all methods
-│   ├── run_generalx.sh  # bash file that submits parallel jobs to a Linux server
-│   └── run_orthx.sh     # bash file that submits parallel jobs to a Linux server
-└── utils.R              ## code that contains functions shared by all the other R codes
+├── plots_tables              ## generate figures and tables in the paper
+│   ├── plots.R               # code that reproduces all the figures
+│   └── tables.R              # code that reproduces all the tables
+├── run_model                 ## fit the models
+│   ├── realdata
+│   │   ├── results           # realdata results
+│   │   │   └── *.rds
+│   │   ├── forestfires.csv   # forest fire dataset
+│   │   ├── run.R             # code that fits and evaluates methods
+│   │   ├── run_forestfire.R  # code that fits MIO BS on forest fire dataset
+│   │   └── run_forestfire.sh
+│   └── simulation
+│   │   ├── para_forhpc       # parameters for each configuration
+│   │   │   └── *.txt
+│   │   ├── results           # simulation results
+│   │   │   ├── generalx      # results for a general X
+│   │   │       └── *.rds
+│   │   │   └── orthx         # results for an orthogonal X
+│   │   │       └── *.rds
+│   │   ├── run.R             # code to fit and evaluate all methods
+│   │   ├── run_generalx.sh
+│   │   └── run_orthx.sh
+└── utils.R                   ## code that contains functions shared by other R codes
 ```
