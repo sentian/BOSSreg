@@ -1,0 +1,106 @@
+ %!TEX root = boss.tex
+\section{Introduction}
+Suppose that we have the data generating process
+\begin{equation}
+\mathbf{y}=\mathbf{\mu}+\mathbf{\epsilon},
+\label{eq:truemodel_def}
+\end{equation}
+where $\mathbf{y}\in \mathcal{R}^n$ is the response vector, $\mathbf{\mu} \in \mathcal{R}^n$, is the fixed mean vector, and $\mathbf{\epsilon} \in \mathcal{R}^n$ is the noise vector. The mean vector is estimated based on a fixed design matrix $\mathbf{X}\in \mathcal{R}^{n\times p}$. We assume the error $\mathbf{\epsilon} \sim \mathcal{N}(0,\sigma^2 I)$ and $n > p$.
+%\stackrel{iid} can be used to add `iid' on top of `sim'
+
+\subsection{Best subset selection}
+Best subset selection (BS) \citep{Hocking1967} seeks the set of predictors that best fit the data in terms of quadratic error for each given subset size (excluding the intercept) $k\in\{0,1,\cdots,p\}$, i.e. it solves the following constrained optimization problem:
+\begin{equation}
+\min_{\beta_0, \beta} \frac{1}{2} \lVert \mathbf{y}-\beta_0\mathtt{1} -\mathbf{X\beta}\rVert_2^2 \quad \text{subject to} \quad \lVert \mathbf{\beta} \rVert_0 \le k,
+\label{eq:bestsubset-setup}
+\end{equation}
+where $\lVert \mathbf{\beta} \rVert_0 = \sum_{i=1}^{p} \mathtt{1}(\beta_i \ne 0)$ is the number of non-zero coefficients in $\mathbf{\beta}$. Note that to simplify the discussion, we assume that the intercept term $\beta_0=0$ throughout the paper, except in the real data examples, where all of the fitting procedures include an intercept.
+
+
+% computation of BS
+BS is known to be an NP-hard problem \citep{Natarajan1995} and its computational cost grows exponentially with the dimension $p$. Many attempts have been made to reduce the computational cost of the method. The most well-known approach is the branch-and-bound algorithm `leaps' \citep{Furnival1974} that solves \eqref{eq:bestsubset-setup} in seconds for $p$ being up to around $30$. More recently, \citet{Bertsimas2016} formulated \eqref{eq:bestsubset-setup} using a mixed integer operator (MIO), and largely reduced the computing overhead by using a well-developed optimization solver such as {\tt GUROBI} or {\tt CPLEX}. However, according to \citet{Hastie2017}, MIO normally takes about $3$ minutes to find the solution at a given size $k$ for a problem with $n=500$ and $p=100$. The current methodology is not scalable to very large datasets, and solving \eqref{eq:bestsubset-setup} remains a challenge for most real world applications.
+
+% edf of BS
+In order to select the optimal tuning parameter, e.g. the subset size $k$ in \eqref{eq:bestsubset-setup}, one often applies an information criterion, which augments the training error with the effective degrees of freedom (edf). \citet{Efron1986} defined the edf for a general fitting rule $\hat{\mu}$ as:
+\begin{equation}
+\text{edf}(\hat{\mu}) = \frac{1}{\sigma^2} \sum_{i=1}^{n} \text{cov}(\hat{\mu}_i,y_i).
+\label{eq:edf}
+\end{equation}
+It is easy to verify that edf for the linear regression of $y$ upon $X$ is the number of estimated coefficients $p$. However, \citet{janson2015effective} showed in simulations that there can be a large discrepancy between the edf of BS at size $k$ and $k$ itself. Similar evidence can be found in \citet{Tibshirani2015}, where the author quantifies the difference as the search degrees of freedom, which accommodates the amount of searching that BS performs in order to choose a best $k$-predictor subset. Unfortunately, the edf of BS does not have an analytical expression except when $X$ is orthogonal and $\mu=0$ \citep{Ye1998}. Numerically, we can apply tools like data perturbation \citep{Ye1998}, bootstrap \citep{Efron2004} or data randomization \citep{Harris2016} to estimate edf, but all rely on tunings of some hyperparameters and can be computationally intensive. 
+
+This paper is motivated by the above challenges. We propose a heuristic degrees of freedom (hdf) for BS by assuming an orthogonal $X$. We further introduce a novel least squares (LS) based subset selection method, the best orthogonalized subset selection (BOSS), and we demonstrate that BOSS using an information criterion with hdf works well in practice for a general $X$ with the computational cost of a single ordinary LS fit.
+
+\subsection{Optimism theorem and information criteria for BS}
+\label{sec:optimism}
+Information criteria are designed to provide an unbiased estimate of the prediction (or testing) error, and can be derived from the so-called optimism theorem. Denote $\Theta$ as an error measure, $\text{err}$ as the training error, $\text{Err}$ as the testing error, $y^0$ as a new response vector with the same distribution but independent of the original $y$, and $E_0$ is the expectation taken over $y^0$. \citet{Efron1986} defined the optimism as 
+\begin{equation*}
+\text{op} = \text{Err} - \text{err},
+%\label{eq:op}
+\end{equation*}
+and introduced the optimism theorem,
+\begin{equation*}
+E(\text{op}) = E(\text{Err}) - E(\text{err}).
+%\label{eq:op_thm}
+\end{equation*}
+A straightforward result from the optimism theorem is that 
+\begin{equation}
+\widehat{\text{Err}} = \text{err} + E(\text{op})
+\label{eq:err_eop}
+\end{equation}
+is an unbiased estimator of $E(\text{Err})$, and is intended to balance the trade-off between model fit and model complexity. The challenge is to find $E(\text{op})$ for a given fitting rule $\hat{\mu}$ and error measure $\Theta(y,\hat{\mu})$.
+
+When the error measure $\Theta$ is the squared error (SE), i.e. $\Theta(y_i,\hat{\mu}_i)=(y_i-\hat{\mu}_i)^2$, $\text{err}_{\text{SE}}$ (denoted as the training error when $\Theta$ is SE) then becomes the residual sum of squares $\text{RSS} = \sum_{i=1}^{n} \Theta(y_i, \hat{\mu}_i)$, and the testing error $\text{Err}_\text{SE} =\sum_{i=1}^n E_0[\Theta(y^0_i,\hat{\mu}_i)]$. \citet{Ye1998} and \citet{Efron2004} proved that for a general fitting rule $\hat{\mu}$ such as BS, $E(\text{op}_{\text{SE}})=2\sigma^2 \cdot \text{edf}(\hat{\mu})$, and hence $\widehat{\text{Err}}_{\text{SE}}$ in \eqref{eq:err_eop} becomes C$_p$-edf where 
+\begin{equation}
+\text{C}_p\text{-edf} = \text{RSS} + 2 \sigma^2 \cdot \text{edf}.
+\label{eq:cp_edf}
+\end{equation}
+These authors also showed that the traditional C$_p$,
+\begin{equation*}
+\text{C}_p\text{-ndf} = \text{RSS} + 2 \sigma^2 \cdot \text{ndf},
+%\label{eq:cp_ndf}
+\end{equation*}
+can be greatly biased when applied for BS, since C$_p$-ndf \citep{mallows1973some} was derived for a linear estimation rule $\hat{\mu} = Hy$ where $H$ is independent of $y$, which is not the case for BS. Here ndf denotes the naive degrees of freedom, i.e. $\text{Tr}(H)$. A further major issue regarding applying C$_p$ in practice is that it requires an estimate of $\sigma^2$. 
+
+Another commonly used error measure is the deviance (up to a constant)
+\begin{equation}
+\Theta = -2 \log f(y|\mu,\sigma^2),
+\label{eq:deviance_def}
+\end{equation}
+where $f$ is a pre-specified parametric model. Let $\hat{\mu}$ and $\hat{\sigma}^2$ be the maximum likelihood estimators obtained by maximizing $f(y|\mu,\sigma^2)$. We then have $\text{err}_{\text{KL}} = -2 \log f (y|\hat{\mu},\hat{\sigma}^2)$ and $\text{Err}_{\text{KL}}  = -2 E_0 \left[ \log f(y^0|\hat{\mu},\hat{\sigma}^2)\right] $, where the latter is the Kullback-Leibler (KL) discrepancy. For a linear estimation procedure, assuming asymptotic normality of $\hat{\mu}$ and $\hat{\sigma}^2$ ($f$ not necessarily Gaussian) and the true model distribution being contained in the specified parametric model $f$, \citet{konishi2008information} proved that $E(\text{op}_{\text{KL}}) = 2 \cdot \text{ndf} + o(1)$, and AIC \citep{Akaike1973},
+\begin{equation*}
+-2 \log f (y|\hat{\mu},\hat{\sigma}^2) + 2 \cdot \text{ndf},
+\end{equation*}
+asymptotically equals $\widehat{\text{Err}}_\text{KL}$ \eqref{eq:err_eop}. If $f$ follows a Gaussian distribution, as assumed in \eqref{eq:truemodel_def}, AIC can be expressed as
+\begin{equation*}
+\text{AIC-ndf} = n \log\left(\frac{\text{RSS}}{n}\right) + 2 \cdot \text{ndf}.
+%\label{eq:aic_ndf}
+\end{equation*}
+\citet{Hurvich1989} replaced the asymptotic $E(\text{op}_\text{KL})$ with its exact value, for Gaussian linear regression with an assumption that the predictors with non-zero true coefficients are included in the model, and used the corrected AIC
+\begin{equation*}
+\text{AICc-ndf} = n \log\left(\frac{\text{RSS}}{n}\right) + n \frac{n+\text{ndf}}{n-\text{ndf}-2}.
+\label{eq:aicc_ndf}
+\end{equation*}
+Neither AIC nor AICc has a penalty term depending upon $\sigma^2$, a clear advantage over C$_p$.
+
+It remains a challenge to derive a KL-based information criterion for BS. \citet{Liao2018} estimated $E(\text{op}_{\text{KL}})$ via Monte Carlo simulations, but this relies on thousands of fits of the procedure, which is not computationally feasible for large datasets. 
+
+In this work, we propose AICc-edf
+\begin{equation}
+\text{AICc-edf} = n \log\left(\frac{\text{RSS}}{n}\right) + n \frac{n+\text{edf}}{n-\text{edf}-2}
+\label{eq:aicc_edf}
+\end{equation}
+for this purpose. We demonstrate that $E(\text{AICc-edf})$ approximates $E(\text{Err}_\text{KL})$ well for BS. Moreover, both AICc-edf and $\widehat{\text{Err}}_\text{KL}$ generally choose the same subset when used as selection rules. Furthermore, the feasible implementation AICc-hdf works reasonably well as a selection rule for BS with an orthogonal $X$ and for our proposed method BOSS with a general $X$. 
+
+\subsection{Contributions of this paper}
+The rest of the paper is organized as follows. In Section \ref{sec:aicc_hdf}, by assuming an orthogonal $X$, we introduce the hdf for BS. We provide a theoretical justification in a restricted scenario, and numerical justifications in general situations. We provide numerical evidence that $E(\text{AICc-edf})$ approximates $E(\text{Err}_\text{KL})$ well, and the feasible version AICc-hdf works well as a selection rule for BS. We further compare the performance of BS with that of regularization methods using feasible selection rules via simulations. In Section \ref{sec:boss}, we consider a general $X$ and propose the method BOSS. We provide numerical evidence that AICc-hdf is a reasonable selection rule for BOSS. Furthermore, we compare the performance of BOSS with that of forward stepwise regression (FS) and regularization methods in simulations. Lastly, we study some real data examples in Section \ref{sec:real_data}, and provide conclusions and potential future works in Section \ref{sec:conclusion}.
+
+Below is a guidance of applying LS-based methods in practice for data analysts.
+\begin{itemize}
+	\item Using IC in a naive way by plugging in the subset size as the degrees of freedom can lead to significantly worse performances than using IC-edf and the feasible IC-hdf.
+	\item AICc is a better selection rule in terms of the predictive performance by comparing with C$_p$, and the advantage is obvious when $p$ is close to $n$.
+	\item AICc is not only much more computationally efficient than cross-validation (CV), but also can result in subsets with better predictive performances especially when the signal-to-noise ratio (SNR) is high or the sample size $n$ is large. The SNR is defined as $\text{Var}(x^T \beta) / \sigma^2$.
+	\item BOSS-AICc is generally the best LS-based method by comparing with BS and forward stepwise (FS) \citep{efroymson1960multiple} using CV as the selection rule, in terms of both computational efficiency and predictive performance.
+	\item Compared to regularization methods, BOSS-AICc performs the best when SNR is high or the sample size $n$ is large. In terms of support recovery in a sparse true model, BOSS recovers the true predictors and rarely include any false positives when SNR is high or the sample size $n$ is large. However, regularization methods generally overfit. 
+\end{itemize}
+
+We make the code to reproduce the results in this paper, as well as an R package \pkg{BOSSreg}\footnote{At the time of submission of this paper, we have submitted the R package to \textit{CRAN}.}, publicly available at \url{https://github.com/sentian/BOSSreg}. 

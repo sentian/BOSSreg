@@ -174,7 +174,7 @@ bs.generalx <- function(x, y, intercept=TRUE){
 }
 
 ## Cross-validation for BS
-cv.bs <- function(x, y, n.folds=10, orthx, intercept.generalx=TRUE){
+cv.bs <- function(x, y, n.folds=10, intercept=TRUE){
   n = dim(x)[1]
   p = dim(x)[2]
 
@@ -189,13 +189,10 @@ cv.bs <- function(x, y, n.folds=10, orthx, intercept.generalx=TRUE){
     x.train = x[-test.index, , drop=FALSE]
     y.train = y[-test.index]
     # Fit the model on training set
-    if(orthx){
-      coef_bs = bs.orthx(x.train, y.train)
-    }else{
-      coef_bs = bs.generalx(x.train, y.train, intercept=intercept.generalx)
-    }
+    coef_bs = bs.generalx(x.train, y.train, intercept=intercept)
+
     # Evaluate on the testing set
-    if(orthx | !intercept.generalx){
+    if(!intercept){
       cv_tmp[fold,] = Matrix::colMeans( sweep(x.test%*%coef_bs, 1, y.test, '-')^2 )
     }else{
       cv_tmp[fold,] = Matrix::colMeans( sweep(cbind(rep(1,nrow(x.test)),x.test)%*%coef_bs, 1, y.test, '-')^2 )
@@ -203,11 +200,7 @@ cv.bs <- function(x, y, n.folds=10, orthx, intercept.generalx=TRUE){
   }
   cv = Matrix::colMeans(cv_tmp)
   # Fit on the full sample
-  if(orthx){
-    coef_bs = bs.orthx(x, y)
-  }else{
-    coef_bs = bs.generalx(x, y, intercept=intercept.generalx)
-  }
+  coef_bs = bs.generalx(x, y, intercept=intercept)
   return(list(betahat=coef_bs, i.min=which.min(cv)))
 }
 
@@ -281,10 +274,12 @@ run.cv <- function(x, y, seed=66, orthx){
     # if(rep %% 100 == 0){print(rep)}
     print(rep)
     # BS
-    if(p <= 30 | orthx){
-      bs_cv = cv.bs(x, y[,rep], orthx = orthx, intercept.generalx=FALSE)
+    if(p <= 30){
+      bs_cv = cv.bs(x, y[,rep], intercept=FALSE)
       i.min.cv$bs[[rep]] = bs_cv$i.min
       betahat$bs[[rep]] = bs_cv$betahat
+    }else if(p > 30 & orthx){
+      betahat$bs[[rep]] = bs.orthx(x, y[,rep])
     }
     if(!orthx){
       # BOSS and FS
@@ -431,7 +426,7 @@ eval.metrics <- function(x, y, beta, sigma, result.cv, bdf.bs, orthx){
   for(method in allmethods){
     if(method %in% c('sparsenet', 'gamlr')){
       betahat_method_cv = do.call(cbind, lapply(1:nrep, function(rep){ betahat[[method]][[rep]][[i.min.cv[[method]][[rep]][1]]][,i.min.cv[[method]][[rep]][2]] }))
-    }else if(method == 'bs' & p > 30 & !orthx){
+    }else if(method == 'bs' & p > 30){
       betahat_method_cv = NULL
     }else{
       betahat_method_cv = do.call(cbind, lapply(1:nrep, function(rep){ betahat[[method]][[rep]][,i.min.cv[[method]][[rep]]] }))
@@ -472,8 +467,8 @@ lbs.orthx <- function(x, y){
   # specify a fixed sequence of lambda
   z = t(x)%*%y
   nlambda = 200
-  sqrt_2lambda = exp(seq(log(max(abs(z))+0.1), log(0.001*(max(abs(z))+0.1)), length.out=nlambda))
-  sqrt_2lambda = matrix(rep(sqrt_2lambda, each=nrep), ncol=nrep, byrow=TRUE)
+  sqrt_2lambda_fixed = exp(seq(log(max(abs(z))+0.1), log(0.001*(max(abs(z))+0.1)), length.out=nlambda))
+  sqrt_2lambda = matrix(rep(sqrt_2lambda_fixed, each=nrep), ncol=nrep, byrow=TRUE)
   
   # calculate the fit based on the analytical formula
   tmp_function <- function(ii){
@@ -484,25 +479,24 @@ lbs.orthx <- function(x, y){
   }
   betahat = lapply(1:nrep, tmp_function)
   
-  return(list(betahat=betahat, sqrt_2lambda=sqrt_2lambda))
+  return(list(betahat=betahat, sqrt_2lambda=sqrt_2lambda_fixed))
 }
-## Evaluate the BS-Cp and LBS-Cp, 'data' is the object by running 'gen.data.orthx'
-eval.metrics.bs.lbs.cp.orthx <- function(data){
-  # Fit BS and LBS
-  betahat = edf = betahat_cp = list()
-  result_lbs = lbs.orthx(data$x, data$y)
-  betahat$lbs = result_lbs$betahat
-  betahat$bs = lapply(1:nrep, function(rep){bs.orthx(data$x, data$y[,rep])})
-  muhat = lapply(betahat, function(xx){lapply(xx, function(yy){data$x %*% yy})})
-  rss = lapply(muhat, function(xx){do.call(cbind, Map(function(yy, rep){colSums(sweep(yy, 1, data$y[,rep])^2)}, xx, 1:nrep))})
+
+## Fit and evaluate the LBS-Cp
+eval.metrics.lbs.cp.orthx <- function(x, y, beta, sigma){
+  nrep = dim(y)[2]
+  # Fit LBS
+  result = lbs.orthx(x, y)
+  betahat = result$betahat
+  muhat = lapply(betahat, function(yy){x %*% yy})
+  rss = do.call(cbind, Map(function(yy, rep){colSums(sweep(yy, 1, y[,rep])^2)}, muhat, 1:nrep))
   # edf 
-  edf$lbs = apply(result_lbs$sqrt_2lambda, 2, function(xx){edf.lbs.orthx(data$x, data$sigma, data$x %*% data$beta, xx)})
-  edf$bs = calc.edf(muhat$bs, data$y, data$sigma)
+  edf = edf.lbs.orthx(x, sigma, x %*% beta, result$sqrt_2lambda)
   # Cp
-  cp = Map(function(xx, yy){xx + 2*data$sigma^2*yy}, rss, edf)
+  cp = sweep(rss, 1, 2*sigma^2*edf, '+')
   # Coefficients selected by Cp-edf
-  betahat_cp = Map(function(aa, bb){do.call(cbind, Map(function(xx,yy){xx[,yy]}, aa, apply(bb, 2, which.min)))}, betahat, cp)
+  betahat_cp = do.call(cbind, Map(function(xx,yy){xx[,yy]}, betahat, apply(cp, 2, which.min)))
   # Evaluate the results
-  result_cp = lapply(betahat_cp, function(xx){rmse.sparsistency.extravariable(xx, data$x, data$beta)})
+  result_cp = rmse.sparsistency.extravariable(betahat_cp, x, beta)
   return(result_cp)
 }

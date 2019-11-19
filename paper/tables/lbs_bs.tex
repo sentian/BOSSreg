@@ -1,0 +1,48 @@
+% latex table generated in R 3.6.1 by xtable 1.8-4 package
+% Sun Nov 10 00:24:03 2019
+\begin{table}[ht]
+\centering
+\caption{The performance of BS and LBS. The selection rule for both methods is C$_p$-edf. We assume knowledge of $\mu$ and $\sigma$.} 
+\label{tab:lbs_bs}
+\scalebox{0.7}{
+\begin{tabular}{|c|c|c|cc|cc|cc|}
+  \toprule 
+ \multicolumn{1}{|c}{} & \multicolumn{1}{c}{} &       & \multicolumn{2}{c|}{Orth-Sparse-Ex1} & \multicolumn{2}{c|}{Orth-Sparse-Ex2} & \multicolumn{2}{c|}{Orth-Dense} \\
+ \cmidrule{4-9}\multicolumn{1}{|c}{} & \multicolumn{1}{c}{} &       & BS    & LBS   & BS    & LBS   & BS    & LBS  \\
+ \midrule 
+ \multicolumn{1}{|c}{} & \multicolumn{1}{c}{} &       & \multicolumn{6}{c|}{\% worse than the best possible BS} \\
+ \midrule 
+ \multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 4 & 28 & 21 & 25 & 1 & 1 \\ 
+   &  & p=180 & 1 & 43 & 12 & 25 & 7 & 10 \\ 
+  \cmidrule{2-9} & \multirow{2}[2]{*}{lsnr} & p=30 & 20 & 26 & 21 & 30 & 15 & 16 \\ 
+   &  & p=180 & 15 & 20 & 15 & 32 & 8 & 12 \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 3 & 29 & 3 & 28 & 0 & 0 \\ 
+   &  & p=180 & 0 & 42 & 0 & 41 & 6 & 9 \\ 
+  \cmidrule{2-9} & \multirow{2}[2]{*}{lsnr} & p=30 & 3 & 28 & 7 & 25 & 2 & 2 \\ 
+   &  & p=180 & 0 & 41 & 1 & 37 & 8 & 12 \\ 
+   \midrule 
+ \multicolumn{1}{|c}{} & \multicolumn{1}{c}{} &       & \multicolumn{6}{c|}{Relative efficiency} \\
+ \midrule 
+\multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 1 & 0.81 & 1 & 0.96 & 1 & 1 \\ 
+   &  & p=180 & 1 & 0.71 & 1 & 0.89 & 1 & 0.97 \\ 
+  \cmidrule{2-9} & \multirow{2}[2]{*}{lsnr} & p=30 & 1 & 0.96 & 1 & 0.93 & 0.95 & 0.94 \\ 
+   &  & p=180 & 1 & 0.96 & 1 & 0.87 & 1 & 0.95 \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 1 & 0.8 & 1 & 0.81 & 1 & 1 \\ 
+   &  & p=180 & 1 & 0.71 & 1 & 0.71 & 1 & 0.98 \\ 
+  \cmidrule{2-9} & \multirow{2}[2]{*}{lsnr} & p=30 & 1 & 0.81 & 1 & 0.86 & 1 & 1 \\ 
+   &  & p=180 & 1 & 0.71 & 1 & 0.74 & 1 & 0.97 \\ 
+   \midrule 
+ \multicolumn{1}{|c}{} & \multicolumn{1}{c}{} &       & \multicolumn{6}{c|}{Sparsistency (number of extra variables)} \\
+ \midrule 
+\multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 6(0.1) & 6(0.7) & 4.8(0.4) & 5(0.9) & 30 & 29.9 \\ 
+   &  & p=180 & 6(0) & 6(0.9) & 4.2(0) & 4.6(0.9) & 20.5 & 21.9 \\ 
+  \cmidrule{2-9} & \multirow{2}[2]{*}{lsnr} & p=30 & 4.5(1.9) & 4.4(2.3) & 2.7(0.6) & 2.9(1.1) & 12.8 & 7.6 \\ 
+   &  & p=180 & 1.9(0.5) & 2.3(1.4) & 1.9(0.3) & 2.2(1.2) & 0.8 & 2.7 \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 6(0.1) & 6(0.7) & 6(0.1) & 6(0.7) & 30 & 30 \\ 
+   &  & p=180 & 6(0) & 6(0.8) & 6(0) & 6(0.8) & 32.1 & 34.1 \\ 
+  \cmidrule{2-9} & \multirow{2}[2]{*}{lsnr} & p=30 & 6(0.1) & 6(0.7) & 4.1(0.2) & 4.3(0.7) & 28.8 & 29.4 \\ 
+   &  & p=180 & 6(0) & 6(0.8) & 4(0) & 4.1(0.8) & 13.9 & 15.9 \\ 
+   \bottomrule 
+\end{tabular}
+}
+\end{table}

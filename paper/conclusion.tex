@@ -1,0 +1,6 @@
+ %!TEX root = boss.tex
+\section{Conclusion and future work}
+\label{sec:conclusion}
+In this paper, we introduce a heuristic degrees of freedom (hdf) for BS based on an orthogonal $X$. We further propose a KL-based information criterion AICc-edf and its feasible implementation AICc-hdf. We show that their expected values can reasonably approximate the expected KL, $E(\text{Err}_\text{KL})$. Moreover, they result in the same choice of subset as $\widehat{\text{Err}}_{\text{KL}}$  when they are used as selection rules for BS. Furthermore, we propose an LS-based subset selection method BOSS. BOSS together with the selection rule AICc-hdf has computational cost on the same order as OLS. Finally, we show in simulations and real data examples that BOSS can be a competitive method in both speed and predictive performance. 
+
+Since edf \eqref{eq:edf} for LS-based methods is saturated at $n$ when $p\ge n$, a potential future work is to study a measure of complexity and build a connection with the use of information criteria in the case of $p \ge n$. The strong performance of BOSS using AICc compared to using CV suggests that the pursuit of methods to approximate edf, which normally does not have an analytical expression for complex modeling method and algorithm, is worthy of further research.

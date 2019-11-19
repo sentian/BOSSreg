@@ -1,0 +1,407 @@
+ %!TEX root = boss.tex
+\clearpage 
+\appendix
+\begin{center}
+\textbf{\huge Appendix}
+\end{center}
+\section{Proof of theorem \ref{thm:hdf_ydf_representation} and its corollary}
+\label{sec:proof_hdf_ydf}
+In this section, we assume an orthogonal $X$ and a null true model. This is the only scenario under which both df$_C(k)$ and hdf$(k)$ have analytical expressions. We will prove that the ratio of df$_C(k)$ and hdf$(k)$ goes to $1$ as $k,p\rightarrow \infty$ while $k=\left \lfloor{xp}\right \rfloor $, where $\left \lfloor{\cdot}\right \rfloor$ denotes the greatest integer function and $x\in(0,1)$. We start by laying out a few lemmas to be used in the proof of the main theorem.
+\begin{lemma}
+	\label{lemma:hdf_nulltrue}
+	Assume the design matrix is orthogonal and the true model is null ($\mu=0$). Then
+	\begin{equation}
+	\text{hdf}(k) = df_L(\lambda_k^\star) = k - 2p\cdot \Phi^{-1} (\frac{k}{2p}) \cdot \phi\left[\Phi^{-1}(\frac{k}{2p}) \right].
+	\label{eq:hdf_nulltrue}
+	\end{equation}
+\end{lemma}
+\begin{proof}
+	We follow the steps described in algorithm \ref{alg:hdf}. We first find $\lambda_k^\star$ from \eqref{eq:thdf_size_expression}, by using the fact that $\mu=0$, and we get $\displaystyle -\frac{\sqrt{2\lambda_k^\star}}{\sigma} = \displaystyle \Phi^{-1}(\frac{k}{2p})$, which is then substituted into \eqref{eq:thdf_expression} to get \eqref{eq:hdf_nulltrue}.
+\end{proof}
+
+\iffalse
+\begin{lemma}
+	\label{lemma:hdf_limitends}
+	Assume the design matrix is orthogonal and the true model is null ($\mu=0$), with a fixed $p$, and by treating $k$ as continuous, we have
+	\begin{equation}
+	\lim_{k\to 0} \text{hdf}(k) = 0 \quad \text{and} \quad \text{hdf}(p) = p.
+	\end{equation}
+\end{lemma}
+\begin{proof}
+	By \eqref{eq:hdf_nulltrue}, we have
+	\begin{equation}
+	\text{hdf}(p) = p - 2p\cdot \Phi^{-1} (\frac{1}{2}) \cdot \phi \left[\Phi^{-1}(\frac{1}{2}) \right]=p,
+	\end{equation}
+	since $\Phi^{-1} (\frac{1}{2})=0$. Meanwhile, 
+	\begin{equation}
+	\begin{aligned}
+	\lim_{k\to 0} \text{hdf}(k) &= \lim_{k\to 0} - 2p\cdot \Phi^{-1} (\frac{k}{2p}) \cdot \phi\left[\Phi^{-1}(\frac{k}{2p}) \right],\\
+	&= \lim_{x \to -\infty} -2p \cdot x \cdot \phi(x),\\
+	&= \lim_{x \to -\infty} -2p \cdot x \cdot \frac{1}{\sqrt{2\pi}} \exp^{-x^2/2},\\
+	&= 0,
+	\end{aligned}
+	\end{equation}
+	where the last step is given by the L'Hopital rule. 
+\end{proof}
+\fi
+
+\begin{lemma}
+	\label{lemma:G(x)}
+	Define $\tilde{G}(x)=  x-\Phi^{-1}(x)\cdot \phi \left[\Phi^{-1}(x)\right]$, where $x\in (0,1)$ is a continuous variable. We have
+	\begin{equation*}
+	\lim_{x\to 0} \tilde{G}(x) = 0,
+	\end{equation*}
+	and 
+	\begin{equation*}
+	\tilde{G}^\prime(x) = \left[\Phi^{-1}(x)\right]^2.
+	\end{equation*}
+	Therefore by the fundamental theorem of calculus:
+	\begin{equation*}
+	\tilde{G}(x) = \int_{0}^{x} \left[\Phi^{-1}(u)\right]^2 du.
+	\end{equation*}
+\end{lemma}
+\begin{proof}
+	First note that, since $\phi^\prime(v)= -v\cdot \phi(v)$ and $\lim_{v\to \pm \infty} \phi^\prime(v) =0$, we have
+	\begin{equation*}
+	\lim_{v\to \pm \infty} v \cdot \phi(v) = 0.
+	\end{equation*}
+	Let $v=\Phi^{-1}(x)$. Then
+	\begin{equation*}
+	\lim_{x\to 0} \tilde{G}(x)  = \lim_{v\to -\infty} -v \cdot \phi(v) = 0,
+	\end{equation*}
+	\iffalse
+	and 
+	\begin{equation}
+	\lim_{x\to 1} \tilde{G}(x)  = 1- \lim_{v\to \infty} v \cdot \phi(v) = 1,
+	\end{equation}
+	\fi
+	
+	Next, we work out the derivative of $\tilde{G}(x)$. Since $\Phi^\prime(x) = \phi(x)$, and by the property of inverse functions, we have
+	\begin{equation}
+	\left[\Phi^{-1}(x)\right]^\prime = \frac{1}{\Phi^\prime \left[\Phi^{-1}(x)\right]}=\frac{1}{\phi \left[\Phi^{-1}(x)\right]}.
+	\label{eq:G(x)_derivative_1}
+	\end{equation}
+	Also since $\phi^\prime(x) = -x\cdot \phi(x)$, we have
+	\begin{equation}
+	\phi^\prime\left[\Phi^{-1}(x)\right] = - \Phi^{-1}(x) \cdot \phi\left[\Phi^{-1}(x)\right] \cdot \left[\Phi^{-1}(x)\right]^\prime = -\Phi^{-1}(x).
+	\label{eq:G(x)_derivative_2}
+	\end{equation}
+	By \eqref{eq:G(x)_derivative_1} and \eqref{eq:G(x)_derivative_2}, we have
+	\begin{equation*}
+	\tilde{G}^\prime(x) = 1 - \left[\Phi^{-1}(x)\right]^\prime \cdot  \phi\left[\Phi^{-1}(x)\right] - \left[\Phi^{-1}(x)\right] \cdot \phi^\prime\left[\Phi^{-1}(x)\right] =  \left[\Phi^{-1}(x)\right]^2.
+	\end{equation*}
+	
+	Therefore, by the fundamental theorem of calculus, we have
+	\begin{equation*}
+	\tilde{G}(x) = \int_{0}^{x} \tilde{G}^\prime(u) du + \tilde{G}(0) = \int_{0}^{x} \left[\Phi^{-1}(u)\right]^2 du.
+	\end{equation*}
+\end{proof}
+
+\begin{lemma}
+	\label{lemma:sigmasq}
+	Denote $\tilde{Q}$ as the quantile function of a $\chi_1^2$ distribution, and let $\tilde{H}(s) = -\tilde{Q}(1-s)$ where $s\in (0,1)$. For $0\le s \le t \le 1$, consider the truncated variance function:
+	\begin{equation}
+	\tilde{\sigma}^2(s,t) = \int_{s}^{t} \int_{s}^{t} (u \wedge v -uv) d \tilde{H}(u) d \tilde{H}(v),
+	\label{eq:sigmasq}
+	\end{equation}
+	where $u \wedge v =\min(u,v)$. We have
+	\begin{equation*}
+	0 \le \tilde{\sigma}^2(s,t) \le 1.
+	\end{equation*}
+\end{lemma}
+\begin{proof}
+	First note that the following facts:
+	\begin{align}
+	\tilde{H}(s) &= -\left[\Phi^{-1}(1-\frac{s}{2}) \right]^2=-\left[\Phi^{-1}(\frac{s}{2}) \right]^2,\label{eq:Hs} \\
+	d\tilde{H}(s) &= \frac{\Phi^{-1}(1-s/2)}{\phi\left[\Phi^{-1}(1-s/2)\right]}ds=-\frac{\Phi^{-1}(s/2)}{\phi\left[\Phi^{-1}(s/2)\right]}ds, \quad \text{by \eqref{eq:G(x)_derivative_1}},\label{eq:dH} \\
+	\Phi^{-1}(w) &= -\sqrt{\log\frac{1}{w^2} - \log\log\frac{1}{w^2} - \log(2\pi)} + o(1), \quad \text{for small $w$, by \cite{Fung2017}}. \label{eq:Phiinv_order}
+	\end{align}
+	Hence for small $w$,
+	\begin{equation}
+	\label{eq:Phiinvsq_order}
+	\left[\Phi^{-1}(w)\right]^2 = O(\log \frac{1}{w^2}).
+	\end{equation}
+	Then by \eqref{eq:Hs} and \eqref{eq:Phiinvsq_order}, we have:
+	\begin{equation}
+	\label{eq:sHs_limit}
+	\lim_{s \to 0} s\cdot \tilde{H}(s) = \lim_{s \to 0} -s\cdot \left[\Phi^{-1}(\frac{s}{2})\right]^2 = 0.
+	\end{equation}
+	Also, by \eqref{eq:Hs} and lemma \ref{lemma:G(x)},
+	\begin{equation}
+	\label{eq:Hs_integral}
+	-\int_{0}^{x} \tilde{H}(s) ds =  2\cdot \tilde{G}(\frac{x}{2}).
+	\end{equation}
+	Since $u,v\in[0,1]$, we have $u \wedge v-uv \ge 0$. By \eqref{eq:dH}, it's easy to see that $d\tilde{H}(s)/ds \ge 0$. Therefore, the integrand in \eqref{eq:sigmasq} is non-negative, so that:
+	\begin{equation*}
+	\tilde{\sigma}^2(s,t) \ge 0,
+	\end{equation*}
+	and 
+	\begin{equation*}
+	\begin{aligned}
+	\tilde{\sigma}^2(s,t) &\le \int_{0}^{1} \int_{0}^{1} (u \wedge v -uv) d \tilde{H}(u) d \tilde{H}(v),\\
+	&= \int_{0}^{1} \left[\int_{0}^{v} u(1-v) d\tilde{H}(u) + \int_{v}^{1} v(1-u) d\tilde{H}(u)   \right]  d\tilde{H}(v),\\
+	&= \int_{0}^{1} \left[\int_{0}^{v} u d\tilde{H}(u) + v\int_{v}^{1} d\tilde{H}(u) -v\int_{0}^{1}u d\tilde{H}(u)  \right]  d\tilde{H}(v).
+	\end{aligned}
+	\end{equation*}
+	Denote 
+	\begin{equation*}
+	\tilde{M}(v) = \int_{0}^{v} u d\tilde{H}(u) + v\int_{v}^{1} d\tilde{H}(u) -v\int_{0}^{1}u d\tilde{H}(u).
+	\end{equation*}
+	Now, let's work out the three integrals in $\tilde{M}(v)$. First note that:
+	\begin{equation*}
+	\begin{aligned}
+	\int_{0}^{x} u d\tilde{H}(u) &= u\cdot \tilde{H}(u) \Bigr|_{0}^x - \int_{0}^{x} \tilde{H}(u) du,\\
+	&= x\cdot \tilde{H}(x) - \int_{0}^{x} \tilde{H}(u) du,\quad \text{by \eqref{eq:sHs_limit}}\\
+	&=  x\cdot \tilde{H}(x) + 2\cdot \tilde{G}(x/2), \quad \text{by \eqref{eq:Hs_integral}}.
+	\end{aligned}
+	\end{equation*}
+	And since it's easy to see that $\tilde{H}(1)=0$ and $\tilde{G}(1/2)=1/2$, we have:
+	\begin{equation*}
+	\int_{0}^{1} u d\tilde{H}(u) = 2\cdot \tilde{G}(1/2)=1,
+	\end{equation*}
+	and
+	\begin{equation*}
+	v\int_{v}^{1} d\tilde{H}(u) = -v\cdot \tilde{H}(v).
+	\end{equation*}
+	Therefore,
+	\begin{equation*}
+	\begin{aligned}
+	\tilde{M}(v) &= v\cdot \tilde{H}(v) +2 \cdot \tilde{G}(v/2)-v\cdot \tilde{H}(v)-2v\cdot \tilde{G}(1/2)\\
+	&=2 \cdot \tilde{G}(v/2) - v.
+	\end{aligned}
+	\end{equation*}
+	Finally,
+	\begin{equation*}
+	\begin{aligned}
+	\int_{0}^{1} \tilde{M}(v) d\tilde{H}(v) &= \int_{0}^{1} 2 \cdot \tilde{G}(v/2)d\tilde{H}(v) - \int_{0}^{1}v d\tilde{H}(v),\\
+	&= -\int_{0}^{1} \Phi^{-1}(\frac{v}{2})\cdot \phi\left[\Phi^{-1}(\frac{v}{2})\right]d\tilde{H}(v),\quad \text{by the definition of $\tilde{G}(x)$},\\
+	&= 2\int_{0}^{1/2} \left[\Phi^{-1}(v)\right]^2 dv, \quad \text{by \eqref{eq:dH}},\\
+	&=2\cdot \tilde{G}(1/2),\\
+	&=1.
+	\end{aligned}
+	\end{equation*}
+	Therefore,
+	\begin{equation*}
+	0 \le \tilde{\sigma}^2(s,t) \le 1.
+	\end{equation*}
+\end{proof}
+
+
+
+
+\begin{theorem}
+	\label{thm:ydf_representation}
+	Assume the design matrix is orthogonal and the true model is null ($\mu=0$). Let $\tilde{X}_{(i)}$ be the $i$-th largest order statistic in an i.i.d sample of size $p$ from a $\chi^2_1$ distribution. Denote $\tilde{Y}_p = \tilde{\sigma}_p^{-1}(\sum_{i=1}^k \tilde{X}_{(i)} - \tilde{\mu}_p)$, where
+	\begin{equation*}
+	\tilde{\sigma}_p = \sqrt{p} \cdot \sigma(1/p,k/p),
+	\end{equation*}
+	and
+	\begin{equation*}
+	\tilde{\mu}_p = -p \int_{1/p}^{k/p} \tilde{H}(u) du - \tilde{H}(\frac{1}{p}),
+	\end{equation*}
+	where $\sigma(s,t)$ and $\tilde{H}(x)$ are defined in Lemma \ref{lemma:sigmasq}.
+	
+	As $k \to \infty$, $p \to \infty$ and $k=\left \lfloor{px}\right \rfloor$ with $x \in (0,1)$, we have:
+	\begin{equation}
+	\frac{\text{df}_C(k)}{2p} = \frac{1}{2p} E\left[ \sum_{i=1}^k \tilde{X}_{(i)} \right]=  \frac{\tilde{\sigma}_p}{2p}E(\tilde{Y}_p) + \tilde{G}(\frac{k}{2p}) + O\left(\frac{\log(p)}{p}\right),
+	\label{eq:ydf/2p_representation}
+	\end{equation}
+	where $\left \lfloor{\cdot}\right \rfloor$ denotes the greatest integer function, $\tilde{G}(x)$ is defined in Lemma \ref{lemma:G(x)}.
+	
+\end{theorem}
+\begin{proof}
+	The proof proceeds as follows. We first apply a result in \citet{Csorgo1991}, to show that $\tilde{Y}_p=\tilde{\sigma}_p^{-1}(\sum_{i=1}^{k} \tilde{X}_{(i)}-\tilde{\mu}_p)$ converges in distribution to a standard normal. We then show how $\tilde{\mu}_p$ can be expressed in terms of function G plus a remainder term, which further leads to expression \eqref{eq:ydf/2p_representation}. 
+	
+	It follows from \cite{Csorgo1991} Corollary 2, that if there exist centering and normalizing constants $c_p$ and $d_p>0$, s.t.
+	\begin{equation}
+	d_p^{-1}(\tilde{X}_{(1)} - c_p) \xrightarrow{D} Y, \quad \text{where Y is the standard Gumbel distribution},
+	\label{eq:scorgo_condition_gumbel} 
+	\end{equation}
+	then as $k \to \infty$, $p \to \infty$ and $k=\left \lfloor{px}\right \rfloor$ with $x \in (0,1)$,
+	\begin{equation}
+	(\sum_{i=1}^k \tilde{X}_{(i)}  - \tilde{\mu}_p) / \tilde{\sigma}_p \xrightarrow{D} Z, \quad \text{where Z is standard normal}.
+	\label{eq:scorgo_result}
+	\end{equation}
+	
+	% https://math.stackexchange.com/questions/450139/asymptotics-of-maxima-of-i-i-d-chi-square-random-variables
+	First, it follows from \cite{Embrechts2013} that \eqref{eq:scorgo_condition_gumbel} holds, with $c_p=2\log(p)-\log\log(p)-\log(\pi)$ and $d_p=2$.
+	\iffalse
+	the maxima of $p$ Gamma-distributed random variables, $\Gamma(\alpha,\beta)$ with $\beta$ being the rate parameter, converges to a Gumbel distribution as $p \to \infty$, where the centering constant $c_p=\beta^{-1}(\log(p) +(\alpha-1)\log\log(p) - \log(\Gamma(\alpha)))$, and the scaling constant $d_p=\beta^{-1}$. Meanwhile, we know that $\chi^2_1$ is a $\Gamma(1/2,1/2)$ distribution. Therefore, \eqref{eq:scorgo_condition_gumbel} holds, where $c_p=2\log(p)-\log\log(p)-\log(\pi)$ and $d_p=2$.
+	\fi
+	
+	Next, we have
+	
+	\begin{equation*}
+	\begin{aligned}
+	\tilde{\mu}_p &= -p \int_{1/p}^{k/p} \tilde{H}(u) du - \tilde{H}(\frac{1}{p}),\\
+	&= -p \int_{0}^{k/p} \tilde{H}(u) du + p \int_{0}^{1/p} \tilde{H}(u) du - \tilde{H}(\frac{1}{p}),\\
+	&= 2p\cdot \tilde{G}(\frac{k}{2p}) - 2p \cdot \tilde{G}(\frac{1}{2p}) + \left[\Phi^{-1}(\frac{1}{2p})\right]^2, \quad \text{by \eqref{eq:Hs_integral}}.
+	\end{aligned}		
+	\end{equation*}
+	Also, since
+	\begin{equation*}
+	\begin{aligned}
+	\tilde{G}(\frac{1}{2p}) &= \frac{1}{2p} - \Phi^{-1}(\frac{1}{2p}) \cdot \phi\left[\Phi^{-1}(\frac{1}{2p}) \right],\quad \text{by definition of $\tilde{G}(x)$ in Lemma \ref{lemma:G(x)}},\\
+	&= \frac{1}{2p} - \frac{1}{\sqrt{2\pi}}\Phi^{-1}(\frac{1}{2p}) \cdot \exp\left(-\frac{1}{2}\left[\Phi^{-1}(\frac{1}{2p}) \right]^2\right),\\
+	&= \frac{1}{2p} + \frac{1}{\sqrt{2\pi}} \cdot \left(\sqrt{\log(4p^2)-\log\log(4p^2)-\log(2\pi)}+o(1)\right)\cdot \\
+	& \qquad \exp\left[-\frac{1}{2} \left(\log(4p^2)-\log\log(4p^2)-\log(2\pi) +o(1)\right)\right], \quad \text{by \eqref{eq:Phiinv_order}},\\
+	&= \frac{1}{2p} + \left(\sqrt{\log(4p^2)-\log\log(4p^2)-\log(2\pi)}+o(1)\right)\cdot \frac{\sqrt{\log(4p^2)}}{2p},\\
+	&= O\left(\frac{\log(p)}{p}\right).
+	\end{aligned}
+	\end{equation*}
+	Also
+	\begin{equation*}
+	\begin{aligned}
+	\frac{1}{2p}\left[\Phi^{-1}(\frac{1}{2p})\right]^2 &= O\left( \frac{\log(p)}{p}\right), \quad \text{by \eqref{eq:Phiinv_order}},
+	\end{aligned}
+	\end{equation*}
+	and hence
+	\begin{equation*}
+	\begin{aligned}
+	\frac{\tilde{\mu}_p}{2p} &= \tilde{G}(\frac{k}{2p}) - \tilde{G}(\frac{1}{2p}) + \frac{1}{2p}\left[\Phi^{-1}(\frac{1}{2p})\right]^2,\\
+	&= \tilde{G}(\frac{k}{2p}) + O\left( \frac{\log(p)}{p}\right).
+	\end{aligned}
+	\end{equation*}
+	Therefore, it's easy to see that \eqref{eq:ydf/2p_representation} holds, i.e.
+	\begin{equation*}
+	\frac{\text{df}_C(k)}{2p}=\frac{1}{2p} E(\sum_{i=1}^{k} \tilde{X}_{(i)}) = \frac{\tilde{\sigma}_p}{2p} E(\tilde{Y}_p) + \frac{\tilde{\mu}_p}{2p}=\frac{\tilde{\sigma}_p}{2p} E(\tilde{Y}_p) + \tilde{G}(\frac{k}{2p}) + O\left( \frac{\log(p)}{p}\right).
+	\end{equation*}
+\end{proof}
+
+\begin{corollary}
+	\label{corollary:Yp_order}
+	If $\limsup |E(\tilde{Y_p})| < \infty$, we further have:
+	\begin{equation}
+	\frac{\text{df}_C(k)}{2p} = \tilde{G}(\frac{k}{2p}) + O\left(\frac{\log(p)}{p}\right) + O\left(\frac{1}{\sqrt{p}}\right).
+	\label{eq:ydf/2p_representation_remark}
+	\end{equation}
+\end{corollary}
+\begin{proof}
+	By Lemma \ref{lemma:sigmasq} we have $0 \le \sigma(1/p,k/p) \le 1$, and hence $\tilde{\sigma}_p = O(\sqrt{p})$. Therefore by theorem \ref{thm:ydf_representation}, we have
+	\begin{equation*}
+	\frac{\text{df}_C(k)}{2p}=  \tilde{G}(\frac{k}{2p}) + O\left( \frac{\log(p)}{p}\right) + O\left(\frac{1}{\sqrt{p}}\right).
+	\end{equation*}	
+\end{proof}
+
+\dfasy*
+
+\begin{proof}
+	By Lemma \ref{lemma:hdf_nulltrue}, we have
+	\begin{equation*}
+	\text{hdf}(k) = df_L(\tilde{M}^{-1}(k)) = k - 2p\cdot \Phi^{-1} (\frac{k}{2p}) \cdot \phi\left[\Phi^{-1}(\frac{k}{2p}) \right].
+	\end{equation*}
+	Then by the definition of $\tilde{G}(x)$ in Lemma \ref{lemma:G(x)},
+	\begin{equation*}
+	\frac{1}{2p} \text{hdf}(k) = \tilde{G}(\frac{k}{2p}).
+	\end{equation*}
+	By Theorem \ref{thm:ydf_representation}, we also have
+	\begin{equation*}
+	\frac{1}{2p}\text{df}_C(k) = \frac{\sigma_p}{2p}E(\tilde{Y}_p) + \tilde{G}(\frac{k}{2p}) + O\left(\frac{\log(p)}{p} \right).
+	\end{equation*}
+	Therefore, \eqref{eq:hdf_ydf_yp_representation} holds, i.e.
+	\begin{equation*}
+	\frac{1}{2p} \text{hdf}(k) = \frac{1}{2p}\text{df}_C(k) - \frac{\tilde{\sigma}_p}{2p}E(\tilde{Y}_p) + O\left(\frac{\log(p)}{p} \right).
+	\end{equation*}
+\end{proof}
+
+\dfasycorollary*
+\begin{proof}
+	By Theorem \ref{thm:hdf_ydf_representation} and Corollary \ref{corollary:Yp_order}, we know
+	\begin{equation*}
+	\frac{1}{2p} \text{hdf}(k) = \frac{1}{2p}\text{df}_C(k) + O\left(\frac{1}{\sqrt{p}}\right) + O\left(\frac{\log(p)}{p} \right).
+	\end{equation*}
+	From Lemma \ref{lemma:G(x)}, we know that $\tilde{G}(x)$ is a non-decreasing function with $\tilde{G}(0+)=0$ and $\tilde{G}(1/2)=1/2$. Thus, it's easy to see that
+	\begin{equation*}
+	\frac{2p}{\text{hdf}(k)} = \frac{1}{\tilde{G}(\frac{k}{2p})} = O(1),
+	\end{equation*}
+	since $k=\left \lfloor{px}\right \rfloor$ and $x\in(0,1)$. Therefore, 
+	\begin{equation*}
+	\frac{\text{df}_C(k)}{\text{hdf}(k)} = 1 + O\left(\frac{1}{\sqrt{p}}\right) + O\left(\frac{\log(p)}{p} \right),
+	\end{equation*}
+	and hence
+	\begin{equation*}
+	\frac{\text{df}_C(k)}{\text{hdf}(k)} \to 1.
+	\end{equation*}
+\end{proof}
+
+\section{Expected KL-based optimism, in the context of BS }
+\label{sec:expectedkl_bs}
+In this section, we work out the expected Kullback–Leibler (KL) based optimism for BS at size $k$. Let's first consider fitting least squares regression on $k$ prefixed predictors. Recall that we have the true model:
+\begin{equation*}
+y = \mu + \epsilon,
+\end{equation*}
+where $\epsilon \sim \mathcal{N}(0,\sigma^2 I)$. Use the deviance to measure the predictive error, that is 
+\begin{equation*}
+\Theta=-2 \log f(y|\mu,\sigma^2).
+\end{equation*}
+The training error is then 
+$$\text{err}_{\text{KL}} = -2 \log f (y|\hat{\mu},\hat{\sigma}^2),$$
+and the testing error (KL information) is
+$$\text{Err}_{\text{KL}}  = -2 E_0 \left[ \log f(y^0|\hat{\mu},\hat{\sigma}^2)\right],$$
+where $\hat{\mu}$ and $\hat{\sigma}^2$ are MLE based on training data $(X,y)$, $y^0$ is independent and has the same distribution of $y$ and $E_0$ is the expectation over $y^0$. 
+
+Due to the assumption of normality, the deviance can be expressed as:
+\begin{equation}
+\Theta = n\log(2\pi \sigma^2) + \frac{\lVert y- \mu \rVert_2^2}{\sigma^2}.
+\label{eq:deviance}
+\end{equation}
+Maximizing the likelihood, or minimizing the deviance \eqref{eq:deviance}, gives:
+\begin{equation}
+\begin{aligned}
+& \hat{\mu} = \argmin_\mu  \lVert y-\mu \rVert_2^2,\\
+&\hat{\sigma}^2 = \frac{1}{n} \lVert y-\hat{\mu}\rVert_2^2.
+\label{eq:appen_mle}
+\end{aligned}
+\end{equation}
+Using these expressions, we then have
+\begin{equation}
+\text{err}_\text{KL} = n \log(2\pi \hat{\sigma}^2) +n,
+\label{eq:err_kl}
+\end{equation}
+and
+\begin{equation*}
+\text{Err}_\text{KL} = n\log(2\pi \hat{\sigma}^2) + n\frac{\sigma^2}{\hat{\sigma}^2} +\frac{\lVert \mu- \hat{\mu} \rVert_2^2}{\hat{\sigma}^2}.
+\end{equation*}
+The expected optimism is then
+\begin{equation}
+\begin{aligned}
+E(\text{op}_\text{KL})  &= E(\text{Err}_\text{KL}) - E(\text{err}_\text{KL}),\\
+&= E(n\frac{\sigma_0^2}{\hat{\sigma}^2}) + E(\frac{\lVert \mu-h(\hat{\beta}) \rVert_2^2}{\hat{\sigma}^2}) -n.
+\end{aligned}
+\label{eq:eop}
+\end{equation}
+
+So far we've been considering a subset with $k$ fixed predictors. At subset size $k$, BS chooses the one with minimum residual sum of squares (RSS) from all $\binom{p}{k}$ possible subsets. In order for the above derivation to hold, we need to show that the MLE we get from \eqref{eq:appen_mle} is also the BS fit. This can be easily obtained from the full likelihood (-2 times) \eqref{eq:err_kl}, which by plugging the expression of $\hat{\sigma}$ leads to
+\begin{equation*}
+n\log(\frac{2\pi}{n}\lVert y-\hat{\mu}\rVert_2^2) + n.
+\end{equation*}
+Therefore, for all $\binom{p}{k}$ models with size $k$, the one with largest log likelihood, is also the one with smallest RSS. Hence \eqref{eq:eop} holds for BS fit at subset size $k$ as well.
+
+\section{Proof of Thoerem \ref{thm:correspondence}}
+\label{sec:correspondence}
+
+\begin{proof}	
+	Since $[X_1,X_2,\cdots,X_j]$ and $[Q_1,Q_2,\cdots,Q_j]$ span the same space, we have
+	\begin{equation}
+	\hat{\alpha}^{(j)} = \hat{\beta}^{(j)}.
+	\label{eq:thmproof-correspondence-zrq-zrx-subset}
+	\end{equation}
+	We can express $\hat{\gamma}(k)$ as
+	\begin{equation}
+		\hat{\gamma}(k) = \sum_{j\in S_k} \hat{\gamma}^{(j)} - \hat{\gamma}^{(j-1)}.
+		\label{eq:zs_expand}
+	\end{equation}
+	We multiply both sides by $R^{-1}$ ($X$ is assumed to have full column rank), and use \eqref{eq:thmproof-correspondence-zrq-zrx-subset} to get
+	\begin{equation*}
+		\hat{\beta}(k) = \sum_{j\in S_k} \hat{\alpha}^{(j)} - \hat{\alpha}^{(j-1)}.
+		%\label{eq:thmproof-correspondence-conclusion}
+	\end{equation*}
+	\iffalse
+	 \eqref{eq:thmproof-correspondence-conclusion} tells us that when certain subset $Q_S$ is chosen, the coefficients projected from the $Q$ space, correspond to a linear combination of multiple regression coefficients of $y$ upon subsets in $X$, where these subsets are sequential. For example, in the simple $2$-predictor case, if $Q_2$ is the chosen predictor, by \eqref{eq:thmproof-correspondence-conclusion}, we get:
+	\begin{equation*}
+	\hat{\beta}^{(Q_2)} = \hat{\beta}^{(X_1,X_2)} - \hat{\beta}^{(X_1)}.
+	\end{equation*}
+	Hence, it corresponds to the difference between two regression coefficients, the coefficients of $y$ upon $X_1,X_2$, and the coefficients of $y$ upon just $X_1$. 
+	\fi
+\end{proof}
+

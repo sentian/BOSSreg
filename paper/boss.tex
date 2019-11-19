@@ -1,0 +1,150 @@
+\documentclass[12pt]{article}
+\usepackage{amssymb}
+\usepackage{multicol,multienum}
+\usepackage{latexsym,amssymb,amsmath}
+\usepackage{indentfirst}
+\usepackage{cases}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{CJK}
+\usepackage{url}
+\usepackage[font={sf,bf},textfont=md]{caption}
+\usepackage{animate}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{interval}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{thmtools, thm-restate}
+\usepackage{bbm}
+\usepackage{verbatim}
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{rotating}
+\usepackage{algorithm}
+\usepackage{enumitem}
+\usepackage{natbib}
+\usepackage[noend]{algpseudocode}
+\usepackage{bbding}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage{bigstrut}
+\usepackage[stable]{footmisc}
+\usepackage{multibib}
+\newcites{online}{References}
+
+
+%\pdfminorversion=4
+% NOTE: To produce blinded version, replace "0" with "1" below.
+\newcommand{\blind}{0}
+
+\iffalse
+% DON'T change margins - should be 1 inch all around.
+\addtolength{\oddsidemargin}{-.5in}%
+\addtolength{\evensidemargin}{-.5in}%
+\addtolength{\textwidth}{1in}%
+\addtolength{\textheight}{-.3in}%
+\addtolength{\topmargin}{-.8in}%
+\fi
+
+\addtolength{\oddsidemargin}{-.6in}%
+\addtolength{\evensidemargin}{-.6in}%
+\addtolength{\textwidth}{1.2in}%
+\addtolength{\textheight}{0.4in}%
+\addtolength{\topmargin}{-0.8in}%
+
+\newcommand{\beginsupplement}{%
+        \setcounter{table}{0}
+        \renewcommand{\thetable}{S\arabic{table}}%
+        \setcounter{figure}{0}
+        \renewcommand{\thefigure}{S\arabic{figure}}%
+        \setcounter{page}{0}
+     }
+
+\newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}} 
+%\newtheorem{theorem}{Theorem}[section]
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}{Lemma}
+
+\newcommand{\N}{{\mathbb{N}}}  % the natural numbers
+\newcommand{\Z}{{\mathbb{Z}}}  % the integers
+\newcommand{\Q}{{\mathbb{Q}}} % the rational numbers
+\newcommand{\R}{{\mathbb{R}}}  % the real numbers
+\newcommand{\C}{{\mathbb{C}}}  % the complex numbers
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\begin{document}
+
+%\bibliographystyle{natbib}
+
+\def\spacingset#1{\renewcommand{\baselinestretch}%
+{#1}\small\normalsize} \spacingset{1}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\if0\blind
+{
+  \title{\bf On the use of information criteria for subset selection in least squares regression}
+  \author{Sen Tian\\
+    and \\
+    Clifford M. Hurvich \\
+    and \\
+    Jeffrey S. Simonoff \\
+    Department of Technology, Operations, and Statistics, \\ Stern School of Business, New York University}
+  \date{}
+  \maketitle
+} \fi
+
+\if1\blind
+{
+  \bigskip
+  \bigskip
+  \bigskip
+  \begin{center}
+    {\LARGE\bf On the use of information criteria for subset selection in least squares regressions}
+\end{center}
+  \medskip
+} \fi
+
+\begin{abstract}
+  Least squares (LS) based subset selection methods are popular in regression modeling. Best subset selection (BS) is known to be NP hard and has a computational cost that grows exponentially with the problem size. In this paper, we propose a novel LS based method, the best orthogonalized subset selection (BOSS) method, that 
+
+\end{abstract}
+
+
+\iffalse
+\begin{abstract}
+  Best subset selection (BS) is a popular least squares (LS) based subset selection method for regression modeling. In order to select the optimal subset size, one often applies an information criterion such as the Mallows' C$_p$. \citet{Ye1998} and \citet{Efron2004} demonstrated that with the effective degrees of freedom (edf) being plugged in place of the subset size, C$_p$-edf provides an unbiased estimate of the prediction error. This paper is largely motivated by the following challenges of applying BS in practice: (1) BS is NP-hard and its computational cost grows exponentially with the problem size; and (2) the edf for BS generally does not have an analytical expression. In this paper, we start from a restricted case (orthogonal design matrix $X$). We build a connection between BS and its Lagrangian version, and propose a heuristic degrees of freedom (hdf) for BS, which can be estimated via an analytically-based expression. Furthermore, we introduce AICc-edf and its feasible version AICc-hdf, which are motivated by trying to construct an unbiased estimator of the Kullback-Leibler divergence for BS. Finally, we return to a general $X$ and propose a novel LS-based method, the best orthogonalized subset selection (BOSS) method. BOSS along with AICc-hdf works well in both simulations and real data analysis, with the computational effort of a single ordinary LS fit. 
+\end{abstract}
+\fi
+
+
+\noindent%
+{\it Keywords:} Best subset regression, effective degrees of freedom, information criteria.
+\vfill
+
+\newpage
+\spacingset{1.5} % DON'T change the spacing!
+
+\input{introduction}
+\input{aicc_hdf}
+\input{boss_method}
+\input{real_data}
+\input{conclusion}
+
+\clearpage
+\bibliographystyle{chicago}
+\bibliography{reference.bib}
+
+\include{supplemental}
+\end{document}

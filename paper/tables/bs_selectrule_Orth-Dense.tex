@@ -1,0 +1,49 @@
+% latex table generated in R 3.6.1 by xtable 1.8-4 package
+% Sun Nov 10 00:46:50 2019
+\begin{table}[ht]
+\centering
+\caption{The performance of AICc-hdf. The true model setup is Orth-Dense. Details of the columns can be referred to 
+                    the caption in Table \ref{tab:ic_df_orthx_sparseex1}} 
+\label{tab:ic_df_orthx_dense}
+\scalebox{0.7}{
+\begin{tabular}{|c|c|c|cc|cc|cc|c|}
+  \toprule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{c}{} &       & \multicolumn{2}{c|}{C$_p$} & \multicolumn{2}{c|}{AICc} & \multicolumn{2}{c|}{BIC} & \multirow{2}[4]{*}{CV} \\
+ \cmidrule{4-9}\multicolumn{1}{|r}{} & \multicolumn{1}{c}{} &       & edf   & ndf/hdf/bdf & edf   & ndf/hdf/bdf & edf   & ndf/hdf/bdf &     \\
+ \midrule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{c}{} &       & \multicolumn{7}{c|}{\% worse than the best possible BS} \\
+ \midrule 
+ \multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 1 & 11/1/2 & 1 & 13/1/2 & 1 & 28/3/5 & 7 \\ 
+   &  & p=180 & 7 & 45/21/20 & 9 & 52/18/19 & 18 & 26/39/42 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 15 & 10/16/16 & 20 & 10/21/20 & 27 & 16/27/27 & 16 \\ 
+   &  & p=180 & 8 & 86/22/22 & 7 & 102/7/7 & 7 & 39/7/7 & - \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 0 & 1/0/0 & 0 & 1/0/0 & 0 & 18/0/1 & 1 \\ 
+   &  & p=180 & 6 & 34/8/8 & 6 & 34/8/8 & 19 & 7/36/37 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 2 & 11/3/3 & 2 & 11/3/3 & 44 & 41/36/45 & 10 \\ 
+   &  & p=180 & 8 & 48/10/10 & 8 & 48/10/10 & 24 & 8/45/47 & - \\ 
+   \midrule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{r}{} &       & \multicolumn{7}{c|}{Relative efficiency} \\
+ \midrule 
+\multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 1 & 0.91/1/1 & 1 & 0.9/1/0.99 & 1 & 0.79/0.98/0.96 & 0.95 \\ 
+   &  & p=180 & 1 & 0.74/0.89/0.89 & 0.99 & 0.71/0.91/0.9 & 0.91 & 0.85/0.77/0.76 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 0.95 & 1/0.95/0.95 & 0.91 & 1/0.91/0.91 & 0.86 & 0.94/0.86/0.86 & 0.94 \\ 
+   &  & p=180 & 1 & 0.58/0.88/0.88 & 1 & 0.53/1/1 & 1 & 0.77/1/1 & - \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 1 & 0.99/1/1 & 1 & 0.99/1/1 & 1 & 0.85/1/0.99 & 0.99 \\ 
+   &  & p=180 & 1 & 0.79/0.98/0.98 & 1 & 0.79/0.98/0.98 & 0.89 & 1/0.78/0.78 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 1 & 0.92/0.99/0.99 & 1 & 0.92/0.99/0.99 & 0.71 & 0.73/0.75/0.7 & 0.93 \\ 
+   &  & p=180 & 1 & 0.73/0.98/0.98 & 1 & 0.73/0.98/0.98 & 0.87 & 1/0.74/0.73 & - \\ 
+   \midrule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{r}{} &       & \multicolumn{7}{c|}{Sparsistency (number of extra variables)} \\
+ \midrule 
+\multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 30 & 24.7/29.5/29 & 30 & 24.2/29.4/28.8 & 30 & 20.9/28.8/27.5 & 26.6 \\ 
+   &  & p=180 & 20.5 & 53.3/37.4/35.5 & 18.3 & 62.3/16.3/16.3 & 16.1 & 35/13.7/13.5 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 12.8 & 10.5/14.6/13 & 7.6 & 10.3/8.5/7.6 & 0 & 4/0/0 & 7.5 \\ 
+   &  & p=180 & 0.8 & 39/14.5/13.7 & 0.3 & 55.2/0.2/0.3 & 0 & 11.8/0/0 & - \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 30 & 29.8/30/29.9 & 30 & 29.8/30/29.9 & 30 & 28.6/30/29.9 & 29.8 \\ 
+   &  & p=180 & 32.1 & 58.9/32.4/32.3 & 31.8 & 58.9/31.6/31.6 & 27 & 31.3/25/24.9 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 28.8 & 19.9/28.2/26.9 & 28.8 & 19.9/28.1/26.8 & 13.5 & 12.5/16.7/14.1 & 22.3 \\ 
+   &  & p=180 & 13.9 & 43.8/14/14 & 13.6 & 44.1/13.3/13.3 & 9.1 & 13.4/7/6.8 & - \\ 
+   \bottomrule 
+\end{tabular}
+}
+\end{table}

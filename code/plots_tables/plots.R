@@ -1,4 +1,7 @@
 ### This file reproduces all the figures in the paper
+### This file is self-contained. It does NOT require reading the simulation results from running 'run.R'
+### Some of the functions involve fitting models. But none of them takes more than a few minutes to run.
+### Resulting figures are stored in '../paper/figures' directory
 
 library(ggplot2)
 library(grid)
@@ -7,13 +10,14 @@ library(zipfR)
 library(reshape2)
 
 ## Specify the directory to save the plots
+setwd("..")
 base = getwd()
-base_plots = paste0(base, '/plots_tables/plots')
+base_plots = paste0(base, '/paper/figures')
 ## Create the directory to save the plots
 dir.create(base_plots, recursive = TRUE, showWarnings = FALSE)
 
 ### Functions to be used throughout this file --------
-source(paste0(base, '/utils.R'))
+source(paste0(base, '/code/utils.R'))
 
 ## Extract the legend of a ggplot object
 g_legend <- function(a.gplot){
@@ -203,6 +207,29 @@ plot.ic(result_fig123, ic = 'aicc', filename = 'aicc_edf_hdf_kl_bs.eps')
 
 ### Figure 4: 
 ### Figure 4: Frequency distributions of the selected subset size for BS and LBS --------
+
+## Fit and evaluate the BS-Cp and LBS-Cp, 'data' is the object by running 'gen.data.orthx'
+eval.metrics.bs.lbs.cp.orthx <- function(data){
+  nrep = dim(data$y)[2]
+  # Fit BS and LBS
+  betahat = edf = betahat_cp = list()
+  result_lbs = lbs.orthx(data$x, data$y)
+  betahat$lbs = result_lbs$betahat
+  betahat$bs = lapply(1:nrep, function(rep){bs.orthx(data$x, data$y[,rep])})
+  muhat = lapply(betahat, function(xx){lapply(xx, function(yy){data$x %*% yy})})
+  rss = lapply(muhat, function(xx){do.call(cbind, Map(function(yy, rep){colSums(sweep(yy, 1, data$y[,rep])^2)}, xx, 1:nrep))})
+  # edf 
+  edf$lbs = edf.lbs.orthx(data$x, data$sigma, data$x %*% data$beta, result_lbs$sqrt_2lambda)
+  edf$bs = calc.edf(muhat$bs, data$y, data$sigma)
+  # Cp
+  cp = Map(function(xx, yy){sweep(xx, 1, 2*data$sigma^2*yy, '+')}, rss, edf)
+  # Coefficients selected by Cp-edf
+  betahat_cp = Map(function(aa, bb){do.call(cbind, Map(function(xx,yy){xx[,yy]}, aa, apply(bb, 2, which.min)))}, betahat, cp)
+  # Evaluate the results
+  result_cp = lapply(betahat_cp, function(xx){rmse.sparsistency.extravariable(xx, data$x, data$beta)})
+  return(result_cp)
+}
+
 plot.freqdist.bs.lbs <- function(){
   type = 'Orth-Sparse-Ex1'
   n = 200

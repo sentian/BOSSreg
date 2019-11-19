@@ -1,0 +1,33 @@
+% latex table generated in R 3.6.1 by xtable 1.8-4 package
+% Sun Nov 10 11:56:55 2019
+\begin{table}[ht]
+\centering
+\caption{Performance of subset selection methods on real datasets. 
+               The results are averages of leave-one-out (LOO) testing. 
+               The selection rules are AICc-hdf for BOSS, AICc for LASSO and 10-fold CV for the rest, respectively. 
+               The intercept term is always fitted and is not counted in the number of predictors. 
+               Minimal values for the metrics for each dataset are given in bold face.} 
+\label{tab:realdata}
+\scalebox{0.9}{
+\begin{tabular}{|c|c|ccc|c|c|}
+  \toprule 
+ Dataset (n, p) & Metrics & BOSS  & BS    & FS    & LASSO & SparseNet  \\
+ \midrule\multirow{3}[2]{*}{Housing (506, 13)} & RMSE & 3.372 & 3.37 & 3.383 & \textbf{3.363} & 3.369 \\ 
+   & \# predictors & 12.004 & \textbf{12.002} & 12.026 & 12.012 & \textbf{12.002} \\ 
+   & running time (s) & 0.021 & 0.066 & 0.156 & \textbf{0.007} & 0.39 \\ 
+  \midrule\multirow{3}[2]{*}{Hitters (263, 19)} & RMSE & \textbf{233.853} & 236.989 & 238.222 & 234.064 & 238.375 \\ 
+   & \# predictors & 11.152 & 10.852 & \textbf{10.662} & 14.205 & 12.51 \\ 
+   & running time (s) & 0.014 & 0.095 & 0.104 & \textbf{0.008} & 0.493 \\ 
+  \midrule \multirow{3}[2]{*}{Auto (392, 6)} & RMSE & \textbf{2.628} & \textbf{2.628} & \textbf{2.628} & 2.643 & 2.63 \\ 
+   & \# predictors & \textbf{3} & 3.003 & \textbf{3} & 5.008 & 3.008 \\ 
+   & running time (s) & 0.008 & 0.051 & 0.067 & \textbf{0.007} & 0.25 \\ 
+  \midrule\multirow{3}[2]{*}{College (777, 17)} & RMSE & 1565.476 & 1568.234 & 1569.625 & \textbf{1564.807} & 1573.975 \\ 
+   & \# predictors & 17.991 & 16.333 & 16.067 & 16.008 & \textbf{15.385} \\ 
+   & running time (s) & 0.058 & 0.092 & 0.451 & \textbf{0.01} & 0.734 \\ 
+  \midrule\multirow{3}[2]{*}{Forest Fires (517, 55)} & RMSE & \textbf{18.603} & 18.707 & 18.757 & 18.726 & 19.163 \\ 
+   & \# predictors & \textbf{0} & 0.983 & 0.986 & 2.985 & 6.899 \\ 
+   & running time (s) & 0.084 & 356.651 & 0.593 & \textbf{0.014} & 0.785 \\ 
+   \bottomrule 
+\end{tabular}
+}
+\end{table}
