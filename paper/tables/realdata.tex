@@ -4,14 +4,14 @@
 \centering
 \caption{Performance of subset selection methods on real datasets. 
                The results are averages of leave-one-out (LOO) testing. 
-               The selection rules are AICc-hdf for BOSS, AICc for LASSO and 10-fold CV for the rest, respectively. 
+               The selection rules are AICc-hdf for BOSS, AICc for lasso and 10-fold CV for the rest, respectively. 
                The intercept term is always fitted and is not counted in the number of predictors. 
                Minimal values for the metrics for each dataset are given in bold face.} 
 \label{tab:realdata}
 \scalebox{0.9}{
 \begin{tabular}{|c|c|ccc|c|c|}
   \toprule 
- Dataset (n, p) & Metrics & BOSS  & BS    & FS    & LASSO & SparseNet  \\
+ Dataset (n, p) & Metrics & BOSS  & BS    & FS    & lasso & SparseNet  \\
  \midrule\multirow{3}[2]{*}{Housing (506, 13)} & RMSE & 3.372 & 3.37 & 3.383 & \textbf{3.363} & 3.369 \\ 
    & \# predictors & 12.004 & \textbf{12.002} & 12.026 & 12.012 & \textbf{12.002} \\ 
    & running time (s) & 0.021 & 0.066 & 0.156 & \textbf{0.007} & 0.39 \\ 

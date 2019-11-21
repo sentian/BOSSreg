@@ -91,16 +91,16 @@ In this work, we propose AICc-edf
 \end{equation}
 for this purpose. We demonstrate that $E(\text{AICc-edf})$ approximates $E(\text{Err}_\text{KL})$ well for BS. Moreover, both AICc-edf and $\widehat{\text{Err}}_\text{KL}$ generally choose the same subset when used as selection rules. Furthermore, the feasible implementation AICc-hdf works reasonably well as a selection rule for BS with an orthogonal $X$ and for our proposed method BOSS with a general $X$. 
 
-\subsection{Contributions of this paper}
+\subsection{The structure and contributions of this paper}
 The rest of the paper is organized as follows. In Section \ref{sec:aicc_hdf}, by assuming an orthogonal $X$, we introduce the hdf for BS. We provide a theoretical justification in a restricted scenario, and numerical justifications in general situations. We provide numerical evidence that $E(\text{AICc-edf})$ approximates $E(\text{Err}_\text{KL})$ well, and the feasible version AICc-hdf works well as a selection rule for BS. We further compare the performance of BS with that of regularization methods using feasible selection rules via simulations. In Section \ref{sec:boss}, we consider a general $X$ and propose the method BOSS. We provide numerical evidence that AICc-hdf is a reasonable selection rule for BOSS. Furthermore, we compare the performance of BOSS with that of forward stepwise regression (FS) and regularization methods in simulations. Lastly, we study some real data examples in Section \ref{sec:real_data}, and provide conclusions and potential future works in Section \ref{sec:conclusion}.
 
-Below is a guidance of applying LS-based methods in practice for data analysts.
+Below is guidance for applying LS-based methods in practice for data analysts.
 \begin{itemize}
-	\item Using IC in a naive way by plugging in the subset size as the degrees of freedom can lead to significantly worse performances than using IC-edf and the feasible IC-hdf.
-	\item AICc is a better selection rule in terms of the predictive performance by comparing with C$_p$, and the advantage is obvious when $p$ is close to $n$.
-	\item AICc is not only much more computationally efficient than cross-validation (CV), but also can result in subsets with better predictive performances especially when the signal-to-noise ratio (SNR) is high or the sample size $n$ is large. The SNR is defined as $\text{Var}(x^T \beta) / \sigma^2$.
-	\item BOSS-AICc is generally the best LS-based method by comparing with BS and forward stepwise (FS) \citep{efroymson1960multiple} using CV as the selection rule, in terms of both computational efficiency and predictive performance.
-	\item Compared to regularization methods, BOSS-AICc performs the best when SNR is high or the sample size $n$ is large. In terms of support recovery in a sparse true model, BOSS recovers the true predictors and rarely include any false positives when SNR is high or the sample size $n$ is large. However, regularization methods generally overfit. 
+	\item Using information criteria in a naive way by plugging in the subset size as the degrees of freedom can lead to significantly worse performance than using edf and the feasible hdf.
+	\item AICc is a better selection rule in terms of predictive performance in comparison to C$_p$, and the advantage is particularly strong when $p$ is close to $n$.
+	\item AICc is not only more computationally efficient than cross-validation (CV), but also can result in subsets with better predictive performance especially when the signal-to-noise ratio (SNR) is high or the sample size $n$ is large. The SNR is defined as $\text{Var}(x^T \beta) / \sigma^2$.
+	\item BOSS-AICc is generally the best LS-based method in comparison to BS and forward stepwise (FS) \citep{efroymson1960multiple} using CV as the selection rule, in terms of both computational efficiency and predictive performance.
+	\item Compared to regularization methods, BOSS-AICc performs the best when SNR is high or the sample size $n$ is large. In terms of support recovery in a sparse true model, BOSS recovers the true predictors and rarely includes any false positives when SNR is high or the sample size $n$ is large. In contrast, regularization methods generally overfit. 
 \end{itemize}
 
 We make the code to reproduce the results in this paper, as well as an R package \pkg{BOSSreg}\footnote{At the time of submission of this paper, we have submitted the R package to \textit{CRAN}.}, publicly available at \url{https://github.com/sentian/BOSSreg}. 

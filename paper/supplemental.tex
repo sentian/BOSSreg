@@ -231,7 +231,7 @@ In this section, we assume an orthogonal $X$ and a null true model. This is the 
 	% https://math.stackexchange.com/questions/450139/asymptotics-of-maxima-of-i-i-d-chi-square-random-variables
 	First, it follows from \citetonline{Embrechts2013} that \eqref{eq:scorgo_condition_gumbel} holds, with $c_p=2\log(p)-\log\log(p)-\log(\pi)$ and $d_p=2$.
 	\iffalse
-	the maxima of $p$ Gamma-distributed random variables, $\Gamma(\alpha,\beta)$ with $\beta$ being the rate parameter, converges to a Gumbel distribution as $p \to \infty$, where the centering constant $c_p=\beta^{-1}(\log(p) +(\alpha-1)\log\log(p) - \log(\Gamma(\alpha)))$, and the scaling constant $d_p=\beta^{-1}$. Meanwhile, we know that $\chi^2_1$ is a $\Gamma(1/2,1/2)$ distribution. Therefore, \eqref{eq:scorgo_condition_gumbel} holds, where $c_p=2\log(p)-\log\log(p)-\log(\pi)$ and $d_p=2$.
+	the maxima of $p$ gamma-distributed random variables, $\gamma(\alpha,\beta)$ with $\beta$ being the rate parameter, converges to a Gumbel distribution as $p \to \infty$, where the centering constant $c_p=\beta^{-1}(\log(p) +(\alpha-1)\log\log(p) - \log(\gamma(\alpha)))$, and the scaling constant $d_p=\beta^{-1}$. Meanwhile, we know that $\chi^2_1$ is a $\gamma(1/2,1/2)$ distribution. Therefore, \eqref{eq:scorgo_condition_gumbel} holds, where $c_p=2\log(p)-\log\log(p)-\log(\pi)$ and $d_p=2$.
 	\fi
 	
 	Next, we have
@@ -431,7 +431,7 @@ Therefore, for all $\binom{p}{k}$ models of size $k$, the one with largest log l
 			\item Orth-Sparse-Ex2: tables S3-S4
 			\item Orth-Dense: tables S5-S6
 		\end{itemize}
-		\item The performance of BS and regularization methods. Note that for LASSO, we use the number of non-zero coefficients $k(\lambda)$ in place of edf in the AICc formula \eqref{eq:aicc_edf}. \citetonline{Zou2007} showed that $k(\lambda)$ is an unbiased estimator of edf for LASSO. For Gamma LASSO, \citetonline{Taddy2017} suggested a heuristic degrees of freedom to be plugged into \eqref{eq:aicc_edf} in order to use AICc as the selection rule.
+		\item The performance of BS and regularization methods. Note that for lasso, we use the number of non-zero coefficients $k(\lambda)$ in place of edf in the AICc formula \eqref{eq:aicc_edf}. \citetonline{Zou2007} showed that $k(\lambda)$ is an unbiased estimator of edf for lasso. For gamma lasso, \citetonline{Taddy2017} suggested a heuristic degrees of freedom to be plugged into \eqref{eq:aicc_edf} in order to use AICc as the selection rule.
 		\begin{itemize}
 			\item Orth-Sparse-Ex1: tables S7-S8
 			\item Orth-Sparse-Ex2: tables S9-S10
@@ -440,7 +440,7 @@ Therefore, for all $\binom{p}{k}$ models of size $k$, the one with largest log l
 	\end{itemize}
 	\item General $X$, simulation setups are discussed in Section \ref{sec:simulation_setup_generalx}. 
 	\begin{itemize}
-		\item The performance of BOSS, BS, FS and regularization methods.
+		\item The performance of BOSS, BS, FS, lasso, gamma lasso, SparseNet and relaxed lasso (rlasso).
 		\begin{itemize}
 			\item Sparse-Ex1: tables S13-S18
 			\item Sparse-Ex2: tables S19-S24
