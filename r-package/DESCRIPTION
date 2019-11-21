@@ -28,6 +28,7 @@ Imports:
     stats
 RoxygenNote: 6.1.1
 Suggests: 
+    devtools,
     glmnet,
     ISLR,
     kableExtra,
@@ -39,5 +40,5 @@ VignetteBuilder: knitr
 LinkingTo: 
     Rcpp,
     RcppArmadillo
-URL: http://github.com/sentian/BOSSreg
-BugReports: http://github.com/sentian/BOSSreg/issues
+URL: https://github.com/sentian/BOSSreg
+BugReports: https://github.com/sentian/BOSSreg/issues
