@@ -1,5 +1,5 @@
 ---
-title: "Best orthogonalized subset selection (BOSS)"
+title: "Best Orthogonalized Subset Selection (BOSS)"
 author: "Sen Tian"
 date: "`r Sys.Date()`"
 #output: rmarkdown::html_vignette
@@ -18,7 +18,7 @@ references:
       given: Clifford M.
     - family: Simonoff
       given: Jeffrey S.
-    URL: 'https://github.com/sentian/BOSSreg/blob/master/paper/Tian2019.pdf'
+    URL: 'https://github.com/sentian/BOSSreg/blob/master/paper/boss.pdf'
     issued:
       year: 2019
 ---
@@ -353,6 +353,7 @@ rdresult <- function(x, y, nrep, seed){
   return(list(error=error, numvar=numvar, time=time))
 }
 result = lapply(dataset, function(xx){rdresult(xx$x, xx$y, nrow(xx$x), seed)})
+saveRDS(result, '/Volumes/HDD/Dropbox/Sen/Research/Model_selection/rpackage/BOSSreg/r-package/vignettes/realdata.rds')
 ```
 
 
