@@ -1,7 +1,7 @@
-%!TEX root = boss.tex
-\section{AICc-hdf FOR BS WITH ORTHOGONAL \texorpdfstring{$X$}{Lg}}
+%!TEX root = ms.tex
+\section{AICc-hdf for BS with orthogonal \texorpdfstring{$X$}{Lg}}
 \label{sec:aicc_hdf}
-\subsection{A Heuristic Degrees of Freedom for BS}
+\subsection{A heuristic degrees of freedom for BS}
 The edf of BS has an analytical expression only when the true model is $\mu=0$ \citep{Ye1998}. \citet{Tibshirani2015} studied the Lagrangian formulation of BS (LBS) and provided an analytical expression for edf without any restrictions on $\mu$. To distinguish between the two methods, we use df$_C(k)$ and df$_L(\lambda)$ to denote edf of BS for subset size $k$ and edf of LBS for tuning parameter $\lambda$, respectively. In this section, we introduce a heuristic degrees of freedom (hdf) for BS that is built upon the connection between df$_C(k)$ and df$_L(\lambda)$.
 
 \subsubsection{Lagrangian BS and its edf}
@@ -39,7 +39,7 @@ Given the similarity of problems \eqref{eq:bestsubset-setup} and \eqref{eq:lbest
 	In place of $\mu$ and $\sigma$ in \eqref{eq:thdf_expression} and \eqref{eq:thdf_size_expression}, we use OLS estimates based on the full model, i.e. $\hat{\mu}=XX^T y$, $\hat{\sigma}^2 = \lVert y-\hat{\mu} \rVert_2^2/(n-p)$.
 \end{algorithm}
 
-\subsubsection{Theoretical Justification of hdf under a Null True Model}
+\subsubsection{Theoretical justification of hdf under a null true model}
 Assume $\mu=0$, with $X$ still being orthogonal. In such a restricted scenario, df$_C(k)$ has an analytical expression, which allows us to provide some theoretical justification for hdf$(k)$. We start by introducing notation, and present the main result in Theorem \ref{thm:hdf_ydf_representation} and its Corollary. The detailed proofs are given in the Supplemental Material.
 
 Denote $\tilde{X}_{(i)}$ as the $i$-th largest order statistic in an i.i.d sample of size $p$ from a $\chi^2_1$ distribution. \citet{Ye1998} showed that
@@ -81,10 +81,10 @@ and
 
 It can be seen that Corollary \ref{thm:hdf_ydf_corollary} holds given the assumptions, since both hdf$(k)$ and df$_C(k)$ diverge while $E(\tilde{Y}_p)$ and the remainder term remain bounded. The Corollary suggests that for large $k$ and large $p$, the ratio of df$_C(k)$ to hdf$(k)$ will be close to $1$. We next explore empirically the relative behavior of the two dfs for a fixed $p$ with an increasing $k$. 
 
-\subsubsection{Numerical Justification of hdf}
+\subsubsection{Numerical justification of hdf}
 Figure \ref{fig:dfc_dflambda} shows the comparison of hdf and edf via simulations. We fit BS on $1000$ realizations of the response generated after fixing $X$. The edf is calculated based on definition \eqref{eq:edf} using the sample covariances, while hdf is given by Algorithm \ref{alg:hdf}. We see that in the null case, using hdf to approximate edf becomes more accurate as $k$ approaches $p$, providing a finite-sample justification of Corollary \ref{thm:hdf_ydf_corollary}. 
 
-In addition to the null model, we consider a sparse model (Orth-Sparse-Ex1) with $p_0=6$ true predictors (those with non-zero coefficients), and a dense model (Orth-Dense) where all predictors have non-zero coefficients. We also consider two signal-to-noise (SNR) ratios with ``hsnr'' and ``lsnr'' representing high and low SNR respectively, and the SNR is defined as $\text{Var}(x^T \beta)/\sigma^2$. The details of the setups for Orth-Sparse-Ex1 and Orth-Dense models can be found in Section \ref{sec:simulation_setup_orthx}. Similarly to the null case, we see that hdf approaches edf as $k$ gets close to $p$, i.e. the statement of Corollary \ref{thm:hdf_ydf_corollary} holds in these scenarios as well. Furthermore, we see that hdf generally approximates edf well, where the difference is more pronounced when BS underfits, e.g. a sparse model with high SNR and $k<p_0=6$ or a dense model with high SNR with $k<p=14$. Clearly, underfitting causes the problem, particularly when what is left out is important, such as in a high SNR case.   
+In addition to the null model, we consider a sparse model (Orth-Sparse-Ex1) with $p_0=6$ true predictors (those with non-zero coefficients), and a dense model (Orth-Dense) where all predictors have non-zero coefficients. We also consider two signal-to-noise (SNR) ratios with `hsnr' and `lsnr' representing high and low SNR respectively, and the SNR is defined as $\text{Var}(x^T \beta)/\sigma^2$. The details of the setups for Orth-Sparse-Ex1 and Orth-Dense models can be found in Section \ref{sec:simulation_setup_orthx}. Similarly to the null case, we see that hdf approaches edf as $k$ gets close to $p$, i.e. the statement of Corollary \ref{thm:hdf_ydf_corollary} holds in these scenarios as well. Furthermore, we see that hdf generally approximates edf well, where the difference is more pronounced when BS underfits, e.g. a sparse model with high SNR and $k<p_0=6$ or a dense model with high SNR with $k<p=14$. Clearly, underfitting causes the problem, particularly when what is left out is important, such as in a high SNR case.   
 
 
 % \ref{fig:dfc_dflambda}
@@ -97,7 +97,7 @@ In addition to the null model, we consider a sparse model (Orth-Sparse-Ex1) with
 
 
 
-\subsubsection{\texorpdfstring{C$_p$}{Lg}-hdf as a Feasible Implementation of \texorpdfstring{C$_p$}{Lg}-edf }
+\subsubsection{\texorpdfstring{C$_p$}{Lg}-hdf as a feasible implementation of \texorpdfstring{C$_p$}{Lg}-edf }
 \label{sec:cp_edf_hdf}
 We have shown that hdf generally approximates edf well, and it agrees with edf as $k$ approaches $p$. By replacing edf with hdf in \eqref{eq:cp_edf}, we have a feasible selection rule C$_p$-hdf. Figure \ref{fig:cp_edf_hdf} compares the averages of C$_p$-edf and C$_p$-hdf over $1000$ replications. Similarly to the comparison of the degrees of freedom values, we see C$_p$-hdf agrees with C$_p$-edf on average as $k$ approaches $p$. Even at the places where we see differences between the degrees of freedom values, e.g. a sparse true model with high SNR and $k<p_0=6$, the differences are compensated by the model fit and we see C$_p$-hdf is very close to C$_p$-edf. As we discussed in Section \ref{sec:optimism}, for any general fitting procedure including BS, C$_p$-edf provides an unbiased estimator of the expected prediction error where the error measure $\Theta$ is the squared error (SE), i.e. $E(\text{C}_p\text{-edf}) = E(\text{Err}_{\text{SE}})$. Therefore, by using the sample average to represent the population mean, Figure \ref{fig:cp_edf_hdf} indicates that $E(\text{C}_p\text{-hdf})$ approximates $E(\text{Err}_{\text{SE}})$ well, and moreover C$_p$-hdf gives the same average selected size as C$_p$-edf in all cases, when they are applied as selection rules, supporting the use of hdf in model selection for BS.
 
@@ -110,7 +110,7 @@ We have shown that hdf generally approximates edf well, and it agrees with edf a
 \end{figure}
 
 
-\subsection{A KL-based Information Criterion for BS}
+\subsection{A KL-based information criterion for BS}
 When the error measure $\Theta$ is the deviance \eqref{eq:deviance_def}, the prediction error $\text{Err}_\text{KL}$ is the KL discrepancy. AICc-edf \eqref{eq:aicc_edf} is motivated by trying to construct an unbiased estimator of $E(\text{Err}_\text{KL})$. The expected KL-based optimism for BS is given as
 \begin{equation}
 E(\text{op}_\text{KL}) = E\left(n \frac{n\sigma^2+\lVert \mu-X\hat{\beta}(k) \rVert_2^2}{\lVert y-X\hat{\beta}(k)\rVert_2^2}\right) + n.
@@ -134,10 +134,10 @@ Last and most importantly, both AICc-edf and AICc-hdf yield the same average sel
 	\label{fig:eop_approx_withrss} 
 \end{figure}
 
-\subsection{The Performance of AICc-hdf as a Selection Rule for BS}
+\subsection{The performance of AICc-hdf as a selection rule for BS}
 We now study the performance of AICc-hdf as a selection rule for BS. The only assumption we make in the simulations is $X$ being orthogonal. Both $\mu$ and $\sigma$ are treated unknown, as would be the case in practice. We start by showing that AICc-hdf can perform well for BS compared to other selection rules. We then compare the performance of BS-AICc-hdf to that of regularization methods. 
 
-\subsubsection{Simulation Setup}
+\subsubsection{Simulation set-up}
 \label{sec:simulation_setup_orthx}
 We consider a trigonometric configuration of $X$ that is studied by \citet{Hurvich1991}, where $X=(x^1,x^2)$ is an $n$ by $p$ matrix with components defined by 
 $$ x_{tj}^1 = \sin\left(\frac{2\pi j}{n}t\right),$$
@@ -185,14 +185,14 @@ To make the scales easier to compare, we construct two relative metrics: $\%$ wo
 We also present the sparsistency (number of true positives) and number of extra predictors (number of false positives). 
 
 
-\subsubsection{AICc-hdf and Other Selection Rules for BS}
+\subsubsection{AICc-hdf and other selection rules for BS}
 \label{sec:bs_ic_simulationresults}
 By analogy to C$_p$ and AICc, we can also define BIC-edf as
 \begin{equation}
 \text{BIC-edf} = n \log\left(\frac{\text{RSS}}{n}\right) + \log(n) \cdot \text{edf},
 \label{eq:bic_edf}
 \end{equation}
-and its feasible version BIC-hdf, where the original BIC (or BIC-ndf in our notation) was introduced in \citet{schwarz1978estimating}. We also consider a numerical estimation of edf that is based on the parametric bootstrap, and we denote it as bdf. The detailed implementation of bdf and the benefit of parametric bootstrap is discussed in \citet{Efron2004}. In our experiment, we use $100$ bootstrapped samples. In addition to the information criteria, we further include 10-fold cross-validation (CV) for comparison. Note that the CV results are only available for $p \le 30$ since it is fitted using the ``leaps'' algorithm.
+and its feasible version BIC-hdf, where the original BIC (or BIC-ndf in our notation) was introduced in \citet{schwarz1978estimating}. We also consider a numerical estimation of edf that is based on the parametric bootstrap, and we denote it as bdf. The detailed implementation of bdf and the benefit of parametric bootstrap is discussed in \citet{Efron2004}. In our experiment, we use $100$ bootstrapped samples. In addition to the information criteria, we further include 10-fold cross-validation (CV) for comparison. Note that the CV results are only available for $p \le 30$ since it is fitted using the `leaps' algorithm.
 
 A selected set of results is shown in Tables \ref{tab:ic_df_orthx_sparseex1} and \ref{tab:ic_df_orthx_dense}. A brief summary is as follows:
 \begin{itemize}
@@ -211,7 +211,7 @@ For the reasons presented above, we conclude that AICc-hdf is the best feasible 
 \input{tables/bs_selectrule_Orth-Dense.tex}
 
 
-\subsubsection{How does BS Perform Compared to Regularization Methods?}
+\subsubsection{How does BS perform compared to regularization methods?}
 \label{sec:bs_regu}
 We have seen that AICc-hdf can be an effective selection rule for BS. In this section, we compare BS with some popular regularization methods, including lasso \citep{Tibshirani1996}, SparseNet \citep{Mazumder2011}, gamma lasso \citep{Taddy2017} and relaxed lasso \citep{Meinshausen2007}. We use {\tt{R}} packages \pkg{glmnet} \citep{Friedman2010}, \pkg{sparsenet} \citep{Mazumder2011}, \pkg{gamlr} \citep{Taddy2017} and \pkg{relaxo} \citep{Meinshausen2012}, to fit them, respectively, which are all available on \textit{CRAN}.
 
@@ -243,7 +243,7 @@ As to the selection rule, we use AICc-hdf for BS, AICc for lasso, and 10-fold CV
 
 A selected set of results is presented in Table \ref{tab:bs_regularization}. A brief summary is as follows:
 \begin{itemize}
-	\item For a relatively small sample size $n=200$ and a sparse true model, BS performs the best when SNR is high,  lasso is best in low SNR, and SparseNet has performance in between of the other two methods. lasso has the property of ``over-select and shrink,'' in order to retain less bias on the large non-zero estimates. In a high SNR, this property can result in disastrous performance, especially when $p$ is close to $n$. For example, in Orth-Sparse-Ex1, high SNR and $p=180$, the relative efficiency of lasso is only $0.44$ and it significantly overfits. However, this property can be beneficial when SNR is low, as a method like BS has higher chance to miss the true predictors (less sparsistency).
+	\item For a relatively small sample size $n=200$ and a sparse true model, BS performs the best when SNR is high,  lasso is best in low SNR, and SparseNet has performance in between of the other two methods. lasso has the property of `over-select and shrink,' in order to retain less bias on the large non-zero estimates. In a high SNR, this property can result in disastrous performance, especially when $p$ is close to $n$. For example, in Orth-Sparse-Ex1, high SNR and $p=180$, the relative efficiency of lasso is only $0.44$ and it significantly overfits. However, this property can be beneficial when SNR is low, as a method like BS has higher chance to miss the true predictors (less sparsistency).
 	
 	\item With $n=200$ and a dense true model, the methods perform similarly when SNR is high, while lasso is better in low SNR.
 	
@@ -256,7 +256,7 @@ Given the spirit of the summary above, it's important to point out the relevant 
 \input{tables/bs_regu.tex}
 
 
-\subsection{A Discussion on the Use of Information Criteria in LBS}
+\subsection{A discussion on the use of information criteria in LBS}
 Since for orthogonal $X$ the edf of LBS has an analytical expression and LBS can recover the solution path of BS, one may ask why not just use LBS with a selection rule such as C$_p$-edf, which is well-defined for any general fitting procedure. 
 
 \iffalse

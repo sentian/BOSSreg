@@ -10,6 +10,7 @@ library(zipfR)
 library(reshape2)
 
 ## Specify the directory to save the plots
+# The default directory on my machine is 'code/', change it to its parent directory 'BOSSreg/'
 setwd("..")
 base = getwd()
 base_plots = paste0(base, '/paper/figures')

@@ -1,5 +1,5 @@
- %!TEX root = boss.tex
-\section{INTRODUCTION}
+%!TEX root = ms.tex
+\section{Introduction}
 Suppose that we have the data generating process
 \begin{equation}
 \mathbf{y}=\mathbf{\mu}+\mathbf{\epsilon},
@@ -8,7 +8,7 @@ Suppose that we have the data generating process
 where $\mathbf{y}\in \mathcal{R}^n$ is the response vector, $\mathbf{\mu} \in \mathcal{R}^n$, is the fixed mean vector, and $\mathbf{\epsilon} \in \mathcal{R}^n$ is the noise vector. The mean vector is estimated based on a fixed design matrix $\mathbf{X}\in \mathcal{R}^{n\times p}$. We assume the error $\mathbf{\epsilon} \sim \mathcal{N}(0,\sigma^2 I)$ and $n > p$.
 %\stackrel{iid} can be used to add `iid' on top of `sim'
 
-\subsection{Best Subset Selection}
+\subsection{Best subset selection}
 Best subset selection (BS) \citep{Hocking1967} seeks the set of predictors that best fit the data in terms of quadratic error for each given subset size (excluding the intercept) $k\in\{0,1,\cdots,p\}$, i.e. it solves the following constrained optimization problem:
 \begin{equation}
 \min_{\beta_0, \beta} \frac{1}{2} \lVert \mathbf{y}-\beta_0\mathtt{1} -\mathbf{X\beta}\rVert_2^2 \quad \text{subject to} \quad \lVert \mathbf{\beta} \rVert_0 \le k,
@@ -18,7 +18,7 @@ where $\lVert \mathbf{\beta} \rVert_0 = \sum_{i=1}^{p} \mathtt{1}(\beta_i \ne 0)
 
 
 % computation of BS
-BS is known to be an NP-hard problem \citep{Natarajan1995} and its computational cost grows exponentially with the dimension $p$. Many attempts have been made to reduce the computational cost of the method. The most well-known approach is the branch-and-bound algorithm ``leaps" \citep{Furnival1974} that solves \eqref{eq:bestsubset-setup} in seconds for $p$ being up to around $30$. More recently, \citet{Bertsimas2016} formulated \eqref{eq:bestsubset-setup} using a mixed integer operator (MIO), and largely reduced the computing overhead by using a well-developed optimization solver such as {\tt GUROBI} or {\tt CPLEX}. However, according to \citet{Hastie2017}, MIO normally takes about $3$ minutes to find the solution at a given size $k$ for a problem with $n=500$ and $p=100$. The current methodology is not scalable to very large datasets, and solving \eqref{eq:bestsubset-setup} remains a challenge for most real world applications.
+BS is known to be an NP-hard problem \citep{Natarajan1995} and its computational cost grows exponentially with the dimension $p$. Many attempts have been made to reduce the computational cost of the method. The most well-known approach is the branch-and-bound algorithm `leaps' \citep{Furnival1974} that solves \eqref{eq:bestsubset-setup} in seconds for $p$ being up to around $30$. More recently, \citet{Bertsimas2016} formulated \eqref{eq:bestsubset-setup} using a mixed integer operator (MIO), and largely reduced the computing overhead by using a well-developed optimization solver such as {\tt GUROBI} or {\tt CPLEX}. However, according to \citet{Hastie2017}, MIO normally takes about $3$ minutes to find the solution at a given size $k$ for a problem with $n=500$ and $p=100$. The current methodology is not scalable to very large datasets, and solving \eqref{eq:bestsubset-setup} remains a challenge for most real world applications.
 
 % edf of BS
 In order to select the optimal tuning parameter, e.g. the subset size $k$ in \eqref{eq:bestsubset-setup}, one often applies an information criterion, which augments the training error with the effective degrees of freedom (edf). \citet{Efron1986} defined the edf for a general fitting rule $\hat{\mu}$ as:
@@ -30,7 +30,7 @@ It is easy to verify that edf for the linear regression of $y$ upon $X$ is the n
 
 This paper is motivated by the above challenges. We propose a heuristic degrees of freedom (hdf) for BS by assuming an orthogonal $X$. We further introduce a novel least squares (LS) based subset selection method, the best orthogonalized subset selection (BOSS), and we demonstrate that BOSS using an information criterion with hdf works well in practice for a general $X$ with the computational cost of a single ordinary LS fit.
 
-\subsection{Optimism Theorem and Information Criteria for BS}
+\subsection{Optimism theorem and information criteria for BS}
 \label{sec:optimism}
 Information criteria are designed to provide an unbiased estimate of the prediction (or testing) error, and can be derived from the so-called optimism theorem. Denote $\Theta$ as an error measure, $\text{err}$ as the training error, $\text{Err}$ as the testing error, $y^0$ as a new response vector with the same distribution but independent of the original $y$, and $E_0$ is the expectation taken over $y^0$. \citet{Efron1986} defined the optimism as 
 \begin{equation*}
@@ -91,7 +91,7 @@ In this work, we propose AICc-edf
 \end{equation}
 for this purpose. We demonstrate that $E(\text{AICc-edf})$ approximates $E(\text{Err}_\text{KL})$ well for BS. Moreover, both AICc-edf and $\widehat{\text{Err}}_\text{KL}$ generally choose the same subset when used as selection rules. Furthermore, the feasible implementation AICc-hdf works reasonably well as a selection rule for BS with an orthogonal $X$ and for our proposed method BOSS with a general $X$. 
 
-\subsection{The Structure and Contributions of this Paper}
+\subsection{The structure and contributions of this paper}
 The rest of the paper is organized as follows. In Section \ref{sec:aicc_hdf}, by assuming an orthogonal $X$, we introduce the hdf for BS. We provide a theoretical justification in a restricted scenario, and numerical justifications in general situations. We provide numerical evidence that $E(\text{AICc-edf})$ approximates $E(\text{Err}_\text{KL})$ well, and the feasible version AICc-hdf works well as a selection rule for BS. We further compare the performance of BS with that of regularization methods using feasible selection rules via simulations. In Section \ref{sec:boss}, we consider a general $X$ and propose the method BOSS. We provide numerical evidence that AICc-hdf is a reasonable selection rule for BOSS. Furthermore, we compare the performance of BOSS with that of forward stepwise regression (FS) and regularization methods in simulations. Lastly, we study some real data examples in Section \ref{sec:real_data}, and provide conclusions and potential future works in Section \ref{sec:conclusion}.
 
 Below is guidance for applying LS-based methods in practice for data analysts.
@@ -103,4 +103,3 @@ Below is guidance for applying LS-based methods in practice for data analysts.
 	\item Compared to regularization methods, BOSS-AICc performs the best when SNR is high or the sample size $n$ is large. In terms of support recovery in a sparse true model, BOSS recovers the true predictors and rarely includes any false positives when SNR is high or the sample size $n$ is large. In contrast, regularization methods generally overfit. 
 \end{itemize}
 
-We make the code to reproduce the results in this paper publicly available at \url{https://github.com/sentian/BOSSreg}, as well as an R package \pkg{BOSSreg} (at the time of submission of this paper, we have submitted the R package to \textit{CRAN}.), publicly available at \url{https://github.com/sentian/BOSSreg}. 

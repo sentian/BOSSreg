@@ -4,6 +4,7 @@
 library(xtable)
 
 ## Specify the directory to save the tables
+# The default directory on my machine is 'code/', change it to its parent directory 'BOSSreg/'
 setwd("..")
 base = getwd()
 base_tables = paste0(base, '/paper/tables')

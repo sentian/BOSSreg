@@ -1,4 +1,4 @@
-%!TEX root = boss.tex
+%!TEX root = ms.tex
 \beginsupplement
 \appendix
 \pagenumbering{arabic}
@@ -9,9 +9,8 @@ On the Use of Information Criteria for Subset Selection in Least Squares Regress
 Sen Tian, Clifford M. Hurvich, Jeffrey S. Simonoff
 \end{center}
 
-\section{Technical Details}
-\label{sec:supplement_technical}
-\subsection{Proof of Theorem \ref{thm:hdf_ydf_representation} and its Corollary}
+\section{Technical details}
+\subsection{Proof of theorem \ref{thm:hdf_ydf_representation} and its corollary}
 \label{sec:proof_hdf_ydf}
 In this section, we assume an orthogonal $X$ and a null true model. This is the only scenario under which both df$_C(k)$ and hdf$(k)$ have analytical expressions. We will prove that the ratio of df$_C(k)$ and hdf$(k)$ goes to $1$ as $k,p\rightarrow \infty$ while $k=\left \lfloor{xp}\right \rfloor $, where $\left \lfloor{\cdot}\right \rfloor$ denotes the greatest integer function and $x\in(0,1)$. We start by laying out a few lemmas to be used in the proof of the main theorem.
 \begin{lemma}
@@ -332,7 +331,7 @@ In this section, we assume an orthogonal $X$ and a null true model. This is the 
 	\end{equation*}
 \end{proof}
 
-\subsection{Expected KL-based Optimism, in the Context of BS }
+\subsection{Expected KL-based optimism, in the context of BS }
 \label{sec:expectedkl_bs}
 In this section, we obtain the expected Kullback-Leibler (KL) based optimism for BS with subset size $k$. Let's first consider fitting least squares regression on $k$ prefixed predictors. Recall that 
 \begin{equation*}
@@ -423,12 +422,11 @@ Therefore, for all $\binom{p}{k}$ models of size $k$, the one with largest log l
 
 \spacingset{1.2} % DON'T change the spacing!
 
-\section{Complete Simulation Results}
-\label{sec:supplement_simu}
+\section{Complete simulation results}
 \begin{itemize}
 	\item Orthogonal $X$, simulation setups are discussed in Section \ref{sec:simulation_setup_orthx}. 
 	\begin{itemize}
-		\item The performance of selection rules for BS. The selection rules include C$_p$, AICc, BIC, GCV and 10-fold CV. For each selection rule except CV, there are two columns in the table indicating the degrees of freedoms to use in calculating the information criterion. The ``edf'' (effective degrees of freedom) is estimated using definition \eqref{eq:edf} by assuming the knowledge of $\mu$ and $\sigma$, and hence it is an infeasible rule. The ``ndf/hdf/bdf'' (naive degrees of freedom /  heuristic degrees of freedom / degrees of freedom based on bootstrap) are feasible selection rules in practice. 
+		\item The performance of selection rules for BS. The selection rules include C$_p$, AICc, BIC, GCV and 10-fold CV. For each selection rule except CV, there are two columns in the table indicating the degrees of freedoms to use in calculating the information criterion. The `edf' (effective degrees of freedom) is estimated using definition \eqref{eq:edf} by assuming the knowledge of $\mu$ and $\sigma$, and hence it is an infeasible rule. The `ndf/hdf/bdf' (naive degrees of freedom /  heuristic degrees of freedom / degrees of freedom based on bootstrap) are feasible selection rules in practice. 
 		\begin{itemize}
 			\item Orth-Sparse-Ex1: tables S1-S2
 			\item Orth-Sparse-Ex2: tables S3-S4
