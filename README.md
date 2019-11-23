@@ -25,7 +25,7 @@ The structure of the '*code*' directory is shown below.
 
 '*plots.R*' and '*tables.R*' generate the figures and tables that can be found in the *paper/figures* and *paper/tables* directories, respectively. Note that '*plots.R*' is self-contained and does not rely on the simulation or real data results. '*tables.R*' requires simulation and real data results as inputs, which can be found in '*code/run_model/simulation/results*' and '*code/run_model/realdata/results*' directories, respectively.
 
-'*.sh*' are bash files that submit the corresponding R codes to a Linux server for parallelization.
+'*.sh*' are bash files that submit the corresponding R code to a Linux server for running in parallels.
 
 ```bash
 code
