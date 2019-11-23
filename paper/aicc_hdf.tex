@@ -1,4 +1,4 @@
-%!TEX root = ms.tex
+ƒ%!TEX root = ms.tex
 \section{AICc-hdf for BS with orthogonal \texorpdfstring{$X$}{Lg}}
 \label{sec:aicc_hdf}
 \subsection{A heuristic degrees of freedom for BS}
@@ -84,7 +84,7 @@ It can be seen that Corollary \ref{thm:hdf_ydf_corollary} holds given the assump
 \subsubsection{Numerical justification of hdf}
 Figure \ref{fig:dfc_dflambda} shows the comparison of hdf and edf via simulations. We fit BS on $1000$ realizations of the response generated after fixing $X$. The edf is calculated based on definition \eqref{eq:edf} using the sample covariances, while hdf is given by Algorithm \ref{alg:hdf}. We see that in the null case, using hdf to approximate edf becomes more accurate as $k$ approaches $p$, providing a finite-sample justification of Corollary \ref{thm:hdf_ydf_corollary}. 
 
-In addition to the null model, we consider a sparse model (Orth-Sparse-Ex1) with $p_0=6$ true predictors (those with non-zero coefficients), and a dense model (Orth-Dense) where all predictors have non-zero coefficients. We also consider two signal-to-noise (SNR) ratios with `hsnr' and `lsnr' representing high and low SNR respectively, and the SNR is defined as $\text{Var}(x^T \beta)/\sigma^2$. The details of the setups for Orth-Sparse-Ex1 and Orth-Dense models can be found in Section \ref{sec:simulation_setup_orthx}. Similarly to the null case, we see that hdf approaches edf as $k$ gets close to $p$, i.e. the statement of Corollary \ref{thm:hdf_ydf_corollary} holds in these scenarios as well. Furthermore, we see that hdf generally approximates edf well, where the difference is more pronounced when BS underfits, e.g. a sparse model with high SNR and $k<p_0=6$ or a dense model with high SNR with $k<p=14$. Clearly, underfitting causes the problem, particularly when what is left out is important, such as in a high SNR case.   
+In addition to the null model, we consider a sparse model (Orth-Sparse-Ex1) with $p_0=6$ true predictors (those with non-zero coefficients), and a dense model (Orth-Dense) where all predictors have non-zero coefficients. We also consider two signal-to-noise (SNR) ratios with ``hsnr'' and ``lsnr'' representing high and low SNR respectively, and the SNR is defined as $\text{Var}(x^T \beta)/\sigma^2$. The details of the setups for Orth-Sparse-Ex1 and Orth-Dense models can be found in Section \ref{sec:simulation_setup_orthx}. Similarly to the null case, we see that hdf approaches edf as $k$ gets close to $p$, i.e. the statement of Corollary \ref{thm:hdf_ydf_corollary} holds in these scenarios as well. Furthermore, we see that hdf generally approximates edf well, where the difference is more pronounced when BS underfits, e.g. a sparse model with high SNR and $k<p_0=6$ or a dense model with high SNR with $k<p=14$. Clearly, underfitting causes the problem, particularly when what is left out is important, such as in a high SNR case.   
 
 
 % \ref{fig:dfc_dflambda}
@@ -192,7 +192,7 @@ By analogy to C$_p$ and AICc, we can also define BIC-edf as
 \text{BIC-edf} = n \log\left(\frac{\text{RSS}}{n}\right) + \log(n) \cdot \text{edf},
 \label{eq:bic_edf}
 \end{equation}
-and its feasible version BIC-hdf, where the original BIC (or BIC-ndf in our notation) was introduced in \citet{schwarz1978estimating}. We also consider a numerical estimation of edf that is based on the parametric bootstrap, and we denote it as bdf. The detailed implementation of bdf and the benefit of parametric bootstrap is discussed in \citet{Efron2004}. In our experiment, we use $100$ bootstrapped samples. In addition to the information criteria, we further include 10-fold cross-validation (CV) for comparison. Note that the CV results are only available for $p \le 30$ since it is fitted using the `leaps' algorithm.
+and its feasible version BIC-hdf, where the original BIC (or BIC-ndf in our notation) was introduced in \citet{schwarz1978estimating}. We also consider a numerical estimation of edf that is based on the parametric bootstrap, and we denote it as bdf. The detailed implementation of bdf and the benefit of parametric bootstrap is discussed in \citet{Efron2004}. In our experiment, we use $100$ bootstrapped samples. In addition to the information criteria, we further include 10-fold cross-validation (CV) for comparison. Note that the CV results are only available for $p \le 30$ since it is fitted using the ``leaps'' algorithm.
 
 A selected set of results is shown in Tables \ref{tab:ic_df_orthx_sparseex1} and \ref{tab:ic_df_orthx_dense}. A brief summary is as follows:
 \begin{itemize}
@@ -243,7 +243,7 @@ As to the selection rule, we use AICc-hdf for BS, AICc for lasso, and 10-fold CV
 
 A selected set of results is presented in Table \ref{tab:bs_regularization}. A brief summary is as follows:
 \begin{itemize}
-	\item For a relatively small sample size $n=200$ and a sparse true model, BS performs the best when SNR is high,  lasso is best in low SNR, and SparseNet has performance in between of the other two methods. lasso has the property of `over-select and shrink,' in order to retain less bias on the large non-zero estimates. In a high SNR, this property can result in disastrous performance, especially when $p$ is close to $n$. For example, in Orth-Sparse-Ex1, high SNR and $p=180$, the relative efficiency of lasso is only $0.44$ and it significantly overfits. However, this property can be beneficial when SNR is low, as a method like BS has higher chance to miss the true predictors (less sparsistency).
+	\item For a relatively small sample size $n=200$ and a sparse true model, BS performs the best when SNR is high,  lasso is best in low SNR, and SparseNet has performance in between of the other two methods. lasso has the property of ``over-select and shrink,'' in order to retain less bias on the large non-zero estimates. In a high SNR, this property can result in disastrous performance, especially when $p$ is close to $n$. For example, in Orth-Sparse-Ex1, high SNR and $p=180$, the relative efficiency of lasso is only $0.44$ and it significantly overfits. However, this property can be beneficial when SNR is low, as a method like BS has higher chance to miss the true predictors (less sparsistency).
 	
 	\item With $n=200$ and a dense true model, the methods perform similarly when SNR is high, while lasso is better in low SNR.
 	
