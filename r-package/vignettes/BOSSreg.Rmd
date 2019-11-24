@@ -18,7 +18,7 @@ references:
       given: Clifford M.
     - family: Simonoff
       given: Jeffrey S.
-    URL: 'https://github.com/sentian/BOSSreg/blob/master/paper/boss.pdf'
+    URL: 'https://github.com/sentian/BOSSreg/blob/master/paper/ms.pdf'
     issued:
       year: 2019
 ---
