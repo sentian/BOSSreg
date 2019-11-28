@@ -2,7 +2,7 @@
 % Please edit documentation in R/ic.R
 \name{calc.ic}
 \alias{calc.ic}
-\title{Calculate information criterion.}
+\title{Calculate an information criterion.}
 \usage{
 calc.ic(y_hat, y, ic = c("aicc", "bicc", "aic", "bic", "gcv", "cp"), df,
   sigma = NULL)
@@ -19,14 +19,14 @@ BIC ('bic'), BICc ('bicc'), GCV ('gcv') and Mallows' Cp ('cp').}
 \item{df}{A number if y_hat is a vector, or a vector with \code{length(df)=ncol(y_hat)=m} if y_hat is
 a matrix. df represents the degrees of freedom for each fit.}
 
-\item{sigma}{Standard deviation of the error term. It only needs to be specified if \code{ic='cp'}.}
+\item{sigma}{Standard deviation of the error term. It only needs to be specified if the argument \code{ic='cp'}.}
 }
 \value{
 The value(s) of the specified IC for each fit.
 }
 \description{
 Calculate a specified information criterion (IC) for an estimate or a group of estimates.
-Such IC includes AIC, BIC, AICc, BICc, GCV and Mallows' Cp.
+The choices of IC include AIC, BIC, AICc, BICc, GCV and Mallows' Cp.
 }
 \details{
 This function enables the computation of various common IC for model fits, which can

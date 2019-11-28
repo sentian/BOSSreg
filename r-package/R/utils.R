@@ -77,10 +77,10 @@ calc.hdf <- function(Q, y, sigma=NULL, mu=NULL){
     beta_hat = xtmu = t(Q) %*% y # the multiple regression coef
     resid = y - Q %*% beta_hat
     sigma = sqrt(sum(resid^2)/(n-p))
-    xtmu_matrix = matrix(rep(xtmu,each=p-1), ncol=p-1, byrow=T)
+    xtmu_matrix = matrix(rep(xtmu,each=p-1), ncol=p-1, byrow=TRUE)
   }else{
     xtmu = t(Q)%*%mu
-    xtmu_matrix = matrix(rep(xtmu,each=p-1), ncol=p-1, byrow=T)
+    xtmu_matrix = matrix(rep(xtmu,each=p-1), ncol=p-1, byrow=TRUE)
   }
   tryCatch({
     # calculate the inverse function of E(k(lambda))=k, where k=1,...p-1

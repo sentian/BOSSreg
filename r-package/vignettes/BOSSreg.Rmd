@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 references:
   - id: Tian2019
-    title: On the use of information criteria for subset selection in least squares regression
+    title: On the Use of Information Criteria for Subset Selection in Least Squares Regression
     author:
     - family: Tian
       given: Sen
@@ -18,7 +18,7 @@ references:
       given: Clifford M.
     - family: Simonoff
       given: Jeffrey S.
-    URL: 'https://github.com/sentian/BOSSreg/blob/master/paper/ms.pdf'
+    URL: 'https://arxiv.org/abs/1911.10191'
     issued:
       year: 2019
 ---

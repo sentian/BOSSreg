@@ -1,30 +1,31 @@
-#' Best orthogonalized subset selection (BOSS).
+#' Best Orthogonalized Subset Selection (BOSS).
 #'
 #'\itemize{
 #'  \item Compute the solution path of BOSS and forward stepwise selection (FS).
-#'  \item Compute various information criteria based on a heuristic degrees of freedom
-#'   that can serve as the selection rule to choose the optimal subset given by BOSS.
+#'  \item Compute various information criteria based on a heuristic degrees of freedom (hdf)
+#'   that can serve as the selection rule to choose the subset given by BOSS.
 #'   Only work when n>p.
 #'}
 #' @param x A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
-#'   \code{ncol(x)=p} predictors. Intercept shall not be included.
+#'   \code{ncol(x)=p} predictors. Intercept shall NOT be included.
 #' @param y A vector of response variable, with \code{length(y)=n}.
 #' @param intercept Logical, whether to include an intercept term. Default is TRUE.
 #' @param hdf.ic.boss Logical, whether to calculate the heuristic degrees of freedom (hdf)
 #'   and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 #'   Cp. Note that if n<=p, \code{hdf.ic.boss=FALSE} no matter what. Default is TRUE.
-#' @param mu True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via full OLS.
+#' @param mu True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via
+#'   least-squares (LS) regression of y upon x.
 #' @param sigma True standard deviation of the error, used in the calculation of hdf. Default is NULL,
-#'   and is estimated via full OLS.
-#' @param ... Extra parameters to allow flexibility. Currently none argument allows or requires, just for
+#'   and is estimated via least-squares (LS) regression of y upon x.
+#' @param ... Extra parameters to allow flexibility. Currently none allows or requires, just for
 #'   the convinience of call from other parent functions like cv.boss.
 #'
 #' @return
 #' \itemize{
-#'   \item beta_fs: A matrix of regression coefficients for each step performed by FS,
+#'   \item beta_fs: A matrix of regression coefficients for all the subsets given by FS,
 #'   from a null model until stop, with \code{nrow=p} and \code{ncol=min(n,p)+1}, where \code{min(n,p)} is
 #'   the maximum number of steps performed.
-#'   \item beta_boss: A matrix of regression coefficients for each step performed by
+#'   \item beta_boss: A matrix of regression coefficients for all the subsets given by
 #'   BOSS, with \code{nrow=p} and \code{ncol=min(n,p)+1}. Note that unlike beta_fs and due to the nature of BOSS,
 #'   the number of non-zero components in columns of beta_boss may not be unique, i.e.
 #'   there maybe multiple columns corresponding to the same size of subset.
@@ -45,15 +46,19 @@
 #'
 #' }
 #'
-#' @details This function computes the full solution path given by FS and (or) BOSS on a given
-#'   dataset (x,y) with n observations and p predictors. Meanwhile, in the case where n>p, it calculates
+#' @details This function computes the full solution path given by BOSS and FS on a given
+#'   dataset (x,y) with n observations and p predictors. In the case where n>p, it also calculates
 #'   the heuristic degrees of freedom for BOSS, and various information criteria, which can further
-#'   be used to select the optimal candidate along the path. Please refer to the example section below
-#'   for implementation details and Tian et al. (2018) for methodology details.
+#'   be used to select the subset from the candidates. Please refer to the Vignette
+#'   for implementation details and Tian et al. (2019) for methodology details (links are given below).
 #'
 #' @author Sen Tian
-#' @references Tian, Hurvich and Simonoff (2019), On the use of information criterion
-#'   in least squares based subset selection problems. (Link to be added)
+#' @references
+#' \itemize{
+#'   \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
+#'   for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
+#'   \item BOSSreg Vignette https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf
+#' }
 #' @seealso \code{predict} and  \code{coef} methods for "boss" object, and the \code{cv.boss} function
 #' @example R/example/eg.boss.R
 #' @useDynLib BOSSreg
@@ -83,7 +88,7 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
 
   # fs
   beta_q = matrix(rep(z, maxstep), nrow=maxstep, byrow=F)
-  beta_q = beta_q * upper.tri(beta_q, diag=T)
+  beta_q = beta_q * upper.tri(beta_q, diag=TRUE)
   beta_q = cbind(0, beta_q)
   if(n<p){
     steps_expand = c(steps_x, setdiff(seq(1, p),steps_x))
@@ -97,7 +102,7 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
   if(intercept){
     beta_fs = rbind((mean_y - mean_x %*% beta_fs), beta_fs)
   }
-  beta_fs = Matrix::Matrix(beta_fs, sparse=T)
+  beta_fs = Matrix::Matrix(beta_fs, sparse=TRUE)
 
   beta_boss = hdf_result = IC_result = NULL
 
@@ -128,7 +133,7 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
   if(intercept){
     beta_boss = rbind((mean_y - mean_x %*% beta_boss), beta_boss)
   }
-  # beta_boss = Matrix::Matrix(beta_boss, sparse=T)
+  # beta_boss = Matrix::Matrix(beta_boss, sparse=TRUE)
 
   # hdf and IC
   if(n<=p & hdf.ic.boss){
@@ -198,13 +203,11 @@ boss <- function(x, y, intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ..
 #' corresponding column(s) in the coefficient matrix.
 #'
 #' If \code{select.boss} is unspecified, the function returns the optimal coefficient
-#' vector selected by AICc-hdf (other choice of IC can be specified in \code{ic}).
+#' vector selected by AICc-hdf (other choice of IC can be specified in the argument \code{ic}).
 #' The only exception is when n>=p, where hdf is not well defined, and the entire coefficient matrix
 #' is returned.
 #'
-#' @examples
-#' # See the example in the section of \code{boss}. Or type ?boss in R.
-#'
+#' @example R/example/eg.boss.R
 #' @importFrom stats coef
 #' @export
 coef.boss <- function(object, ic=c('aicc','bicc','aic','bic','gcv','cp'), select.boss=NULL, ...){
@@ -261,9 +264,7 @@ coef.boss <- function(object, ic=c('aicc','bicc','aic','bic','gcv','cp'), select
 #' is a coefficient vector chosen by a selection rule. See more details about the default
 #' and available choices of the selection rule in the description of \code{coef.boss}.
 #'
-#' @examples
-#' #See the example in the section of \code{boss}. Or type ?boss in R.
-#'
+#' @example R/example/eg.boss.R
 #' @importFrom stats predict
 #' @export
 predict.boss <- function(object, newx, ...){

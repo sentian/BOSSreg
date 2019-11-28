@@ -1,7 +1,7 @@
-#' Calculate information criterion.
+#' Calculate an information criterion.
 #'
 #' Calculate a specified information criterion (IC) for an estimate or a group of estimates.
-#' Such IC includes AIC, BIC, AICc, BICc, GCV and Mallows' Cp.
+#' The choices of IC include AIC, BIC, AICc, BICc, GCV and Mallows' Cp.
 #'
 #' @param y_hat A vector of fitted values with \code{length(y_hat)=length(y)=n}, or
 #'   a matrix, with \code{nrow(coef)=length(y)=n} and \code{ncol(y_hat)=m}, containing m different fits.
@@ -10,7 +10,7 @@
 #'   BIC ('bic'), BICc ('bicc'), GCV ('gcv') and Mallows' Cp ('cp').
 #' @param df A number if y_hat is a vector, or a vector with \code{length(df)=ncol(y_hat)=m} if y_hat is
 #'   a matrix. df represents the degrees of freedom for each fit.
-#' @param sigma Standard deviation of the error term. It only needs to be specified if \code{ic='cp'}.
+#' @param sigma Standard deviation of the error term. It only needs to be specified if the argument \code{ic='cp'}.
 #'
 #' @return The value(s) of the specified IC for each fit.
 #'

@@ -2,14 +2,14 @@
 % Please edit documentation in R/boss.R
 \name{boss}
 \alias{boss}
-\title{Best orthogonalized subset selection (BOSS).}
+\title{Best Orthogonalized Subset Selection (BOSS).}
 \usage{
 boss(x, y, intercept = TRUE, hdf.ic.boss = TRUE, mu = NULL,
   sigma = NULL, ...)
 }
 \arguments{
 \item{x}{A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
-\code{ncol(x)=p} predictors. Intercept shall not be included.}
+\code{ncol(x)=p} predictors. Intercept shall NOT be included.}
 
 \item{y}{A vector of response variable, with \code{length(y)=n}.}
 
@@ -19,20 +19,21 @@ boss(x, y, intercept = TRUE, hdf.ic.boss = TRUE, mu = NULL,
 and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 Cp. Note that if n<=p, \code{hdf.ic.boss=FALSE} no matter what. Default is TRUE.}
 
-\item{mu}{True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via full OLS.}
+\item{mu}{True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via
+least-squares (LS) regression of y upon x.}
 
 \item{sigma}{True standard deviation of the error, used in the calculation of hdf. Default is NULL,
-and is estimated via full OLS.}
+and is estimated via least-squares (LS) regression of y upon x.}
 
-\item{...}{Extra parameters to allow flexibility. Currently none argument allows or requires, just for
+\item{...}{Extra parameters to allow flexibility. Currently none allows or requires, just for
 the convinience of call from other parent functions like cv.boss.}
 }
 \value{
 \itemize{
-  \item beta_fs: A matrix of regression coefficients for each step performed by FS,
+  \item beta_fs: A matrix of regression coefficients for all the subsets given by FS,
   from a null model until stop, with \code{nrow=p} and \code{ncol=min(n,p)+1}, where \code{min(n,p)} is
   the maximum number of steps performed.
-  \item beta_boss: A matrix of regression coefficients for each step performed by
+  \item beta_boss: A matrix of regression coefficients for all the subsets given by
   BOSS, with \code{nrow=p} and \code{ncol=min(n,p)+1}. Note that unlike beta_fs and due to the nature of BOSS,
   the number of non-zero components in columns of beta_boss may not be unique, i.e.
   there maybe multiple columns corresponding to the same size of subset.
@@ -56,17 +57,17 @@ the convinience of call from other parent functions like cv.boss.}
 \description{
 \itemize{
  \item Compute the solution path of BOSS and forward stepwise selection (FS).
- \item Compute various information criteria based on a heuristic degrees of freedom
-  that can serve as the selection rule to choose the optimal subset given by BOSS.
+ \item Compute various information criteria based on a heuristic degrees of freedom (hdf)
+  that can serve as the selection rule to choose the subset given by BOSS.
   Only work when n>p.
 }
 }
 \details{
-This function computes the full solution path given by FS and (or) BOSS on a given
-  dataset (x,y) with n observations and p predictors. Meanwhile, in the case where n>p, it calculates
+This function computes the full solution path given by BOSS and FS on a given
+  dataset (x,y) with n observations and p predictors. In the case where n>p, it also calculates
   the heuristic degrees of freedom for BOSS, and various information criteria, which can further
-  be used to select the optimal candidate along the path. Please refer to the example section below
-  for implementation details and Tian et al. (2018) for methodology details.
+  be used to select the subset from the candidates. Please refer to the Vignette
+  for implementation details and Tian et al. (2019) for methodology details (links are given below).
 }
 \examples{
 ## Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
@@ -100,8 +101,11 @@ mu_boss_cp = predict(boss_result, newx=x, method.boss='cp')
 mu_boss_cp = cbind(1,x) \%*\% beta_boss_cp
 }
 \references{
-Tian, Hurvich and Simonoff (2019), On the use of information criterion
-  in least squares based subset selection problems. (Link to be added)
+\itemize{
+  \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
+  for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
+  \item BOSSreg Vignette https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf
+}
 }
 \seealso{
 \code{predict} and  \code{coef} methods for "boss" object, and the \code{cv.boss} function

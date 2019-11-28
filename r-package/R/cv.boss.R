@@ -1,6 +1,4 @@
-#' Cross validation for BOSS.
-#'
-#' Cross validation for BOSS and FS.
+#' Cross-validation for Best Orthogonalized Subset Selection (BOSS) and Forward Stepwise Selection (FS).
 #'
 #' @param x A matrix of predictors, see \code{boss}.
 #' @param y A vector of response variable, see \code{boss}.
@@ -20,12 +18,16 @@
 #' }
 #'
 #' @details This function fits BOSS and FS (\code{boss}) on the full dataset, and performs \code{n.folds}
-#'   cross validation. The cross validation process can be repeated \code{n.rep} times to evaluate the
+#'   cross-validation. The cross-validation process can be repeated \code{n.rep} times to evaluate the
 #'   out-of-sample (OOS) performance for the candidate subsets given by both methods.
 #'
 #' @author Sen Tian
-#' @references Tian, Hurvich and Simonoff (2019), On the use of information criterion
-#'   in least squares based subset selection problems. (Link to be added)
+#' @references
+#' \itemize{
+#'   \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
+#'   for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
+#'   \item BOSSreg Vignette https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf
+#' }
 #' @seealso \code{predict} and \code{coef} methods for \code{cv.boss} object, and the \code{boss} function
 #' @example R/example/eg.cv.boss.R
 #' @export
@@ -99,7 +101,7 @@ cv.boss <- function(x, y, n.folds=10, n.rep=1, intercept=TRUE, ...){
 }
 
 
-#' Select coefficient vector based on cross validation (CV) for BOSS or FS.
+#' Select coefficient vector based on cross-validation for BOSS or FS.
 #'
 #' This function returns coefficient vector that minimizes out-of-sample (OOS) cross
 #' validation score.
@@ -110,9 +112,7 @@ cv.boss <- function(x, y, n.folds=10, n.rep=1, intercept=TRUE, ...){
 #'
 #' @return The chosen coefficient vector for BOSS or FS.
 #'
-#' @examples
-#' # See the example in the section of \code{cv.boss}. Or type ?cv.boss in R.
-#'
+#' @example R/example/eg.cv.boss.R
 #' @importFrom stats coef
 #' @export
 coef.cv.boss <- function(object, method=c('boss', 'fs'), ...){
@@ -145,9 +145,7 @@ coef.cv.boss <- function(object, method=c('boss', 'fs'), ...){
 #'
 #' @return The prediction for BOSS or FS.
 #'
-#' @examples
-#' # See the example in the section of \code{cv.boss}. Or type ?cv.boss in R.
-#'
+#' @example R/example/eg.cv.boss.R
 #' @importFrom stats predict
 #' @export
 predict.cv.boss <- function(object, newx, ...){

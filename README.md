@@ -18,7 +18,7 @@ install.packages("BOSSreg", repos = "http://cran.rstudio.com")
 ### Use the R package
 For a simple guide of the functionalities of the package, please refer to the [BOSSreg's Vignette](https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf).
 
-For a complete documentation of the package, please refer to the [BOSSreg's Documentation](https://github.com/sentian/BOSSreg/blob/master/BOSSreg_0.1.0.pdf).
+For a complete documentation of the package, please refer to the [BOSSreg's Documentation](https://github.com/sentian/BOSSreg/blob/master/BOSSreg_reference.pdf).
 
 ### Reproduce the results in the paper
 The structure of the '*code*' directory is shown below.

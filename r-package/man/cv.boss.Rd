@@ -2,7 +2,7 @@
 % Please edit documentation in R/cv.boss.R
 \name{cv.boss}
 \alias{cv.boss}
-\title{Cross validation for BOSS.}
+\title{Cross-validation for Best Orthogonalized Subset Selection (BOSS) and Forward Stepwise Selection (FS).}
 \usage{
 cv.boss(x, y, n.folds = 10, n.rep = 1, intercept = TRUE, ...)
 }
@@ -30,11 +30,11 @@ cv.boss(x, y, n.folds = 10, n.rep = 1, intercept = TRUE, ...)
 }
 }
 \description{
-Cross validation for BOSS and FS.
+Cross-validation for Best Orthogonalized Subset Selection (BOSS) and Forward Stepwise Selection (FS).
 }
 \details{
 This function fits BOSS and FS (\code{boss}) on the full dataset, and performs \code{n.folds}
-  cross validation. The cross validation process can be repeated \code{n.rep} times to evaluate the
+  cross-validation. The cross-validation process can be repeated \code{n.rep} times to evaluate the
   out-of-sample (OOS) performance for the candidate subsets given by both methods.
 }
 \examples{
@@ -66,8 +66,11 @@ beta_fs_cv = coef(boss_cv_result, method='fs')
 mu_fs_cv = predict(boss_cv_result, newx=x, method='fs')
 }
 \references{
-Tian, Hurvich and Simonoff (2019), On the use of information criterion
-  in least squares based subset selection problems. (Link to be added)
+\itemize{
+  \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
+  for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
+  \item BOSSreg Vignette https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf
+}
 }
 \seealso{
 \code{predict} and \code{coef} methods for \code{cv.boss} object, and the \code{boss} function
