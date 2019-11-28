@@ -1,8 +1,10 @@
 # Best Orthogonalized Subset Selection (BOSS)
-This repository contains the R package **BOSSreg** that implements the Best Orthogonalized Subset Selection (BOSS) and Forward Stepwise regression (FS), with feasible selection rules that include information criteria and cross-validation. Various choices of information criteria are provided that include AICc, Cp, GCV, AIC and BIC.
+Best Orthogonalized Subset Selection (BOSS) is a least-squares (LS) based subset selection method, that performs best subset selection upon an orthogonalized basis of ordered predictors, with the computational effort of a single ordinary LS fit.
+
+This repository contains an R package **BOSSreg** that provides a highly optimized implementation of BOSS and an heuristic degrees of freedom, which can be further plugged into an information criterion such as AICc in order to selection the subset from candidates. Various choices of information criteria are provided including AICc, Cp, GCV, AIC and BIC. The R package also implements forward stepwise regression (FS) with no additional computational cost, where the subset of FS is selected via cross-validation (CV). CV is also an option for BOSS.
 
 It also contains all the code to reproduce the results in the paper,
-[Tian, Hurvich and Simonoff (2019): "On the use of information criterion for least squares based subset selection methods"](https://github.com/sentian/BOSSreg/blob/master/paper/ms.pdf)
+[Tian, S., Hurvich, C. and Simonoff, J. (2019): "On the Use of Information Criteria for Subset Selection in Least Squares Regression"](https://arxiv.org/abs/1911.10191).
 
 ### Install the R package
 To install the latest version of the package, run the following:
