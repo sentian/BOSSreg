@@ -259,7 +259,7 @@ rmse = tmp$rmse
 nvar = tmp$nvar
 ```
 
-```{r, eval=FALSE, fig.width=3, fig.height=3, fig.show='hold'}
+```{r, fig.width=3, fig.height=3, fig.show='hold'}
 # Make the plots
 boxplot(rmse, outline=FALSE, main='RMSE')
 boxplot(nvar, outline=FALSE, main='Number of predictors')
