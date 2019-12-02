@@ -207,7 +207,7 @@ We calculate the average RMSE at each subset size based on $1000$ replications. 
   \text{RMSE} = \sqrt{\frac{1}{n} \lVert \hat{\mu} - X\beta \rVert_2^2}.
 \end{equation*}
 
-```{r, cache=TRUE}
+```{r, eval=FALSE}
 # Function to calculate RMSE
 calc.rmse <- function(muhat){
   sqrt( Matrix::colSums(sweep(muhat, 1, mu)^2) / n )
@@ -219,8 +219,12 @@ for(rep in 1:nrep){
   rmse_solutionpath[['BOSS']][[rep]] = calc.rmse(x %*% boss_model$beta_boss)
   rmse_solutionpath[['FS']][[rep]] = calc.rmse(x %*% boss_model$beta_fs)
 }
+# saveRDS(rmse_solutionpath, '/vignettes/rmse_solutionpath.rds')
 ```
 
+```{r, include=FALSE}
+rmse_solutionpath = readRDS(gzcon(url('https://raw.githubusercontent.com/sentian/BOSSreg/master/r-package/vignettes/rmse_solutionpath.rds')))
+```
 BOSS clearly provides a better solution path than FS in steps less than $8$.
 ```{r, fig.width=5, fig.height=4}
 # Average RMSE over replications
@@ -234,7 +238,7 @@ legend('topright', legend = c('FS', 'BOSS'), col=c('blue', 'red'), pch=c(1,3))
 Next, we bring back the selection rules and compare their performances. The selection rule for 
 BOSS is AICc-hdf and is 10-fold CV for FS. BOSS shows a better predictive performance, and it provides 
 sparser solutions than FS does.
-```{r, cache=TRUE, fig.width=3, fig.height=3, fig.show='hold'}
+```{r, eval=FALSE}
 rmse = nvar = list(BOSS=c(), FS=c())
 set.seed(seed)
 for(rep in 1:nrep){
@@ -246,6 +250,16 @@ for(rep in 1:nrep){
   nvar[['BOSS']][rep] = sum(coef(boss_cv_model$boss)!=0)
   nvar[['FS']][rep] = sum(coef(boss_cv_model, method='fs')!=0)
 }
+# saveRDS(list(rmse=rmse, nvar=nvar), '/vignettes/boss_fs.rds')
+```
+
+```{r, include=FALSE}
+tmp = readRDS(gzcon(url('https://raw.githubusercontent.com/sentian/BOSSreg/master/r-package/vignettes/boss_fs.rds')))
+rmse = tmp$rmse
+nvar = tmp$nvar
+```
+
+```{r, eval=FALSE, fig.width=3, fig.height=3, fig.show='hold'}
 # Make the plots
 boxplot(rmse, outline=FALSE, main='RMSE')
 boxplot(nvar, outline=FALSE, main='Number of predictors')
@@ -425,6 +439,7 @@ rdresult <- function(x, y, nrep, seed){
   return(list(error=error, numvar=numvar, time=time))
 }
 result = lapply(dataset, function(xx){rdresult(xx$x, xx$y, nrow(xx$x), seed)})
+# saveRDS(result, '/vignettes/realdata.rds')
 ```
 
 This is the code to construct the table on page 6.

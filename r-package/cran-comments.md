@@ -1,5 +1,8 @@
 ## Resubmission
-This is a resubmission. In this version I have
+This is the resubmission \#2. In this version I have
+* added quote ("") to the title of the paper reference in the description field of DESCRIPTION
+
+In the resubmission \#1, I have
 * shortened the running time of Vignette
 * removed license file and change the description accordingly
 * rewrited the description field of DESCRIPTION with more details about what the package does and why it is useful
