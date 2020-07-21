@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{multicol,multienum}
+\usepackage{latexsym,amssymb,amsmath}
+\usepackage{indentfirst}
+\usepackage{cases}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{CJK}
+\usepackage{url}
+\usepackage[font={sf,bf},textfont=md]{caption}
+\usepackage{animate}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{interval}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{thmtools, thm-restate}
+\usepackage{bbm}
+\usepackage{verbatim}
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{rotating}
+\usepackage{algorithm}
+\usepackage{enumitem}
+\usepackage{natbib}
+\usepackage[noend]{algpseudocode}
+\usepackage{bbding}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage{bigstrut}
+\usepackage[stable]{footmisc}
+\usepackage{multibib}
+\newcites{online}{References}
+
+
+\pdfminorversion=4
+
+\addtolength{\oddsidemargin}{-.7in}%
+\addtolength{\evensidemargin}{-.7in}%
+\addtolength{\textwidth}{1.4in}%
+\addtolength{\textheight}{0.8in}%
+\addtolength{\topmargin}{-0.8in}%
+
+\newcommand{\beginsupplement}{%
+        \setcounter{table}{0}
+        \renewcommand{\thetable}{S\arabic{table}}%
+        \setcounter{figure}{0}
+        \renewcommand{\thefigure}{S\arabic{figure}}%
+        \setcounter{page}{0}
+     }
+
+\newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}} 
+%\newtheorem{theorem}{Theorem}[section]
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}{Lemma}
+
+\newcommand{\N}{{\mathbb{N}}}  % the natural numbers
+\newcommand{\Z}{{\mathbb{Z}}}  % the integers
+\newcommand{\Q}{{\mathbb{Q}}} % the rational numbers
+\newcommand{\R}{{\mathbb{R}}}  % the real numbers
+\newcommand{\C}{{\mathbb{C}}}  % the complex numbers
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\begin{document}
+
+%\bibliographystyle{natbib}
+
+\def\spacingset#1{\renewcommand{\baselinestretch}%
+{#1}\small\normalsize} \spacingset{1}
+
+
+\title{\bf On the Use of Information Criteria for Subset Selection in Least Squares Regression}
+\author{Sen Tian\footnote{E-mail: stian@stern.nyu.edu} \quad Clifford M. Hurvich  \quad Jeffrey S. Simonoff \\\\
+  Department of Technology, Operations, and Statistics, \\Stern School of Business, New York University.}
+\date{}
+\maketitle
+
+
+\input{abstract}
+\input{introduction}
+\input{aicc_hdf}
+\input{boss_method}
+\input{real_data}
+\input{conclusion}
+
+\clearpage
+\bibliographystyle{chicago}
+\bibliography{reference.bib}
+
+\include{supplemental}
+\end{document}

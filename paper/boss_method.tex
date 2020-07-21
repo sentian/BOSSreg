@@ -1,0 +1,151 @@
+%!TEX root = ms.tex
+\section{Best orthogonalized subset selection (BOSS)}
+\label{sec:boss}
+With a general $X$, BS is not computationally feasible for large problems. In this section, we propose a LS-based subset selection method BOSS that has computational cost of the same order as a multiple regression on all of the predictors (or a selected subset of $n$ predictors for $n \le p$). 
+
+\subsection{The method and its computational cost}
+\label{sec:boss_alg}
+The detailed implementation process of BOSS is described in Algorithm \ref{alg:boss}. The main steps can be summarized as follows: 1) order and orthogonalize the predictors, 2) perform BS on the set of orthogonal predictors, 3) transform the coefficients back to the original space, and 4) use a selection rule such as AICc-hdf to choose the single subset.
+
+% main algorithm
+\begin{algorithm}
+	\caption{Best Orthogonalized Subset Selection (BOSS)}\label{alg:boss}
+	\begin{enumerate}[label=\arabic*.]
+		\item Standardize $y$ and the columns of $X$ to have mean $0$, and denote the means as $\bar{X}$ and $\bar{y}$.
+		%\item Denote $S_k$ as the set of predictors that are active at step $k$ and let $S={1,\cdots, p}$.
+
+		\textbf{Order and orthogonalize the predictors:}
+
+		\item From the $p$ predictors, select the one that has the largest marginal correlation with the response $y$,  and denote it as $X_{S_1}$. Standardize $X_{S_1}$ to have unit $l_2$ norm and denote it as $Q_{S_1}$. Calculate $R_{S_1}$ such that $X_{S_1} = Q_{S_1} R_{S_1}$. Let $S=\{1,\cdots, p\}$. Initialize vectors $\text{resid}_j=X_j$ where $j=1,\cdots,p$.
+		\item For $k=2,\cdots,\tilde{k}$ ($\tilde{k}=\min\{n,p\}$):
+		\begin{enumerate}[label=\alph*.]
+			\item For each of the $p-k+1$ predictors $X_j$ in $X_{S \setminus S_{k-1} }$, calculate its partial correlations with the response $y$ conditioning on $Q_{S_{k-1}}$. 
+			\iffalse
+			\begin{enumerate}[label=a\arabic*.]
+				\item Regress $y$ on $q$, augment $Z$ with the coefficient $z$. Set $\text{resid1} = \text{resid1} - zq$.
+			\end{enumerate}
+			\fi
+			%\begin{enumerate}[resume*,label=a\arabic*.]
+			\begin{enumerate}[label=a\arabic*.]
+				%\item Regress $x_j$ on $q$, call the coefficient $r$. Set $\text{resid2}_j = \text{resid2}_j - rq$.
+				%\item Calculate the correlation between resid1 and $\text{resid2}_j$.
+				\item Regress $X_j$ on $Q_{S_{k-1} \setminus S_{k-2}}$ ($S_{k-2}=\emptyset$ if $k=2$), and denote the estimated coefficient as $r$. Update $\text{resid}_j = \text{resid}_j - r Q_{S_{k-1} \setminus S_{k-2}}$.
+				\item Calculate the correlation between y and $\text{resid}_j$.
+			\end{enumerate}
+			\item Select the predictor that has the largest partial correlation in magnitude, augment $S_{k-1}$ with this predictor and call it $S_{k}$.
+			\item Update $Q_{S_{k-1}}$ and $R_{S_{k-1}}$ given the newly added column $X_{S_k \setminus S_{k-1}}$, and call them $Q_{S_k}$ and $R_{S_k}$. The update is based on the modified Gram-Schmidt algorithm as discussed in \citet{hammarling2008updating}.
+		\end{enumerate}
+		
+		\textbf{BS on the orthogonalized predictors $Q_{S_{\tilde{k}}}$:}
+
+		\item Calculate $\tilde{\gamma}_j (k_Q)= z_j \mathbbm{1}(|z_j| \ge |z_{(k_Q)}|)$, i.e. the $j$-th component of coefficient vector for subset size $k_Q$, where $z=Q_{S_{\tilde{k}}}^T y$ and $z_{(k_Q)}$ is the $k$-th largest entry in absolute values. Let $\tilde{\gamma} = [\tilde{\gamma} (0) \tilde{\gamma} (1) \cdots \tilde{\gamma} (\tilde{k})]$.
+		
+		\textbf{Transform back to the original space:}
+
+		\item Project $\tilde{\gamma}$, a $p \times (\tilde{k}+1)$ matrix, to the original space of $X_{S_{\tilde{k}}}$, i.e. back solving $R \tilde{B} = \tilde{\gamma}$, and re-order the rows of $\tilde{B}$ to their correspondences in $X$, i.e. $\hat{B} = O \tilde{B}$ where $O$ represents the ordering matrix s.t. $X_{S_{\tilde{k}}}=XO$. The intercept vector is $\hat{B}_0 = \bar{y} \mathbbm{1} - \hat{B}^T \bar{X}$. 
+
+		\textbf{Select the subset:}
+
+		\item Select the subset using AICc-hdf, where hdf is calculated via Algorithm \ref{alg:hdf}, by inputting $(Q_{S_{\tilde{k}}},y)$. The inclusion of an intercept term implies that hdf$(k_Q)$ is increased by $1$. Note that in the case where $n\le p$, hdf is calculated using the estimates $\hat{\mu}=y$ and $\hat{\sigma} = \sqrt{\lVert y-\hat{\mu}_l \rVert_2^2 / (n-\text{df}(\hat{\mu}_l)-1)}$ as discussed in \citet{reid2016study}, where $\hat{\mu}_l$ are the lasso fitted values based on 10-fold CV and df$(\hat{\mu}_l)$ is the corresponding number of non-zero coefficients in the lasso estimate. 
+	\end{enumerate}
+\end{algorithm}
+
+
+As can be seen in what follows, the computation of BOSS has the same cost as OLS on all $p$ predictors (or OLS on a selected subset of $n$ predictors for $n \le p$). For step $k$, we have a set of ordered predictors $X_{S_{k-1}}$ and its orthogonal basis $Q_{S_{k-1}}$. From the remaining $p-k+1$ predictors, we choose the one that has the largest correlation with $y$ conditioning on $Q_{S_{k-1}}$, that is the correlation between $y$ and the residual from regressing a candidate predictor on $Q_{S_{k-1}}$. The regression part costs $O(n)$ since we maintain the regression result, e.g. estimated coefficients and residual, in the previous steps, and only need to perform a simple linear regression upon the predictor joined in step $k-1$, i.e. the last column in $Q_{S_{k-1}}$. Repeating the above step for all $p-k+1$ predictors costs $O(n(p-k+1))$. We then update the QR decomposition, by adding the chosen predictor as a new column, which costs $O(n(\tilde{k}-k))$ ($\tilde{k}=\min\{n, p\}$) via the modified Gram-Schmidt algorithm as discussed in \citet{hammarling2008updating}. Therefore, we end up with an ordered set of predictors $X_{S_{\tilde{k}}}$ and its corresponding QR decomposition $Q_{S_{\tilde{k}}}$ and $R_{S_{\tilde{k}}}$. We regress $y$ upon $Q_{S_{\tilde{k}}}$ which costs $O(n\tilde{k})$, and denote the coefficient vector as $z$. BOSS then performs BS on $Q_{S_{\tilde{k}}}$, which is a ranking of predictors based on their magnitudes of corresponding element in $z$, and the cost is $O(\tilde{k}\log(\tilde{k}))$. Once we have the solution path of BOSS, we then apply AICc-hdf to choose the single subset size (denoted as $k_Q$), where hdf is calculated via Algorithm \ref{alg:hdf} by inputting $Q_{S_{\tilde{k}}}$. The entire BOSS-AICc-hdf procedure has cost $O(np \tilde{k})$ ($O(np^2)$ for $n>p$, i.e. the cost of OLS on $p$ predictors). 
+
+The ordering of predictors is essential in terms of both getting a sparse solution and a better predictive performance. Consider a sparse true model with only two uncorrelated predictors $X=[X_1,X_2]$, $\beta=[0,1]^T$ and a high SNR. Based on the evidence we see from the previous section, the best model in such a scenario is LS regression on $X_2$. Without the ordering step, the orthogonal basis is $Q=[Q_1,Q_2]$ s.t. $X=QR$, i.e. the predictors are orthogonalized in their physical orders. The one-predictor model ($k_Q=1$) of BS can either be $Q_1$ or $Q_2$, which when transformed back to the space of $X$ do not correspond to LS regression upon $X_2$. The former corresponds to LS estimates upon $X_1$, while the latter is a linear combination of LS estimates upon $X$ and LS estimates upon $X_1$; the former leads to a completely wrong model while the latter results in non-zero coefficients on both predictors. In contrast, if $X_2$ is the first variable orthogonalized, the best subset will be based on that variable alone, the correct choice. Therefore, the ordering step is crucial to both sparsity as well as predictive performance. Note that we show the coefficients of BOSS can be expressed as a linear combination of LS coefficients on subsets of $X$ in Theorem \ref{thm:correspondence} and the proof can be found in the Supplemental Material. 
+
+BS on the set of orthogonalized predictors gives the chance for BOSS to ``look back'' at the predictors that are already stepped in. One may notice that BOSS is similar to forward stepwise regression (FS), which was first introduced in \citet{efroymson1960multiple}. FS orders and orthogonalizes the predictors in the same way as BOSS. It then takes the nested subsets $Q_{S_1}, Q_{S_2}, \cdots, Q_{S_{\tilde{k}} }$ as the candidate subsets and performs LS regression upon them. Therefore, once a predictor is stepped in, it remains in the subsets of every following step of FS. As we will show in the next section, under certain circumstances, FS can easily overfit, since noise predictors (those with $\beta_j=0$) step in during early steps. However, BOSS revisits the predictors that have already stepped in and allows them to be dropped, resulting in a better predictive performance than FS.
+
+\begin{theorem}[Coefficients of BOSS are a linear combination of LS coefficients on subsets of $X$] 
+	Suppose $X$ has full column rank and the columns are already ordered, i.e. $X=X_{S_{\tilde{k}}}$. $X=QR$ where $Q$ is an $n \times \tilde{k}$ matrix with orthonormal columns and $R$ is a $\tilde{k} \times \tilde{k}$ upper-triangular matrix. Let $S_k=\{j_1,j_2,\cdots,j_{k_Q}\}$ denote the support (position of predictors) of the best $k_Q$-predictor model given by BS upon $(Q,y)$, and use $\hat{\gamma}(k_Q)$ ($\tilde{k}$ by $1$) to denote the BS coefficients. The corresponding coefficients in the $X$ space, i.e. $\hat{\beta}(k_Q)$ s.t. $R\hat{\beta}(k_Q)=\hat{\gamma}(k_Q)$, can be expressed as
+	\begin{equation*}
+	\hat{\beta}(k_Q) = \sum_{j\in S_k} \left(\hat{\alpha}^{(j)} - \hat{\alpha}^{(j-1)}\right),
+	\end{equation*}
+	where the first $j$ entries in $\hat{\alpha}^{(j)}$ ($\tilde{k}$ by $1$) are LS coefficients of regressing $y$ upon $[X_1,X_2,\cdots,X_j]$ (the first $j$ columns in $X$), and the remaining $\tilde{k}-j$ entries are zero.
+
+	\label{thm:correspondence}
+\end{theorem}
+
+\subsection{Numerical justification of using hdf for BOSS}
+The hdf is designed for BS on a set of orthogonal predictors. However, before performing BS on the orthogonal basis, BOSS first orders the predictors. This raises the question as to whether hdf is reasonable to use in the selection rules for BOSS. 
+
+Figure \ref{fig:boss_cp_edf_hdf} compares averages of C$_p$-edf and C$_p$-hdf over $1000$ replications for BOSS under various true models. The details of setups for the sparse and dense models can be found in Section \ref{sec:simulation_setup_generalx}, where they correspond to the Sparse-Ex3 and Dense designs, respectively. The correlation between predictors is $\rho=0.5$. We see that by using the sample average to represent the population mean, $E(\text{C}_p\text{-hdf})$ approximates $E(\text{C}_p\text{-edf})$ well in most cases where the latter is also the expected prediction error $E(\text{Err}_\text{SE})$ by definition, and they converge as $k_Q$ approaches $p$. Moreover, both C$_p$-edf and C$_p$-hdf lead to the same average selected subset size, supporting the use of hdf in model selection for BOSS. 
+
+Note that for any general fitting procedure including BOSS, C$_p$ provides an unbiased estimator of the testing error, and for that reason it is used in our discussions about the best-case performance when $\sigma$ is assumed to be known. Unfortunately, as discussed in Section \ref{sec:bs_ic_simulationresults}, using C$_p$ as the selection rule for BS can perform poorly in practice because of the need to estimate $\sigma$, particularly when $p$ is close to $n$. A similar property of using C$_p$ as the selection rule for BOSS will be shown in Section \ref{sec:boss_regu}. Therefore we prefer AICc in feasible versions of selection since it can perform considerably better. 
+
+% {fig:boss_cp_edf_hdf}
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{figures/cp_edf_hdf_boss.eps}
+	\caption{Averages of C$_p$-edf and C$_p$-hdf for BOSS over $1000$ replications. Here $X$ is general with $n=200$, $p=14$. Both criteria result in the same average of the selected subset size over the $1000$ replications (rounded to the nearest integer) as denoted by the dashed vertical lines. We assume knowledge of $\mu$ and $\sigma$.}
+	\label{fig:boss_cp_edf_hdf}
+\end{figure}
+
+\subsection{The performance of BOSS}
+We now study the performance of BOSS via simulations. We first show that BOSS can provide a better solution path than FS, and we further compare BOSS with regularization methods. 
+
+\subsubsection{Simulation setups}
+\label{sec:simulation_setup_generalx}
+We consider a similar setup as in Section \ref{sec:simulation_setup_orthx}, but with a general $X$, where  $x_i\sim \mathcal{N}(0,\Sigma)$, $i=1,\cdots,n$ are independent realizations from a $p$-dimensional multivariate normal distribution with mean zero and covariance matrix $\Sigma=(\sigma_{ij})$. 
+
+The correlation structure and true coefficient vector $\beta$ include the following scenarios:
+\begin{itemize}
+	\item Sparse-Ex1: \textbf{All of the predictors (both signal and noise) are correlated.} We take $\sigma_{i,j}=\rho^{|i-j|}$ for $i,j\in\{1,\cdots,p\}\times\{1,\cdots,p\}$. As to $\beta$, we have $\beta_j=1$ for $p_0$ equispaced values and $0$ everywhere else. 
+	\item Sparse-Ex2: \textbf{Signal predictors are pairwise correlated with opposite effects.} We take $\sigma_{i,j}=\sigma_{j,i}=\rho$ for $1\le i <j \le p_0$. Other off-diagonal elements in $\Sigma$ are zero. For the true coefficient vector, we have $\beta_{2j-1}=1$ and $\beta_{2j}=-1$ for $1\le j \le p_0/2$, and all other $\beta_j=0$ for $j=p_0+1,\cdots,p$.
+	\item Sparse-Ex3: \textbf{Signal predictors are pairwise correlated with noise predictors.} We take $\sigma_{i,j}=\sigma_{j,i}=\rho$ for $1\le i \le p_0$ and $j=p_0+i$. Other off-diagonal elements in $\Sigma$ are zero. $\beta=[1_{p_0},0_{p-p_0}]^T$.
+	\item Sparse-Ex4: \textbf{Same correlation structure as Sparse-Ex2, but with varying strengths of coefficients.} We have $\beta_j=-\beta_{j+1}$ where $j=2k+1$ and $k=0,1,\cdots,p_0/2-1$. Suppose that $\beta^\prime=[1,5,10]$, then $\beta_j=\beta^\prime_k$ where $k=j (\text{mod} 3)$. 
+	\item Dense: \textbf{Same correlation structure as Ex1, but with diminishing strengths of coefficients}. The true coefficient vector has: $\beta_j = \displaystyle (-1)^j \exp(-\frac{j}{\kappa})$, $j=1,\cdots,p$, and here $\kappa=10$.
+	%\item Dense-Ex2: \textbf{Same setup as Dense-Ex1, but with slower decay}. Here we take $\kappa=50$.
+\end{itemize}
+The setup of Sparse-Ex1 is very common in the literature, such as in \citet{Bertsimas2016} and \citet{Hastie2017}. All of the predictors are correlated (when $\rho \ne 0$) where the strength of correlation depends on the physical positions of variables. Sparse-Ex2 is designed such that the pair of correlated predictors, e.g. $(X_1,X_2)$, leads to a good fit (high $R^2$), while either single one of them contribute little to the fitted $R^2$. Sparse-Ex4 is similar to Sparse-Ex2, but has varying strengths of coefficients for the true predictors. In Sparse-Ex3, signal predictors are only correlated with the noise ones. Finally, the dense setup is built on the dense example in Section \ref{sec:simulation_setup_orthx}, by having correlated predictors.
+
+For the sparse examples, we take $p_0=6$. We consider three values of the correlation parameter, $\rho \in [0, 0.5, 0.9]$. For the case of $n>p$, other configuration options, including $n$, $p$, and SNR, are the same as in Section \ref{sec:simulation_setup_orthx}. For the case of $n \le p$, we consider $n \in \{200, 500\}$ and $p \in \{550, 1000\}$. This implies a total of $540$ different combinations of configuration options. For each configuration, $1000$ replications are estimated and we present the same evaluation measures as introduced in Section \ref{sec:simulation_setup_orthx}. The full set of results can be found in the Supplemental Material.
+
+
+\subsubsection{The solution paths of BOSS and FS}
+Unlike FS, whose candidate subsets are nested, BOSS performs an extra step of BS upon $Q_{S_p}$, which raises the question of whether the extra step brings any benefit. We set aside the selection rule for now, and focus on the solution paths of the two methods. 
+
+Figure \ref{fig:lossratio_fs_boss_k} shows two examples of the average RMSE along the solution paths of BS, FS and BOSS. When the true model is Sparse-Ex3, all three methods provide almost the same solution path. However, for Sparse-Ex4, we see a clear advantage of BOSS over FS in early steps up until about the fifteenth step. Recall that in Sparse-Ex4, there are $p_0=6$ predictors with $\beta_j \ne 0$ that are pairwise correlated with opposite effects, where each pair say $(X_1,X_2)$ together leads to a high $R^2$ but each single one of them ($X_1$ or $X_2$) contributes little. When the correlation between $X_1$ and $X_2$ is high, the effect of $X_1$ almost completely cancels out the effect of $X_2$ on $y$. Therefore all of predictors (both true and noise predictors) have approximately zero marginal correlation with $y$, and they have equal chance of stepping in. Since the subsets along the solution path of FS are nested, if a noise predictor steps in during early steps, it remains in the subsets of every following step, and hence the subset containing both $X_1$ and $X_2$ may appear in a late stage. In contrast, BOSS takes ordered predictors provided by FS, and re-orders them by performing BS upon their orthogonal basis, which gives a greater chance for $(X_1,X_2)$ to appear early in the solution path of BOSS and potentially results in a better predictive performance than FS. Furthermore, in this example, we notice that BOSS provides a better solution path than BS until step $5$ (except the fourth step), and the two methods give similar performances in further steps.
+
+% {fig:lossratio_fs_boss_k}
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=\textwidth]{figures/rmse_solpath_lsmethods.eps}
+	\caption{RMSE at each subset size, average over $1000$ replications. Note that for BOSS, the subset size $k_Q$ denotes the number of non-zero coefficients in $\hat{\gamma}(k_Q)$. In both scenarios, we have $n=200$, $p=30$, $\rho=0.9$ and high SNR.}
+	\label{fig:lossratio_fs_boss_k}
+\end{figure}
+
+
+\subsubsection{The performance of BOSS compared to other methods}
+\label{sec:boss_regu}
+We now consider feasible implementations of the estimation methods. We looked at results using AICc-hdf, C$_p$-hdf and 10-fold CV for BOSS, and AICc-hdf was the best (see Supplemental Material), so that is what we will use here. For BS and FS, we will use 10-fold CV. Similar to our discussion in Section \ref{sec:bs_regu}, we find that (see Supplemental Material) AICc performs similarly to 10-fold CV for lasso, and that is what we will use for lasso. For other regularization methods, the selection rule will be 10-fold CV. According to our results (see Supplemental Material), SparseNet is slightly better than relaxed lasso and gamma lasso, and therefore we only present the results for SparseNet here. 
+
+A selected set of simulation results is presented in Table \ref{tab:boss_regu}. Note that for BS, we only have results for $p\le 30$, since it is fitted using the ``leaps'' algorithm and $p \approx 30$ is the ad-hoc limit. We present the results in terms of $\%$ worse than the best possible BOSS, where the best possible BOSS means that on a single fit, we choose the subset size $k_Q$ with the minimum RMSE among all $p+1$ candidates, as if an oracle tells us the true model. Here is a brief summary of the results:
+
+
+\begin{itemize}
+	\item For BOSS, AICc-hdf has a significant advantage over CV in terms of predictive performance, except for $n=200$ and low SNR, in which case both selection rules are comparable. CV is also ten times heavier in terms of computation than AICc-hdf. These results are similar to the comparison of AICc-hdf and CV for BS with an orthogonal $X$ as discussed in Section \ref{sec:bs_ic_simulationresults}. Overall, the simulations indicate that AICc with hdf used in place of edf is a reasonable selection rule for an LS-based method that can be applied in practice without the requirement that the predictors are orthogonal. In the following discussions, when we refer to BOSS, we mean BOSS-AICc-hdf. 
+
+	\item The performance of BOSS is comparable to the performance of BS when BS is feasible. With a small sample size $n=200$, BOSS performs either similarly to or better than BS for a high SNR, and it performs either similarly to or slightly worse than BS for a low SNR. With a large sample size $n=2000$, BOSS is generally better than BS. Furthermore, BOSS only requires fitting the procedure once while BS uses CV as the selection rule, and a single fit of BOSS only has computational cost $O(np^2)$ so that BOSS is feasible for high dimensions.
+
+	\item The performance of BOSS is generally better than the performance of FS. In the Dense model, and Sparse-Ex3 with $n=200$ and low SNR, we see that BOSS performs similarly to FS. In all other scenarios, the advantage of BOSS is obvious. For example, in Sparse-Ex4 with $n=200$, high SNR and $\rho=0.9$, FS is almost ten times worse than BOSS in terms of RMSE. Recall that Sparse-Ex4 is an example where FS has trouble stepping in all of the true predictors (with $\beta_j \ne 0$) in early steps. This is evidenced by the fact that FS chooses eight extra predictors on average in this situation, while BOSS only chooses approximately two extra predictors. Furthermore, FS based on CV is ten times computationally heavier than BOSS. 
+
+	\item Compared to the regularization methods, with a small sample size $n=200$, BOSS is the best when SNR is high, lasso is the best when SNR is low and SparseNet is in between. With $n=2000$, BOSS is almost always the best even when SNR is low. These findings are consistent with the discussion in Section \ref{sec:bs_regu}, where we compare the performance of BS with regularization methods under an orthogonal $X$. 
+
+	\item In terms of support recovery in the sparse true models, LS-based methods can recover the true predictors (those with $\beta_j \ne 0$) and rarely include any noise predictors (those with $\beta_j = 0$) when SNR is high or the sample size $n$ is large. However, SparseNet and lasso generally overfit, with the latter being worse in that regard. In the low SNR and small $n$ scenario, lasso and SparseNet have more opportunity to recover the true predictors, but it comes with a price of including more false positives. 
+
+\end{itemize}
+
+
+% tab:boss_regu
+\input{tables/boss_regu.tex}
+
+\subsubsection{The scenario where \texorpdfstring{$n \le p$}{Lg}}
+For the case where $n \le p$, BS solves \eqref{eq:bestsubset-setup} up until subset size $k=n$ and FS stops stepping in predictors at step $k=n$. Similar to BS and FS, BOSS takes the first $n$ ordered predictors, orthogonalizes them and performs BS upon their orthogonalized space. The calculation of hdf requires estimates of $\mu$ and $\sigma$. For $n \le p$, we can not use the traditional unbiased estimate of $\sigma$ based on OLS estimates. Instead, we consider an estimate $\hat{\sigma} = \sqrt{\lVert y-\hat{\mu}_l \rVert_2^2 / (n-\text{df}(\hat{\mu}_l)-1)}$ as discussed in \citet{reid2016study}, where $\hat{\mu}_l$ are the lasso fitted values based on 10-fold CV and df$(\hat{\mu}_l)$ is the corresponding number of non-zero coefficients in the lasso estimate.
+
+Table \ref{tab:boss_regu_highdim} extends the results in Table \ref{tab:boss_regu} to the case where $n \le p$. Most of the findings in Table \ref{tab:boss_regu} apply here. AICc-hdf is preferable over CV as the selection rule for BOSS in terms of both performance and computational efficiency. The performance of BOSS is generally better than FS and the advantage can be significant, e.g. in Sparse-Ex4, $\rho=0.9$ and high SNR. Compared to regularization methods, BOSS performs the best when SNR is high and it can be a competitive method even in low SNR by increasing the sample size.
+
+
+% tab:boss_regu
+\input{tables/boss_regu_highdim.tex}

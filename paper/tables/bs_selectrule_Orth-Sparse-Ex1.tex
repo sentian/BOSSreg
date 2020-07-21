@@ -1,0 +1,50 @@
+% latex table generated in R 3.6.1 by xtable 1.8-4 package
+% Sun Nov 10 00:43:00 2019
+\begin{table}[ht]
+\centering
+\caption{The performance of AICc-hdf. The true model setup is Orth-Sparse-Ex1. 
+                    The columns involving `edf' refer to infeasible selection rules since edf is estimated as if the true model is known, 
+                    while other columns correspond to feasible rules.} 
+\label{tab:ic_df_orthx_sparseex1}
+\scalebox{0.7}{
+\begin{tabular}{|c|c|c|cc|cc|cc|c|}
+  \toprule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{c}{} &       & \multicolumn{2}{c|}{C$_p$} & \multicolumn{2}{c|}{AICc} & \multicolumn{2}{c|}{BIC} & \multirow{2}[4]{*}{CV} \\
+ \cmidrule{4-9}\multicolumn{1}{|r}{} & \multicolumn{1}{c}{} &       & edf   & ndf/hdf/bdf & edf   & ndf/hdf/bdf & edf   & ndf/hdf/bdf &     \\
+ \midrule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{c}{} &       & \multicolumn{7}{c|}{\% worse than the best possible BS} \\
+ \midrule 
+ \multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 4 & 84/5/7 & 2 & 83/2/5 & 0 & 28/0/0 & 24 \\ 
+   &  & p=180 & 1 & 338/30/32 & 0 & 392/1/2 & 0 & 206/0/0 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 20 & 25/36/33 & 21 & 24/37/35 & 68 & 23/68/67 & 28 \\ 
+   &  & p=180 & 15 & 108/35/34 & 18 & 132/22/22 & 25 & 50/25/25 & - \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 3 & 85/3/6 & 3 & 85/3/6 & 0 & 9/0/0 & 23 \\ 
+   &  & p=180 & 0 & 334/1/3 & 1 & 337/1/3 & 0 & 60/0/0 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 3 & 85/6/7 & 3 & 85/5/6 & 0 & 9/0/0 & 23 \\ 
+   &  & p=180 & 0 & 334/5/4 & 1 & 337/4/4 & 0 & 60/1/1 & - \\ 
+   \midrule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{r}{} &       & \multicolumn{7}{c|}{Relative efficiency} \\
+ \midrule 
+\multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 0.96 & 0.54/0.95/0.93 & 0.98 & 0.55/0.98/0.96 & 1 & 0.78/1/1 & 0.81 \\ 
+   &  & p=180 & 0.99 & 0.23/0.77/0.76 & 1 & 0.2/0.99/0.98 & 1 & 0.33/1/1 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 1 & 0.97/0.89/0.9 & 1 & 0.97/0.88/0.89 & 0.72 & 0.98/0.72/0.72 & 0.94 \\ 
+   &  & p=180 & 1 & 0.55/0.86/0.86 & 0.97 & 0.5/0.95/0.95 & 0.93 & 0.77/0.93/0.93 & - \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 0.97 & 0.54/0.97/0.94 & 0.97 & 0.54/0.97/0.94 & 1 & 0.92/1/1 & 0.81 \\ 
+   &  & p=180 & 1 & 0.23/0.99/0.97 & 0.99 & 0.23/0.99/0.97 & 1 & 0.62/1/1 & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 0.97 & 0.54/0.95/0.94 & 0.97 & 0.54/0.95/0.94 & 1 & 0.92/1/1 & 0.81 \\ 
+   &  & p=180 & 1 & 0.23/0.96/0.96 & 0.99 & 0.23/0.96/0.96 & 1 & 0.62/0.99/0.99 & - \\ 
+   \midrule 
+ \multicolumn{1}{|r}{} & \multicolumn{1}{r}{} &       & \multicolumn{7}{c|}{Sparsistency (number of extra variables)} \\
+ \midrule 
+\multirow{4}[4]{*}{n=200} & \multirow{2}[2]{*}{hsnr} & p=30 & 6(0.1) & 6(3.9)/6(0.2)/6(0.2) & 6(0) & 6(3.8)/6(0.1)/6(0.1) & 6(0) & 6(0.6)/6(0)/6(0) & 6(0.7) \\ 
+   &  & p=180 & 6(0) & 6(32.2)/6(6.4)/6(6.3) & 6(0) & 6(48.9)/6(0)/6(0) & 6(0) & 6(9.5)/6(0)/6(0) & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 4.5(1.9) & 5.3(3.9)/4.2(4.9)/4.2(4) & 4.2(1.2) & 5.2(3.8)/3.3(2.2)/3.4(1.8) & 0.1(0) & 3.7(0.6)/0.1(0)/0.2(0) & 4(1.9) \\ 
+   &  & p=180 & 1.9(0.5) & 5.3(32.2)/1.8(10.9)/1.9(9.8) & 1.1(0.1) & 5.6(49)/0.5(0)/0.6(0) & 0(0) & 4.2(8.4)/0(0)/0(0) & - \\ 
+  \midrule \multirow{4}[4]{*}{n=2000} & \multirow{2}[2]{*}{hsnr} & p=30 & 6(0.1) & 6(3.8)/6(0.1)/6(0.2) & 6(0.1) & 6(3.8)/6(0.1)/6(0.2) & 6(0) & 6(0.1)/6(0)/6(0) & 6(0.6) \\ 
+   &  & p=180 & 6(0) & 6(27.5)/6(0)/6(0) & 6(0) & 6(28.2)/6(0)/6(0) & 6(0) & 6(1.1)/6(0)/6(0) & - \\ 
+  \cmidrule{2-10} & \multirow{2}[2]{*}{lsnr} & p=30 & 6(0.1) & 6(3.8)/6(0.2)/6(0.2) & 6(0.1) & 6(3.8)/6(0.2)/6(0.2) & 6(0) & 6(0.1)/6(0)/6(0) & 6(0.6) \\ 
+   &  & p=180 & 6(0) & 6(27.5)/6(0.1)/6(0) & 6(0) & 6(28.2)/6(0.1)/6(0) & 6(0) & 6(1.1)/6(0)/6(0) & - \\ 
+   \bottomrule 
+\end{tabular}
+}
+\end{table}
