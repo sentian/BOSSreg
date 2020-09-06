@@ -49,7 +49,8 @@ calc.ic.all <- function(coef, x, y, df, sigma=NULL){
   # for AICc and BICc df larger than n-2 will cause trouble, round it
   df[which(df>=n-2)] = n-3
   ic$aicc = log(rss/n) + 2*(df+1)/(n-df-2)
-  ic$bicc = log(rss/n) + log(n)*(df+1)/(n-df-2)
+  # ic$bicc = log(rss/n) + log(n)*(df+1)/(n-df-2)
+  ic$bicc = log(rss/n) + df*(log(n)+2*log(p))/n
   return(ic)
 }
 
