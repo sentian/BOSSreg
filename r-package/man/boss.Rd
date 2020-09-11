@@ -7,7 +7,7 @@
 boss(
   x,
   y,
-  maxstep = min(nrow(x) - intercept, ncol(x)),
+  maxstep = min(nrow(x) - intercept - 1, ncol(x)),
   intercept = TRUE,
   hdf.ic.boss = TRUE,
   mu = NULL,
@@ -21,8 +21,8 @@ boss(
 
 \item{y}{A vector of response variable, with \code{length(y)=n}.}
 
-\item{maxstep}{Maximum number of steps performed. Default is \code{min(n,p)} if \code{intercept=FALSE},
-and it is \code{min(n-1, p)} otherwise.}
+\item{maxstep}{Maximum number of steps performed. Default is \code{min(n-1,p)} if \code{intercept=FALSE},
+and it is \code{min(n-2, p)} otherwise.}
 
 \item{intercept}{Logical, whether to include an intercept term. Default is TRUE.}
 

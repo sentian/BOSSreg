@@ -7,7 +7,7 @@
 cv.boss(
   x,
   y,
-  maxstep = min(nrow(x) - intercept, ncol(x)),
+  maxstep = min(nrow(x) - intercept - 1, ncol(x)),
   intercept = TRUE,
   n.folds = 10,
   n.rep = 1,
@@ -20,8 +20,8 @@ cv.boss(
 
 \item{y}{A vector of response variable, see \code{boss}.}
 
-\item{maxstep}{Maximum number of steps performed. Default is \code{min(n,p)} if \code{intercept=FALSE},
-and it is \code{min(n-1, p)} otherwise.}
+\item{maxstep}{Maximum number of steps performed. Default is \code{min(n-1,p)} if \code{intercept=FALSE},
+and it is \code{min(n-2, p)} otherwise.}
 
 \item{intercept}{Logical, whether to fit an intercept term. Default is TRUE.}
 
