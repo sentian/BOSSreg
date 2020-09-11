@@ -9,8 +9,8 @@
 #' @param x A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
 #'   \code{ncol(x)=p} predictors. Intercept shall NOT be included.
 #' @param y A vector of response variable, with \code{length(y)=n}.
-#' @param maxstep Maximum number of steps performed. Default is \code{min(n,p)} if \code{intercept=FALSE},
-#'   and it is \code{min(n-1, p)} otherwise.
+#' @param maxstep Maximum number of steps performed. Default is \code{min(n-1,p)} if \code{intercept=FALSE},
+#'   and it is \code{min(n-2, p)} otherwise.
 #' @param intercept Logical, whether to include an intercept term. Default is TRUE.
 #' @param hdf.ic.boss Logical, whether to calculate the heuristic degrees of freedom (hdf)
 #'   and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
@@ -70,13 +70,13 @@
 #' @useDynLib BOSSreg
 #' @importFrom Rcpp sourceCpp
 #' @export
-boss <- function(x, y, maxstep=min(nrow(x)-intercept, ncol(x)), intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ...){
+boss <- function(x, y, maxstep=min(nrow(x)-intercept-1, ncol(x)), intercept=TRUE, hdf.ic.boss=TRUE, mu=NULL, sigma=NULL, ...){
   n = dim(x)[1]
   p = dim(x)[2]
 
-  if(maxstep > min(nrow(x)-intercept, ncol(x))){
+  if(maxstep > min(nrow(x)-intercept-1, ncol(x))){
     warning('Specified maximum number of steps is larger than expected.')
-    maxstep = min(nrow(x)-intercept, ncol(x))
+    maxstep = min(nrow(x)-intercept-1, ncol(x))
   }
 
   # standardize x (mean 0 and norm 1) and y (mean 0)

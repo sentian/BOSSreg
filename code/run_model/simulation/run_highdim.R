@@ -4,8 +4,8 @@
 
 para.forhpc.highdim <- function(){
   count = 360
-  n = c(50, 100, 200, 400)
-  p = c(1000, 2000, 4000, 4000)
+  n = c(50, 100, 200, 200)
+  p = c(1000, 2000, 4000, 10000)
   snr = c(0.2, 1.5, 7)
   type = c('Sparse-Ex1', 'Sparse-Ex2', 'Sparse-Ex3', 'Sparse-Ex4', 'Dense')
   rho = c(0, 0.5, 0.9)
@@ -75,4 +75,9 @@ result = eval.metrics.simplified(data$x, data$y, data$beta, data$sigma, result_c
 
 ## Save the results
 saveRDS(result, paste0(base, '/results/', filename, '.rds'))
+
+
+
+
+
 

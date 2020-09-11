@@ -676,7 +676,8 @@ run.cv.simplified <- function(x, y, seed=66){
               step_fs = step_fs))
 }
 
-calc.ic.extended <- function(coef, x, y, ic=c('aicc','bicc','aic','bic','gcv','cp','ebic','hdbic','hdhq'), df, sigma=NULL){
+## Extend the calc.ic function by including EBIC, HDBIC, HDHQ from Ing(2011)
+calc.ic.extended <- function(coef, x, y, ic=c('aicc','bicc','aic','bic','gcv','cp','ebic','hdbic','hdhq'), df, p, sigma=NULL){
   # match the argument
   ic = match.arg(ic)
   
@@ -698,7 +699,6 @@ calc.ic.extended <- function(coef, x, y, ic=c('aicc','bicc','aic','bic','gcv','c
   }
   
   n = nrow(y)
-  p = dim(x)[2]
   nfit = ncol(coef)
   fit = x %*% coef
   rss = Matrix::colSums(sweep(fit, 1, y, '-')^2)
@@ -718,9 +718,7 @@ calc.ic.extended <- function(coef, x, y, ic=c('aicc','bicc','aic','bic','gcv','c
   else if(ic=='hdbic'){return(log(rss/n) + df*log(n)*log(p)/n )}
   else if(ic=='hdhq'){return(log(rss/n) + 2.01*df*log(log(n))*log(p)/n)}
 }
-coef.ls <- function(x, y){
-  ginv(t(x)%*%x) %*% t(x) %*% y
-}
+## FS with trim, Ing(2011)
 fs.trim <- function(x, y, betahat, steps, hdbic){
   n = dim(x)[1]
   p = dim(x)[2]
@@ -738,14 +736,16 @@ fs.trim <- function(x, y, betahat, steps, hdbic){
     steps_khat = steps[1:k_hat]
     hdbic_khat = min(hdbic)
     tmp_function <- function(i){
-      betahat_tmp = coef.ls(x[,steps_khat[-i],drop=FALSE], y)
-      calc.ic.extended(betahat_tmp, x[,steps_khat[-i],drop=FALSE], y, ic="hdbic", df=Matrix::colSums(betahat_tmp!=0))
+      betahat_tmp = lsfit(x[,steps_khat[-i],drop=FALSE], y, intercept=FALSE)$coef
+      calc.ic.extended(betahat_tmp, x[,steps_khat[-i],drop=FALSE], y, ic="hdbic", df=sum(betahat_tmp!=0), p=p)
     }
     hdbic_candidate = unlist(lapply(1:length(steps_khat), tmp_function))
     steps_trim = steps_khat[which(hdbic_candidate > hdbic_khat)]
     # Fit LS on the trimmed subset
     betahat_trim = Matrix::Matrix(0, nrow=p, ncol=1)
-    betahat_trim[steps_trim] = coef.ls(x[,steps_trim,drop=FALSE], y) / sd_demanedx[steps_trim]
+    if(length(steps_trim) > 0){
+      betahat_trim[steps_trim] = lsfit(x[,steps_trim,drop=FALSE], y, intercept = FALSE)$coef / sd_demanedx[steps_trim]
+    }
     if(intercept){
       betahat_trim = rbind(Matrix::Matrix(mean_y - mean_x %*% betahat_trim, sparse=TRUE), betahat_trim)
     }
@@ -754,7 +754,9 @@ fs.trim <- function(x, y, betahat, steps, hdbic){
   }
   return(betahat_trim)
 }
-
+## Simplifed version of eval.metrics
+## Remove the orthogonal X case
+## Remove BS, Relaxed LASSO (keep the simplified version) from the comparison
 eval.metrics.simplified <- function(x, y, beta, sigma, result.cv){
   betahat = result.cv$betahat
   i.min.cv = result.cv$i.min.cv
@@ -792,25 +794,18 @@ eval.metrics.simplified <- function(x, y, beta, sigma, result.cv){
   }
   
   # FS
-  betahat_fs_trim = fs_trim(x, y, betahat_fs, steps_fs, hdbic)
-  k_stop = trunc(5*sqrt(n / log(p)))
-  fs_trim(x, y, betahat_fs[,1:(k_stop+1)], steps_fs[1:k_stop], hdbic[1:(k_stop+1)])
-  
-  result[['fstrim']][['ic']][[c('hdbic')]][['ndf']]
-  result[['fsstoptrim']][['ic']][[c('hdbic')]][['ndf']]
-  
   for(ic in c('ebic', 'hdbic', 'hdhq')){
-    ic_value = lapply(betahat[['fs']], function(xx){calc.ic.extended(xx, x, y, ic=ic, df=Matrix::colSums(xx!=0))})
+    ic_value = lapply(1:nrep, function(rep){calc.ic.extended(betahat[['fs']][[rep]], x, y[,rep], ic=ic, df=Matrix::colSums(betahat[['fs']][[rep]]!=0), p=p)})
     # FS on the entire solution path
-    betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ betahat[['fs']][, which.min(ic_value[[rep]])] }))
+    betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ betahat[['fs']][[rep]][, which.min(ic_value[[rep]])] }))
     result[['fs']][['ic']][[ic]][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
     # FS with stopping rule, Ing (2011)
-    betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ betahat[['fs']][, which.min(ic_value[[rep]][1:(k_stop+1)])] }))
+    betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ betahat[['fs']][[rep]][, which.min(ic_value[[rep]][1:(k_stop+1)])] }))
     result[['fsstop']][['ic']][[ic]][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
     if(ic == 'hdbic'){
-      betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ fs_trim(x, y[,rep], betahat[['fs']][[rep]], steps_fs[[rep]], ic_value[[rep]]) }))
+      betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ fs.trim(x, y[,rep], betahat[['fs']][[rep]], step_fs[[rep]], ic_value[[rep]]) }))
       result[['fstrim']][['ic']][['hdbic']][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
-      betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ fs_trim(x, y[,rep], betahat[['fs']][[rep]], steps_fs[[rep]][1:k_stop], ic_value[[rep]][1:(k_stop+1)]) }))
+      betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ fs.trim(x, y[,rep], betahat[['fs']][[rep]], step_fs[[rep]][1:k_stop], ic_value[[rep]][1:(k_stop+1)]) }))
       result[['fsstoptrim']][['ic']][['hdbic']][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
     }
   }
@@ -822,7 +817,7 @@ eval.metrics.simplified <- function(x, y, beta, sigma, result.cv){
   # Gamma LASSO-AICc
   betahat_gamlr_aicc = do.call(cbind, lapply(1:nrep, function(rep){ betahat$gamlr[[rep]][[i.min.gamlr.aicc[[rep]][1]]][,i.min.gamlr.aicc[[rep]][2]] }))
   result$gamlr$ic$aicc = rmse.sparsistency.extravariable(betahat_gamlr_aicc, x, beta)
-
+  
   # CV for all the methods
   for(method in allmethods){
     if(method %in% c('sparsenet', 'gamlr')){

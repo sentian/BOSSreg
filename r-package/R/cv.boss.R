@@ -2,8 +2,8 @@
 #'
 #' @param x A matrix of predictors, see \code{boss}.
 #' @param y A vector of response variable, see \code{boss}.
-#' @param maxstep Maximum number of steps performed. Default is \code{min(n,p)} if \code{intercept=FALSE},
-#'   and it is \code{min(n-1, p)} otherwise.
+#' @param maxstep Maximum number of steps performed. Default is \code{min(n-1,p)} if \code{intercept=FALSE},
+#'   and it is \code{min(n-2, p)} otherwise.
 #' @param intercept Logical, whether to fit an intercept term. Default is TRUE.
 #' @param n.folds The number of cross validation folds. Default is 10.
 #' @param n.rep The number of replications of cross validation. Default is 1.
@@ -35,7 +35,7 @@
 #' @seealso \code{predict} and \code{coef} methods for \code{cv.boss} object, and the \code{boss} function
 #' @example R/example/eg.cv.boss.R
 #' @export
-cv.boss <- function(x, y, maxstep=min(nrow(x)-intercept, ncol(x)), intercept=TRUE, n.folds=10, n.rep=1, show.warning=TRUE, ...){
+cv.boss <- function(x, y, maxstep=min(nrow(x)-intercept-1, ncol(x)), intercept=TRUE, n.folds=10, n.rep=1, show.warning=TRUE, ...){
   # # arguments
   argu = list(...)
   # argu_boss = c('intercept', 'hdf.ic.boss') # arguments that boss accepts
@@ -52,7 +52,7 @@ cv.boss <- function(x, y, maxstep=min(nrow(x)-intercept, ncol(x)), intercept=TRU
   n = dim(x)[1]
   p = dim(x)[2]
   maxstep_tmp = maxstep
-  maxstep = trunc(min(n - n/n.folds, maxstep_tmp))
+  maxstep = trunc(min(n - n/n.folds - 1, maxstep_tmp))
   if(maxstep < maxstep_tmp & show.warning){
     warning(paste0('Subsets up to size ', maxstep,
                    ' are evaluated by CV. Increase the number of folds to incorporate larger subsets.'))
