@@ -11,6 +11,7 @@ cv.boss(
   intercept = TRUE,
   n.folds = 10,
   n.rep = 1,
+  show.warning = TRUE,
   ...
 )
 }
@@ -27,6 +28,9 @@ and it is \code{min(n-1, p)} otherwise.}
 \item{n.folds}{The number of cross validation folds. Default is 10.}
 
 \item{n.rep}{The number of replications of cross validation. Default is 1.}
+
+\item{show.warning}{Whether to display a warning if CV is only performed for a subset of candidates.
+e.g. when n<p and 10-fold. Default is TRUE.}
 
 \item{...}{Arguments to \code{boss}, such as \code{hdf.ic.boss}.}
 }

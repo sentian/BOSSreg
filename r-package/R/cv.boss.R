@@ -7,6 +7,8 @@
 #' @param intercept Logical, whether to fit an intercept term. Default is TRUE.
 #' @param n.folds The number of cross validation folds. Default is 10.
 #' @param n.rep The number of replications of cross validation. Default is 1.
+#' @param show.warning Whether to display a warning if CV is only performed for a subset of candidates.
+#'   e.g. when n<p and 10-fold. Default is TRUE.
 #' @param ... Arguments to \code{boss}, such as \code{hdf.ic.boss}.
 #'
 #' @return
@@ -52,7 +54,8 @@ cv.boss <- function(x, y, maxstep=min(nrow(x)-intercept, ncol(x)), intercept=TRU
   maxstep_tmp = maxstep
   maxstep = trunc(min(n - n/n.folds, maxstep_tmp))
   if(maxstep < maxstep_tmp & show.warning){
-    warning(paste0('Subsets up to size ', maxstep, ' are evaluated by CV. Increase the number of folds to incorporate larger subsets.'))
+    warning(paste0('Subsets up to size ', maxstep,
+                   ' are evaluated by CV. Increase the number of folds to incorporate larger subsets.'))
   }
 
   # matrix to store the CV error

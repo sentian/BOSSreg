@@ -615,6 +615,228 @@ eval.metrics.srlasso <- function(x, y, beta, result.cv){
   result[[method]][['cv']] = rmse.sparsistency.extravariable(betahat_method_cv, x, beta)
   return(result)
 }
+
+
+## Simplifed version of run.cv
+## Remove the orthogonal X case
+## Remove BS, Relaxed LASSO (keep the simplified version) from the comparison
+run.cv.simplified <- function(x, y, seed=66){
+  n = dim(x)[1]
+  p = dim(x)[2]
+  nrep = dim(y)[2]
+  
+  # Declare variables to save the results
+  allmethods = c('boss', 'fs', 'lasso', 'sparsenet', 'gamlr', 'srlasso')
+  
+  i.min.cv = betahat = replicate(length(allmethods), list(), simplify=FALSE)
+  names(i.min.cv) = names(betahat) = allmethods
+  i.min.gamlr.aicc = ic_hdf_boss = step_fs = list()
+  
+  set.seed(seed)
+  for(rep in 1:nrep){
+    if(rep %% 100 == 0){print(rep)}
+    # BOSS and FS
+    boss_cv = cv.boss(x, y[,rep], intercept=FALSE, show.warning=FALSE)
+    i.min.cv$boss[[rep]] = boss_cv$i.min.boss
+    i.min.cv$fs[[rep]] = boss_cv$i.min.fs
+    betahat$boss[[rep]] = boss_cv$boss$beta_boss
+    betahat$fs[[rep]] = boss_cv$boss$beta_fs
+    ic_hdf_boss[[rep]] = boss_cv$boss$IC_boss
+    step_fs[[rep]] = boss_cv$boss$steps_x
+    # lasso
+    lasso_cv = cv.glmnet(x, y[,rep], intercept=FALSE)
+    i.min.cv$lasso[[rep]] = which.min(lasso_cv$cvm)
+    betahat$lasso[[rep]] = coef(lasso_cv$glmnet.fit)[-1,]
+    # SparseNet
+    sparsenet_cv = cv.sparsenet(x, y[,rep])
+    i.min.cv$sparsenet[[rep]] = rev(sparsenet_cv$which.min)
+    betahat$sparsenet[[rep]] = lapply(coef(sparsenet_cv$sparsenet.fit), function(xx){xx[-1,]})
+    # Gamma LASSO
+    gamma_seq = c(0,1,10)
+    cvm = aicc_gamlr = matrix(NA, nrow=length(gamma_seq), ncol=100)
+    coef_tmp = list()
+    for(j in 1:length(gamma_seq)){
+      gamlr_cv_gamma = cv.gamlr(x, y[,rep], gamma=gamma_seq[j], nlambda=100, nfold=10)
+      cvm[j,] = gamlr_cv_gamma$cvm
+      coef_tmp[[j]] = gamlr_cv_gamma$gamlr$beta
+      aicc_gamlr[j,] = calc.ic(x%*%gamlr_cv_gamma$gamlr$beta, y[,rep], ic='aicc', df=gamlr_cv_gamma$gamlr$df)
+    }
+    i.min.cv$gamlr[[rep]] = pick.best(cvm)
+    betahat$gamlr[[rep]] = coef_tmp
+    i.min.gamlr.aicc[[rep]] = pick.best(aicc_gamlr)
+    # Simplified relaxed lasso
+    srlasso_cv = cv.srlasso(x, y[,rep], intercept=FALSE)
+    i.min.cv$srlasso[[rep]] = srlasso_cv$i.min
+    betahat$srlasso[[rep]] = srlasso_cv$betahat
+  }
+  return(list(i.min.cv = i.min.cv,
+              i.min.gamlr.aicc = i.min.gamlr.aicc,
+              ic_hdf_boss = ic_hdf_boss,
+              betahat = betahat,
+              step_fs = step_fs))
+}
+
+calc.ic.extended <- function(coef, x, y, ic=c('aicc','bicc','aic','bic','gcv','cp','ebic','hdbic','hdhq'), df, sigma=NULL){
+  # match the argument
+  ic = match.arg(ic)
+  
+  # unify dimensions
+  y = matrix(y, ncol=1)
+  df = matrix(df, nrow=1)
+  if(is.null(dim(coef))){
+    coef = matrix(coef, ncol=1)
+  }else if(dim(coef)[1]==1){
+    coef = matrix(coef, ncol=1)
+  }
+  
+  # sanity check
+  if(ncol(coef) != ncol(df)){
+    stop('the number of fits does not match the number of df')
+  }
+  if(ic=='cp' & is.null(sigma)){
+    stop("need to specify sigma for Mallow's Cp")
+  }
+  
+  n = nrow(y)
+  p = dim(x)[2]
+  nfit = ncol(coef)
+  fit = x %*% coef
+  rss = Matrix::colSums(sweep(fit, 1, y, '-')^2)
+  # for AICc and BICc df larger than n-2 will cause trouble, round it
+  if(ic=='aicc' | ic=='bicc'){
+    df[which(df>=n-2)]=n-3
+  }
+  if(ic=='aic'){return(log(rss/n)  + 2*df/n)}
+  else if(ic=='bic'){return(log(rss/n)  + log(n)*df/n)}
+  else if(ic=='aicc'){return(log(rss/n) + 2*(df+1)/(n-df-2))}
+  else if(ic=='bicc'){return(log(rss/n) + log(n)*(df+1)/(n-df-2))}
+  else if(ic=='gcv'){return(rss / (n-df)^2)}
+  else if(ic=='cp'){return(rss + 2*sigma^2*df)}
+  # Wang (2009)
+  else if(ic=='ebic'){return(log(rss/n) + df*(log(n)+2*log(p))/n )}
+  # Ing (2011)
+  else if(ic=='hdbic'){return(log(rss/n) + df*log(n)*log(p)/n )}
+  else if(ic=='hdhq'){return(log(rss/n) + 2.01*df*log(log(n))*log(p)/n)}
+}
+coef.ls <- function(x, y){
+  ginv(t(x)%*%x) %*% t(x) %*% y
+}
+fs.trim <- function(x, y, betahat, steps, hdbic){
+  n = dim(x)[1]
+  p = dim(x)[2]
+  intercept = (dim(betahat)[1] == p+1)
+  k_hat = which.min(hdbic) - 1
+  if(k_hat > 1){
+    # standardize x (mean 0 and norm 1) and y (mean 0)
+    std_result = BOSSreg:::std(x, y, intercept)
+    x = std_result$x_std
+    y = std_result$y_std
+    mean_x = std_result$mean_x
+    mean_y = std_result$mean_y
+    sd_demanedx = std_result$sd_demeanedx
+    # Trim based on HDBIC
+    steps_khat = steps[1:k_hat]
+    hdbic_khat = min(hdbic)
+    tmp_function <- function(i){
+      betahat_tmp = coef.ls(x[,steps_khat[-i],drop=FALSE], y)
+      calc.ic.extended(betahat_tmp, x[,steps_khat[-i],drop=FALSE], y, ic="hdbic", df=Matrix::colSums(betahat_tmp!=0))
+    }
+    hdbic_candidate = unlist(lapply(1:length(steps_khat), tmp_function))
+    steps_trim = steps_khat[which(hdbic_candidate > hdbic_khat)]
+    # Fit LS on the trimmed subset
+    betahat_trim = Matrix::Matrix(0, nrow=p, ncol=1)
+    betahat_trim[steps_trim] = coef.ls(x[,steps_trim,drop=FALSE], y) / sd_demanedx[steps_trim]
+    if(intercept){
+      betahat_trim = rbind(Matrix::Matrix(mean_y - mean_x %*% betahat_trim, sparse=TRUE), betahat_trim)
+    }
+  }else{
+    betahat_trim = betahat[,(k_hat+1),drop=FALSE]
+  }
+  return(betahat_trim)
+}
+
+eval.metrics.simplified <- function(x, y, beta, sigma, result.cv){
+  betahat = result.cv$betahat
+  i.min.cv = result.cv$i.min.cv
+  i.min.gamlr.aicc = result.cv$i.min.gamlr.aicc
+  ic_hdf_boss = result.cv$ic_hdf_boss
+  step_fs = result.cv$step_fs
+  
+  mu = x%*%beta
+  n = dim(x)[1]
+  p = dim(x)[2]
+  nrep = dim(y)[2]
+  k_stop = trunc(5*sqrt(n / log(p))) # stopping rule for FS
+  
+  allmethods = names(betahat)
+  
+  result = list()
+  # BOSS
+  method = 'boss'
+  rmse_method_allrep = lapply(betahat[[method]], function(xx){sqrt(colSums(sweep(x%*%xx,1,mu,'-')^2)/n)})
+  betahat_method_best = do.call(cbind, Map(function(xx, yy){yy[,which.min(xx)]}, rmse_method_allrep, betahat[[method]]))
+  result[[method]][['best']] = rmse.sparsistency.extravariable(betahat_method_best, x, beta)
+  
+  # BOSS-IC-hdf
+  ic_boss = list()
+  ic_boss$hdf = ic_hdf_boss
+  ic_method = ic_boss
+  tmp = lapply(ic_method, function(xx){lapply(1:nrep, function(rep){lapply(xx[[rep]], function(yy){betahat[[method]][[rep]][,which.min(yy)]})})})
+  df_names = names(tmp)
+  ic_names = names(tmp$hdf[[1]])
+  for(ic in ic_names){
+    for(df in df_names){
+      betahat_method_ic = do.call(cbind, lapply(tmp[[df]], function(xx){xx[[ic]]}) )
+      result[[method]][['ic']][[ic]][[df]] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
+    }
+  }
+  
+  # FS
+  betahat_fs_trim = fs_trim(x, y, betahat_fs, steps_fs, hdbic)
+  k_stop = trunc(5*sqrt(n / log(p)))
+  fs_trim(x, y, betahat_fs[,1:(k_stop+1)], steps_fs[1:k_stop], hdbic[1:(k_stop+1)])
+  
+  result[['fstrim']][['ic']][[c('hdbic')]][['ndf']]
+  result[['fsstoptrim']][['ic']][[c('hdbic')]][['ndf']]
+  
+  for(ic in c('ebic', 'hdbic', 'hdhq')){
+    ic_value = lapply(betahat[['fs']], function(xx){calc.ic.extended(xx, x, y, ic=ic, df=Matrix::colSums(xx!=0))})
+    # FS on the entire solution path
+    betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ betahat[['fs']][, which.min(ic_value[[rep]])] }))
+    result[['fs']][['ic']][[ic]][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
+    # FS with stopping rule, Ing (2011)
+    betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ betahat[['fs']][, which.min(ic_value[[rep]][1:(k_stop+1)])] }))
+    result[['fsstop']][['ic']][[ic]][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
+    if(ic == 'hdbic'){
+      betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ fs_trim(x, y[,rep], betahat[['fs']][[rep]], steps_fs[[rep]], ic_value[[rep]]) }))
+      result[['fstrim']][['ic']][['hdbic']][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
+      betahat_method_ic = do.call(cbind, lapply(1:nrep, function(rep){ fs_trim(x, y[,rep], betahat[['fs']][[rep]], steps_fs[[rep]][1:k_stop], ic_value[[rep]][1:(k_stop+1)]) }))
+      result[['fsstoptrim']][['ic']][['hdbic']][['ndf']] = rmse.sparsistency.extravariable(betahat_method_ic, x, beta)
+    }
+  }
+  
+  # LASSO-AICc
+  betahat_lasso_aicc = do.call(cbind, lapply(1:nrep, function(rep){betahat$lasso[[rep]][,which.min( calc.ic(x%*%betahat$lasso[[rep]], y[,rep], ic='aicc', df=colSums(betahat$lasso[[rep]]!=0)) )]} ))
+  result$lasso$ic$aicc = rmse.sparsistency.extravariable(betahat_lasso_aicc, x, beta)
+  
+  # Gamma LASSO-AICc
+  betahat_gamlr_aicc = do.call(cbind, lapply(1:nrep, function(rep){ betahat$gamlr[[rep]][[i.min.gamlr.aicc[[rep]][1]]][,i.min.gamlr.aicc[[rep]][2]] }))
+  result$gamlr$ic$aicc = rmse.sparsistency.extravariable(betahat_gamlr_aicc, x, beta)
+
+  # CV for all the methods
+  for(method in allmethods){
+    if(method %in% c('sparsenet', 'gamlr')){
+      betahat_method_cv = do.call(cbind, lapply(1:nrep, function(rep){ betahat[[method]][[rep]][[i.min.cv[[method]][[rep]][1]]][,i.min.cv[[method]][[rep]][2]] }))
+    }else{
+      betahat_method_cv = do.call(cbind, lapply(1:nrep, function(rep){ betahat[[method]][[rep]][,i.min.cv[[method]][[rep]]] }))
+    }
+    result[[method]][['cv']] = rmse.sparsistency.extravariable(betahat_method_cv, x, beta)
+  }
+  
+  return(result)
+}
+
+
 ###### Other functions to be used in reproducing plots and tables --------
 ## Degrees of freedom for LBS when X is orthogonal, based on definitions in Tibshirani(2015)
 edf.lbs.orthx <- function(Q, sigma, mu, sqrt_2lambda){
@@ -659,4 +881,17 @@ lbs.orthx <- function(x, y){
   
   return(list(betahat=betahat, sqrt_2lambda=sqrt_2lambda_fixed))
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 

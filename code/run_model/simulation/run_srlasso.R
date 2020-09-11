@@ -53,7 +53,7 @@ if(orthx){
   data = gen.data.generalx(n=n, p=p, rho=rho, snr=snr, type=type)
 }
 
-## Cross-valications
+## Cross-validations
 print('cv')
 ptm = proc.time()
 result_cv = run.cv.srlasso(data$x, data$y)
@@ -61,7 +61,7 @@ proc.time() - ptm
 saveRDS(result_cv, paste0(base, '/tmp/result_cv/srlasso/', filename, '.rds'))
 
 
-## Evaulate the selected subsets for all methods
+## Evaluate the selected subsets for all methods
 print('evaluation')
 result = eval.metrics.srlasso(data$x, data$y, data$beta, result_cv)
 result_all = readRDS(paste0(base, '/results/', filename, '.rds'))

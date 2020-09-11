@@ -62,8 +62,8 @@ calc.ic <- function(y_hat, y, ic=c('aicc','bicc','aic','bic','gcv','cp'), df, si
   if(ic=='aic'){return(log(rss/n)  + 2*df/n)}
   else if(ic=='bic'){return(log(rss/n)  + log(n)*df/n)}
   else if(ic=='aicc'){return(log(rss/n) + 2*(df+1)/(n-df-2))}
-  # else if(ic=='bicc'){return(log(rss/n) + log(n)*(df+1)/(n-df-2))}
-  else if(ic=='bicc'){return(log(rss/n) + df*(log(n)+2*log(p))/n )}
+  else if(ic=='bicc'){return(log(rss/n) + log(n)*(df+1)/(n-df-2))}
+  # else if(ic=='bicc'){return(log(rss/n) + df*(log(n)+2*log(p))/n )}
   else if(ic=='gcv'){return(rss / (n-df)^2)}
   else if(ic=='cp'){return(rss + 2*sigma^2*df)}
 }

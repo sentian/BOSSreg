@@ -14,6 +14,7 @@ Note that the implementation of FS in **BOSSreg** is built upon the implementati
   * extended the estimation of hdf to the scenario of p>=n
   * modified function `boss` to account for p>n
   * modified function `cv.boss` to account for p>n (only validates subset with sizes up to min(n - n/n.folds, maxstep))
+  * corrected the format of estimated coefficient matrix to be sparse matrix, when intercept is estimated
 
 ### Install the R package
 To install the latest version of the package (v0.2.0.9000, see r-package/NEWS.md for updates in the new version), run the following:

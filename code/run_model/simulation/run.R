@@ -32,7 +32,7 @@ para.forhpc <- function(orthx){
             for(m in 1:length(rho)){
               count = count + 1
               write.table(c(type[i], n[j], p[k], snr[l], rho[m]),
-                          file = paste(base, "/run_model/para_forhpc/generalx_",count,".txt",sep=''), sep = '', col.names = FALSE, row.names = FALSE)
+                          file = paste(base, "/run_model/simulation/para_forhpc/generalx_",count,".txt",sep=''), sep = '', col.names = FALSE, row.names = FALSE)
             }
           }
         }
@@ -43,10 +43,10 @@ para.forhpc <- function(orthx){
 
 
 }
-# base = '/Users/sentian/Dropbox/Sen/Research/Model_selection/rpackage/BOSSreg/code'
+
+# base = '/Volumes/HDD/Dropbox/Sen/Research/Model_selection/BOSSreg/code'
 # para.forhpc(TRUE)
 # para.forhpc(FALSE)
-
 
 ###### Fit the models on HPC server --------
 base = '/scratch/st1864/boss' # the basis of the directory to store all the outputs

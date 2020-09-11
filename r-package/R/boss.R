@@ -109,7 +109,7 @@ boss <- function(x, y, maxstep=min(nrow(x)-intercept, ncol(x)), intercept=TRUE, 
     beta.x[steps_x, ] = diag(1/sd_demanedx[steps_x]) %*% backsolve(R, beta.q)
     beta.x = cbind(0, beta.x)
     if(intercept){
-      beta.x = rbind((mean_y - mean_x %*% beta.x), beta.x)
+      beta.x = rbind(Matrix::Matrix(mean_y - mean_x %*% beta.x, sparse=TRUE), beta.x)
     }
     return(beta.x)
   }

@@ -31,7 +31,7 @@ and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 Cp. Default is TRUE.}
 
 \item{mu}{True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via
-least-squares (LS) regression of y upon x for n>p and FS at subset size k=n for n<=p. .}
+least-squares (LS) regression of y upon x.}
 
 \item{sigma}{True standard deviation of the error, used in the calculation of hdf. Default is NULL,
 and is estimated via least-squares (LS) regression of y upon x for n>p and 10-fold cross-validated lasso
@@ -117,6 +117,8 @@ mu_boss_cp = cbind(1,x) \%*\% beta_boss_cp
 \itemize{
   \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
   for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
+  \item Reid, S., Tibshirani, R. and Friedman, J. (2016), A Study of Error Variance Estimation in Lasso Regression. Statistica Sinica,
+  P35-67, JSTOR.
   \item BOSSreg Vignette https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf
 }
 }
