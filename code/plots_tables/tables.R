@@ -596,6 +596,160 @@ table.bs.regu.supplement <- function(scale.box = 0.75){
 }
 table.bs.regu.supplement()
 
+summary.result.highdim <- function(data, result, rmse.oracle, type.table){
+  n = dim(data$x)[1]
+  # % worse than the oracle performance (best possible BS or BOSS)
+  percentloss = unlist(lapply(result$rmse, function(xx){round(100*(xx / rmse.oracle - 1), 0)}))
+  
+  # Relative efficiency
+  mu = data$x %*% data$beta
+  rmse_null = sqrt(sum(mu^2) / n) # null model
+  betahat_full = ginv(data$x) %*% data$y # full OLS
+  rmse_full = mean( sqrt(colSums(sweep(data$x%*%betahat_full, 1, mu,'-')^2)/n) )
+  rmse_method = unlist(result$rmse)
+  rmse_min = min(c(rmse_method, rmse_null, rmse_full))
+  efficiency = round(rmse_min/rmse_method, 2)
+  
+  if(sum(data$beta == 0) == 0){
+    output = list(percentloss = percentloss, efficiency = efficiency, 
+                  sparsistency = unlist(lapply(result$sparsistency, function(xx){as.character(round(xx, 1))})),
+                  extravariable = rep('-', length(result$extravariable)))
+  }else{
+    output = list(percentloss = percentloss, efficiency = efficiency, 
+                  sparsistency = unlist(lapply(result$sparsistency, function(xx){as.character(round(xx, 1))})),
+                  extravariable = unlist(lapply(result$extravariable, function(xx){as.character(round(xx, 1))})),
+  }
+  
+  # Different styles of output for different types of tables
+  if(type.table == 'maintext.bossreguhighdim'){
+    tmp_function <- function(xx){
+      c(paste(xx[1:2],collapse='/'), paste(xx[3:6],collapse='/'), paste(xx[7:9],collapse='/'), xx[10:13])
+    } 
+    return(lapply(output, tmp_function))
+  }else if(type.table == 'supplement.bossreguhighdim'){
+    tmp_function <- function(xx){
+      c(paste(xx[1:3],collapse='/'), paste(xx[4:7],collapse='/'), paste(xx[8:10],collapse='/'), xx[11:12], 
+        paste(xx[13:14],collapse='/'), paste(xx[15:16],collapse='/'), xx[17:18])
+    } 
+    return(lapply(output, tmp_function))
+  }
+  
+}
+df.summary.result.highdim <- function(n, p, snr, type, rho, methods, type.table){
+  count = 0
+  output = list()
+  allresults = list.files(paste0(base_results, '/generalx'))
+  # X is general
+  for(i in 1:length(n)){
+    for(j in 1:length(snr)){
+      for(m in 1:length(rho)){
+        for(k in 1:length(p)){
+          metrics = list()
+          count = count + 1
+          for(l in 1:length(type)){
+            # Read data
+            x_beta_sigma = gen.x.beta.sigma(n[i], p[i], rho[m], type[l], snr[j], seed.x = 1001)
+            x = x_beta_sigma$x
+            beta = x_beta_sigma$beta
+            sigma = x_beta_sigma$sigma
+            mu = x%*%beta
+            y = do.call(cbind, lapply(1:1000, function(rep){gen.response(mu, sigma, seed.y=rep)}))
+            data = list(x=x, y=y, beta=beta, sigma=sigma)
+            # Read the simulation results
+            filename = paste0( type[l], '_n', n[i], '_p', p[i], '_', names(snr)[j], '_rho', gsub("[.]","",as.character(rho[m])), '.rds')
+            result = readRDS(paste0(base_results, '/generalx/', filename))
+            result_target = lapply(methods, function(xx){result[[xx]]})
+            # Best possible BOSS
+            rmse_oracle = mean(result$boss$best$rmse)
+            # The evaluation metrics for the specified methods
+            result_tosummary = list()
+            for(which.metric in c('rmse', 'sparsistency', 'extravariable')){
+              result_tosummary[[which.metric]] = lapply(result_target, function(xx){mean(xx[[which.metric]])})
+            }
+            # Calculate the three metrics to be presented in the table
+            metrics[[l]] = summary.result.highdim(data, result_tosummary, rmse_oracle, type.table)
+          }
+          output[[count]] = lapply(1:4, function(ii){do.call(c, lapply(metrics, '[[', ii))})
+        }
+      }
+    }
+  }
+
+  output = do.call(rbind, lapply(1:4, function(ii){do.call(rbind, lapply(output, '[[', ii))}))
+  return(output) 
+}
+table.boss.regu.highdim.supplement <- function(title, scale.box=0.43){
+  # Parameters
+  n = 200
+  p = c(550, 1000, 4000, 10000)
+  snr = c(7, 1.5, 0.2)
+  names(snr) = c('hsnr', 'msnr', 'lsnr')
+  nrep = 1000
+  
+  count = 0
+  for(type in c(paste0('Sparse-Ex', 1:4), 'Dense')){
+    for(rho in c(0, 0.5, 0.9)){
+      title = paste0('The performance of BOSS for high dimensional data, ', type, ', $\\rho$=', rho, ', n=', n)
+      filename = paste0(type, '_rho_', gsub("[.]","",as.character(rho)))
+      
+      output = df.summary.result.highdim(n, p, snr, type, rho, 
+                                         methods = list(c('boss', 'ic', 'cp', 'hdf'), c('boss', 'ic', 'aicc', 'hdf'), c('boss', 'cv'), 
+                                                        c('fs', 'ic', 'ebic', 'ndf'), c('fs', 'ic', 'hdbic', 'ndf'), c('fs', 'ic', 'hdhq', 'ndf'), c('fs', 'cv'),
+                                                        c('fsstop', 'ic', 'ebic', 'ndf'), c('fsstop', 'ic', 'hdbic', 'ndf'), c('fsstop', 'ic', 'hdhq', 'ndf'),
+                                                        c('fstrim', 'ic', 'hdbic', 'ndf'), 
+                                                        c('fsstoptrim', 'ic', 'hdbic', 'ndf'), 
+                                                        c('lasso', 'ic', 'aicc'), c('lasso', 'cv'),
+                                                        c('gamlr', 'ic', 'aicc'), c('lasso', 'cv'),
+                                                        c('sparsenet', 'cv'),
+                                                        c('srlasso', 'cv')),
+                                         type.table = 'supplement.bossreguhighdim')
+      
+      output = cbind(rep(c("\\midrule\\multirow{4}[2]{*}{hsnr}", "",  "",  "", "\\midrule\\multirow{4}[2]{*}{msnr}", "",  "",  "", "\\midrule\\multirow{4}[2]{*}{lsnr}", "",  "",  ""), 4),
+                     rep(paste0('p=',p), 12),
+                     output)
+      command = c(paste("\\toprule \n",
+                        "\\multicolumn{1}{|c}{} &       & BOSS  & FS    & FSstop & FStrim & FSstoptrim & lasso & Gamma lasso & SparseNet & rlasso \\\\\n",
+                        "\\multicolumn{1}{|c}{} &       & C$_p$/AICc/CV & EBIC/HDBIC/HDHQ/CV & EBIC/HDBIC/HDHQ & HDBIC & HDBIC & AICc/CV & AICc/CV & CV    & CV  \\\\\n",
+                        "\\cmidrule{3-11}\\multicolumn{1}{|c}{} &       & \\multicolumn{9}{c|}{\\% worse than the best possible BOSS}  \\\\\n"
+                ),
+                paste("\\midrule \n",
+                      "\\multicolumn{1}{|c}{} &       & \\multicolumn{9}{c|}{Relative efficiency} \\\\\n"),
+                paste("\\midrule \n",
+                      "\\multicolumn{1}{|c}{} &       & \\multicolumn{9}{c|}{Sparsistency} \\\\\n"),
+                paste("\\midrule \n",
+                      "\\multicolumn{1}{|c}{} &       & \\multicolumn{9}{c|}{Number of extra variables} \\\\\n"),
+                paste("\\bottomrule \n")
+                )
+      print(xtable(output,
+                   align = "l|c|c|ccccccccc|",  # align and put a vertical line (first "l" again represents column of row numbers)
+                   label = NULL,
+                   caption = title),
+            #size = size, #Change size; useful for bigger tables "normalsize" "footnotesize"
+            scalebox = scale.box,
+            caption.placement = "top",
+            include.rownames = FALSE, 
+            include.colnames = FALSE, 
+            hline.after = NULL, 
+            floating = TRUE, # whether \begin{Table} should be created (TRUE) or not (FALSE)
+            sanitize.text.function = force, # Important to treat content of first column as latex function
+            add.to.row = list(pos = list(-1,
+                                         12,
+                                         24,
+                                         36,
+                                         nrow(output)),
+                              command = command
+            ),
+            file = paste0(base_tables, "/supplement/boss_highdim/", filename, ".tex"), compress = FALSE
+      )
+      count = count + 1
+      if(count %% 5 == 0){
+        print(paste0(count,'/',15,' are done'))
+      }
+    }
+  }
+}
+table.boss.regu.highdim.supplement()
+
 ### Supplemental material: BOSS, FS, BS and regularization methods --------
 # output: supplement/boss/*.tex
 table.boss.regu.supplement <- function(scale.box=0.7){

@@ -4,8 +4,8 @@
 
 para.forhpc.highdim <- function(){
   count = 360
-  n = c(50, 100, 200, 200)
-  p = c(1000, 2000, 4000, 10000)
+  n = rep(200, 4)
+  p = c(550, 1000, 4000, 10000)
   snr = c(0.2, 1.5, 7)
   type = c('Sparse-Ex1', 'Sparse-Ex2', 'Sparse-Ex3', 'Sparse-Ex4', 'Dense')
   rho = c(0, 0.5, 0.9)
@@ -16,7 +16,7 @@ para.forhpc.highdim <- function(){
         for(m in 1:length(rho)){
           count = count + 1
           write.table(c(type[i], n[j], p[j], snr[l], rho[m]),
-                      file = paste(base, "/run_model/simulation/para_forhpc/generalx_",count,".txt",sep=''), sep = '', col.names = FALSE, row.names = FALSE)
+                      file = paste(base, "/run_model/simulation/para_forhpc_highdim/generalx_",count,".txt",sep=''), sep = '', col.names = FALSE, row.names = FALSE)
         }
       }
     }
@@ -35,7 +35,8 @@ pathname = 'generalx'
 
 ## create folders to store the results (both temporary and final results)
 # folders for temporary results in case the code is terminated somewhere
-dir.create(paste0(base, '/tmp/result_cv/', pathname), showWarnings = FALSE, recursive = TRUE)
+dir.create(paste0(base, '/tmp/betahat/', pathname), showWarnings = FALSE, recursive = TRUE)
+dir.create(paste0(base, '/tmp/result_intermediate/', pathname), showWarnings = FALSE, recursive = TRUE)
 # folder for the final results
 dir.create(paste0(base, '/results/', pathname), showWarnings = FALSE, recursive = TRUE)
 
@@ -53,28 +54,31 @@ names(snr_all) = c('lsnr', 'msnr', 'hsnr')
 snr_name = names(snr_all)[which(snr_all == snr)]
 
 ## Filename
-filename = paste0(pathname, '/', type, '_n', n, '_p', p, '_', snr_name, '_rho', gsub("[.]","",as.character(rho)))
+filename = paste0(type, '_n', n, '_p', p, '_', snr_name, '_rho', gsub("[.]","",as.character(rho)))
 
 ## Source all the required libraries and functions
 ## The code and results are stored at different file systems on the server
 source(paste0(getwd(), '/utils.R'))
 
-## Generate simulated datasets
-data = gen.data.generalx(n=n, p=p, rho=rho, snr=snr, type=type)
+# ## Generate simulated datasets
+# data = gen.data.generalx(n=n, p=p, rho=rho, snr=snr, type=type)
 
-## Cross-valications
-print('cv')
-ptm = proc.time()
-result_cv = run.cv.simplified(data$x, data$y)
-proc.time() - ptm
-saveRDS(result_cv, paste0(base, '/tmp/result_cv/', filename, '.rds'))
+# ## Cross-valications
+# print('cv')
+# ptm = proc.time()
+# result_cv = run.cv.simplified(data$x, data$y)
+# proc.time() - ptm
+# saveRDS(result_cv, paste0(base, '/tmp/result_cv/', filename, '.rds'))
+# 
+# ## Evaulate the selected subsets for all methods
+# print('evaluation')
+# result = eval.metrics.simplified(data$x, data$y, data$beta, data$sigma, result_cv)
 
-## Evaulate the selected subsets for all methods
-print('evaluation')
-result = eval.metrics.simplified(data$x, data$y, data$beta, data$sigma, result_cv)
-
+result = run.all.simplified(n, p, rho, snr, type, nrep=1000, p0=54, write.tmp.to.file = TRUE)
 ## Save the results
-saveRDS(result, paste0(base, '/results/', filename, '.rds'))
+saveRDS(result, paste0(base, '/results/', pathname, '/', filename, '.rds'))
+
+
 
 
 

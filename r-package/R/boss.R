@@ -79,6 +79,13 @@ boss <- function(x, y, maxstep=min(nrow(x)-intercept-1, ncol(x)), intercept=TRUE
     maxstep = min(nrow(x)-intercept-1, ncol(x))
   }
 
+  if(!is.null(dim(y))){
+    if(dim(y)[2] == 1){
+      y = as.numeric(y)
+    }else{
+      stop('Multiple dependent variables are not supported.')
+    }
+  }
   # standardize x (mean 0 and norm 1) and y (mean 0)
   std_result = std(x, y, intercept)
   x = std_result$x_std

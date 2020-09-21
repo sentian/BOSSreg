@@ -129,6 +129,68 @@ gen.data.generalx <- function(n, p, rho, snr, type, nrep=1000, seed=66, print.r2
 }
 # test = gen.data.generalx(n=200, p=14, rho=0.5, snr=0.2, type='Sparse-Ex1')
 
+gen.x.beta.sigma <- function(n, p, rho, type, snr, seed.x, p0=6){
+  # Covariance matrix and true beta
+  beta = Matrix(0, nrow=p, ncol=1)
+  if(type == 'Sparse-Ex1'){
+    Sigma = Matrix(rho^abs(outer(1:p, 1:p, "-")), sparse = TRUE)
+    beta[round(seq(1,p,length.out = p0))] = 1
+  }else if(type == 'Sparse-Ex2'){
+    Sigma = Diagonal(p)
+    for(i in 1:(p0/2)){
+      Sigma[2*i-1,2*i] = Sigma[2*i,2*i-1] = rho
+    }
+    beta[1:p0] = rep(c(1,-1),p0/2)
+  }else if(type == 'Sparse-Ex3'){
+    Sigma = Diagonal(p)
+    for(i in 1:p0){
+      Sigma[i,i+p0] = Sigma[i+p0,i] = rho
+    }
+    beta[1:p0] = rep(1,p0)
+  }else if(type == 'Sparse-Ex4'){
+    Sigma = Diagonal(p)
+    for(i in 1:(p0/2)){
+      Sigma[2*i-1,2*i] = Sigma[2*i,2*i-1] = rho
+    }
+    beta[1:p0] = rep(c(1,-1,5,-5,10,-10), p0/6)
+  }else if(type == 'Dense'){
+    Sigma = Matrix(rho^abs(outer(1:p, 1:p, "-")), sparse = TRUE)
+    kappa = 10
+    beta = Matrix((-1)^seq(1,p) * exp(-seq(1,p)/kappa), ncol=1, sparse = TRUE)
+  }
+  
+  if(rho != 0){
+    obj = svd(Sigma)
+    Sigma.half = Matrix(obj$u %*% (sqrt(diag(obj$d))) %*% t(obj$v), sparse=TRUE)
+  }else{
+    Sigma.half = NULL
+  }
+  
+  set.seed(seed.x)
+  x = matrix( rnorm(n*p), nrow=n, ncol=p )
+  if(!is.null(Sigma.half)){
+    x = x %*% Sigma.half
+  }
+  x = scale(x, center=TRUE, scale=FALSE)
+  colnorm = sqrt(colSums(x^2))
+  x = scale(x, center=FALSE, scale=colnorm)
+  sigma = as.numeric(sqrt(t(beta/colnorm)%*%Sigma%*%(beta/colnorm) / snr))
+  
+  return(list(x=x, sigma=sigma, beta=beta))
+}
+gen.response <- function(mu, sigma, seed.y, center.y=TRUE){
+  set.seed(seed.y)
+  n = length(mu)
+  # generate the response
+  epsilon = rnorm(n, mean=0, sd=sigma)
+  if(center.y){
+    epsilon = scale(epsilon, center=TRUE, scale=FALSE)
+  }
+  y = mu + epsilon
+  return(as.numeric(y))
+}
+
+
 ###### Fit the models ---------
 library(glmnet)
 library(sparsenet)
@@ -494,13 +556,13 @@ pick.best <- function(val){
 
 # betahat is p by nrep, selected coefficient vector
 rmse.sparsistency.extravariable <- function(betahat, x, beta){
-  if(is.null(betahat)){
-    return(NULL)
+  if(is.null(dim(betahat))){
+    betahat = Matrix(betahat, ncol=1)
   }
   n = dim(x)[1]
-  rmse = sqrt(colSums(sweep(x%*%betahat, 1, x%*%beta,'-')^2)/n)
-  sparsistency = colSums(betahat[beta!=0, , drop=FALSE] != 0)
-  extravariable = colSums(betahat[beta==0, , drop=FALSE] != 0)
+  rmse = sqrt(Matrix::colSums(sweep(x%*%betahat, 1, x%*%beta,'-')^2)/n)
+  sparsistency = Matrix::colSums(betahat[which(beta!=0), , drop=FALSE] != 0)
+  extravariable = Matrix::colSums(betahat[which(beta==0), , drop=FALSE] != 0)
   return(list(rmse=rmse, sparsistency=sparsistency, extravariable=extravariable))
 }
 
@@ -831,6 +893,156 @@ eval.metrics.simplified <- function(x, y, beta, sigma, result.cv){
   return(result)
 }
 
+## Perform one rep at a time to better manage the memory
+## previously, the data are generated once for all
+run.all.simplified <- function(n, p, rho, snr, type, nrep, p0=6, write.tmp.to.file=FALSE){
+
+  allmethods = c('boss', 'fs', 'lasso', 'sparsenet', 'gamlr', 'srlasso')
+  
+  snr_all = c(0.2, 1.5, 7)
+  names(snr_all) = c("lsnr", "msnr", "hsnr")
+  snr_name = names(snr_all)[which(snr_all == snr)]
+  
+  filename = paste0(type, "_n", n, "_p", p, "_", snr_name, "_rho", gsub("[.]","",as.character(rho)))
+
+  ## Generate data
+  x_beta_sigma = gen.x.beta.sigma(n, p, rho, type, snr, seed.x=nrep+1, p0)
+  x = x_beta_sigma$x
+  beta = x_beta_sigma$beta
+  sigma = x_beta_sigma$sigma
+  mu = x%*%beta
+  
+  k_stop = trunc(5*sqrt(n / log(p))) # stopping rule for FS
+  
+  ## Check if some intermediate results already exist
+  result = betahat_all = list()
+  rep = 1
+  if(paste0(filename, ".rds") %in% list.files(paste0(base, "/tmp/result_intermediate"))){
+    result = readRDS(paste0(base, "/tmp/result_intermediate/", filename, ".rds"))
+    rep = length(result[[1]]) + 1
+  }
+  
+  
+  while(rep <= nrep){
+    ## Generate response
+    y = gen.response(mu, sigma, seed.y=rep)
+    
+    i.min.cv = betahat = list()
+    ## Cross-validation
+    set.seed(2*nrep+rep)
+    # BOSS and FS
+    boss_cv = cv.boss(x, y, intercept=FALSE, show.warning=FALSE)
+    i.min.cv$boss = boss_cv$i.min.boss
+    i.min.cv$fs = boss_cv$i.min.fs
+    betahat$boss = boss_cv$boss$beta_boss
+    betahat$fs = boss_cv$boss$beta_fs
+    ic_hdf_boss = boss_cv$boss$IC_boss
+    step_fs = boss_cv$boss$steps_x
+    
+    # BOSS, best possible
+    rmse_method_allrep = sqrt(colSums(sweep(x%*%betahat$boss,1,mu,'-')^2)/n)
+    betahat_selected = betahat$boss[, which.min(rmse_method_allrep)]
+    result[['boss_best']][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+    
+    # BOSS-IC-hdf
+    for(ic in names(ic_hdf_boss)){
+      betahat_selected = betahat$boss[, which.min(ic_hdf_boss[[ic]])]
+      result[[paste0('boss_ic_', ic, '_hdf')]][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+    }
+    
+    # FS
+    for(ic in c('ebic', 'hdbic', 'hdhq')){
+      ic_value = calc.ic.extended(betahat$fs, x, y, ic=ic, df=Matrix::colSums(betahat$fs!=0), p=p)
+      # FS on the entire solution path
+      betahat_selected = betahat$fs[, which.min(ic_value)]
+      result[[paste0('fs_ic_', ic, '_ndf')]][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+      # FS with stopping rule, Ing (2011)
+      betahat_selected = betahat$fs[, which.min(ic_value[1:(k_stop+1)])] 
+      result[[paste0('fsstop_ic_', ic, '_ndf')]][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+      if(ic == 'hdbic'){
+        betahat_selected = fs.trim(x, y, betahat$fs, step_fs, ic_value) 
+        result[['fstrim_ic_hdbic_ndf']][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+        betahat_selected = fs.trim(x, y, betahat$fs, step_fs[1:k_stop], ic_value[1:(k_stop+1)])
+        result[['fsstoptrim_ic_hdbic_ndf']][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+      }
+    }
+    
+    # lasso
+    lasso_cv = cv.glmnet(x, y, intercept=FALSE)
+    i.min.cv$lasso = which.min(lasso_cv$cvm)
+    betahat$lasso = coef(lasso_cv$glmnet.fit)[-1,]
+    # LASSO-AICc
+    ic_value = calc.ic(x%*%betahat$lasso, y, ic='aicc', df=colSums(betahat$lasso!=0))
+    betahat_selected = betahat$lasso[,which.min(ic_value)]
+    result[['lasso_ic_aicc']][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+   
+    # SparseNet
+    sparsenet_cv = cv.sparsenet(x, y)
+    i.min.cv$sparsenet= rev(sparsenet_cv$which.min)
+    betahat$sparsenet = lapply(coef(sparsenet_cv$sparsenet.fit), function(xx){xx[-1,]})
+    
+    # Gamma LASSO
+    gamma_seq = c(0,1,10)
+    cvm = aicc_gamlr = matrix(NA, nrow=length(gamma_seq), ncol=100)
+    coef_tmp = list()
+    for(j in 1:length(gamma_seq)){
+      gamlr_cv_gamma = cv.gamlr(x, y, gamma=gamma_seq[j], nlambda=100, nfold=10)
+      cvm[j,] = gamlr_cv_gamma$cvm
+      coef_tmp[[j]] = gamlr_cv_gamma$gamlr$beta
+      aicc_gamlr[j,] = calc.ic(x%*%gamlr_cv_gamma$gamlr$beta, y, ic='aicc', df=gamlr_cv_gamma$gamlr$df)
+    }
+    i.min.cv$gamlr = pick.best(cvm)
+    betahat$gamlr = coef_tmp
+    i.min.gamlr.aicc = pick.best(aicc_gamlr)
+    # Gamma LASSO-AICc
+    betahat_selected = betahat$gamlr[[i.min.gamlr.aicc[1]]][,i.min.gamlr.aicc[2]]
+    result[['gamlr_ic_aicc']][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+    
+    # Simplified relaxed lasso
+    srlasso_cv = cv.srlasso(x, y, intercept=FALSE)
+    i.min.cv$srlasso = srlasso_cv$i.min
+    betahat$srlasso = srlasso_cv$betahat
+    
+    # CV for all the methods
+    for(method in names(i.min.cv)){
+      if(method %in% c('sparsenet', 'gamlr')){
+        betahat_selected = betahat[[method]][[i.min.cv[[method]][1]]][,i.min.cv[[method]][2]] 
+      }else{
+        betahat_selected = betahat[[method]][,i.min.cv[[method]]] 
+      }
+      result[[paste0(method, '_cv')]][[rep]] = rmse.sparsistency.extravariable(betahat_selected, x, beta)
+    }
+
+    betahat_all[[rep]] = betahat
+    if(rep %% 100 == 0){
+      print(rep)
+      ## Save temporary results
+      if(write.tmp.to.file){
+        saveRDS(result, paste0(base, "/tmp/result_intermediate/", filename, ".rds"))
+        saveRDS(betahat_all[(rep-100+1):rep], paste0(base, "/tmp/betahat/", filename, "_rep", rep, ".rds"))
+        betahat_all = list()
+      }
+    }
+    rep = rep + 1
+  }
+
+  ## Adjust the layout of results for the final output
+  metric_names = unique(unlist(lapply(result[[1]], names)))
+  allmethods = strsplit(names(result), '_')
+  result_final = list()
+  for(i in 1:length(allmethods)){
+    tmp = setNames(lapply(metric_names, function(key){unname(unlist(lapply(result[[i]], '[', key)))}), metric_names)
+    if(length(allmethods[[i]]) == 2){
+      result_final[[allmethods[[i]][1]]][[allmethods[[i]][2]]] = tmp
+    }else if(length(allmethods[[i]]) == 3){
+      result_final[[allmethods[[i]][1]]][[allmethods[[i]][2]]][[allmethods[[i]][3]]] = tmp
+    }else if(length(allmethods[[i]]) == 4){
+      result_final[[allmethods[[i]][1]]][[allmethods[[i]][2]]][[allmethods[[i]][3]]][[allmethods[[i]][4]]] = tmp
+    }
+  }
+  
+  return(result_final)
+}
 
 ###### Other functions to be used in reproducing plots and tables --------
 ## Degrees of freedom for LBS when X is orthogonal, based on definitions in Tibshirani(2015)
