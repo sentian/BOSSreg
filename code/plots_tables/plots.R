@@ -13,7 +13,7 @@ library(reshape2)
 # The default directory on my machine is 'code/', change it to its parent directory 'BOSSreg/'
 setwd("..")
 base = getwd()
-base_plots = paste0(base, '/paper/figures')
+base_plots = paste0(base, '/paper_new/figures')
 ## Create the directory to save the plots
 dir.create(base_plots, recursive = TRUE, showWarnings = FALSE)
 
@@ -133,7 +133,7 @@ plot.hdf.edf.bs <- function(result){
 plot.hdf.edf.bs(result_fig123)
 
 ### Figure 2: Cp-edf and Cp-hdf for BS --------
-plot.ic <- function(result, ic=c('cp', 'aicc'), filename){
+plot.ic <- function(result, ic=c('cp', 'aicc'), filename, ignore.edf=FALSE){
   # Parameters
   n = result$para$n
   p = result$para$p
@@ -157,6 +157,10 @@ plot.ic <- function(result, ic=c('cp', 'aicc'), filename){
     }
     x_op = k_avg$edf[[type_snr]]
     
+    if(ignore.edf){
+      df_toplot = df_toplot[df_toplot$type!='edf',]
+    }
+    
     p1 <- ggplot(data=df_toplot, aes(y = bias, x = k)) + geom_point(aes(color=type, shape=type), stat="identity",size=2, stroke=2)
     p1 <- p1 + geom_path(data=data.frame(x=c(x_op, x_op), y=c(min(df_toplot$bias), max(df_toplot$bias))),aes(x=x, y=y), linetype=2, colour='black', size=2)
     if(grepl('boss', filename)){
@@ -172,14 +176,26 @@ plot.ic <- function(result, ic=c('cp', 'aicc'), filename){
                            labels=expression('Cp-edf'/n, 'Cp-hdf'/n),
                            values=c(5, 3))
     }else if(ic == 'aicc'){
-      p1 <- p1 + scale_colour_manual(name  = "",
-                                     breaks=c("edf", "hdf", "kl"),
-                                     labels=expression('AICc-edf'/n, 'AICc-hdf'/n, widehat(Err)[KL]/n),
-                                     values=c("#F8766D", "#00BA38", "#619CFF")) +
-        scale_shape_manual(name  = "",
-                           breaks=c("edf", "hdf", "kl"),
-                           labels=expression('AICc-edf'/n, 'AICc-hdf'/n, widehat(Err)[KL]/n),
-                           values=c(5, 3, 1))
+      if(ignore.edf){
+        p1 <- p1 + scale_colour_manual(name  = "",
+                                       breaks=c("hdf", "kl"),
+                                       labels=expression('AICc-hdf'/n, widehat(Err)[KL]/n),
+                                       values=c("#00BA38", "#619CFF")) +
+          scale_shape_manual(name  = "",
+                             breaks=c("hdf", "kl"),
+                             labels=expression('AICc-hdf'/n, widehat(Err)[KL]/n),
+                             values=c(3, 1))
+      }else{
+        p1 <- p1 + scale_colour_manual(name  = "",
+                                       breaks=c("edf", "hdf", "kl"),
+                                       labels=expression('AICc-edf'/n, 'AICc-hdf'/n, widehat(Err)[KL]/n),
+                                       values=c("#F8766D", "#00BA38", "#619CFF")) +
+          scale_shape_manual(name  = "",
+                             breaks=c("edf", "hdf", "kl"),
+                             labels=expression('AICc-edf'/n, 'AICc-hdf'/n, widehat(Err)[KL]/n),
+                             values=c(5, 3, 1))
+      }
+
     }
     
     p1 <- p1 + theme(legend.text=element_text(size=30)) + theme(axis.title.y=element_blank())
@@ -273,7 +289,7 @@ plot.freqdist.bs.lbs()
 ### Figure 5: Cp-edf and Cp-hdf for BOSS --------
 ## Calculate Cp values for BOSS fits on replicaitons of data under various true models
 ## May throw warnings of returning df of null model
-cp.boss <- function(){
+cp.aicc.boss <- function(){
   # parameters
   nrep = 1000
   n = 200
@@ -283,32 +299,41 @@ cp.boss <- function(){
   type = c('Null', rep('Sparse-Ex3', 2), rep('Dense', 2))
   type_snr = c('Null', 'Sparse, hsnr', 'Sparse, lsnr', 'Dense, hsnr', 'Dense, lsnr')
   
-  cp_edf = cp_hdf = list()
+  cp_edf = cp_hdf = aicc_hdf = aicc_edf = Errhat_kl = list()
 
   for(i in 1:length(type_snr)){
-    data = gen.data.generalx(n, p, rho, snr[i], type[i], nrep)
+    data = gen.data.generalx(n, p, rho, snr[i], type[i], nrep, center.y = FALSE)
     mu = data$x %*% data$beta
     # calculate the fit, bias and IC
-    betahat = cp_hdf_tmp = list()
+    betahat = cp_hdf_tmp = aicc_hdf_tmp = list()
     for(rep in 1:nrep){
       boss_model = boss(data$x, data$y[,rep], intercept = FALSE, mu = mu, sigma = data$sigma)
       cp_hdf_tmp[[rep]] = as.numeric( boss_model$IC_boss$cp )
+      aicc_hdf_tmp[[rep]] = (as.numeric( boss_model$IC_boss$aicc ) + 1) * n
       betahat[[rep]] = boss_model$beta_boss
     }
     muhat = lapply(betahat, function(xx){data$x%*%xx})
     rss = Map(function(xx, jj){Matrix::colSums(sweep(xx,1,data$y[,jj])^2) }, muhat, 1:nrep)
     rss = do.call(rbind, rss)
-
+    loss = lapply(muhat, function(xx){Matrix::colSums(sweep(xx,1,mu)^2) })
+    loss = do.call(rbind, loss)
+    
     edf = calc.edf(muhat, data$y, data$sigma)
     cp_edf[[type_snr[i]]] = sweep(rss, 2, 2*data$sigma^2*edf, '+')
     cp_hdf[[type_snr[i]]] = do.call(rbind, cp_hdf_tmp)
+    aicc_edf[[type_snr[i]]] = sweep(n*log(rss/n), 2, n*(n+edf)/(n-edf-2), '+')
+    aicc_hdf[[type_snr[i]]] = do.call(rbind, aicc_hdf_tmp)
+    bias_kl = n*(n*data$sigma^2 + loss) / rss
+    Errhat_kl[[type_snr[i]]] = sweep(n*log(rss/n), 2, Matrix::colMeans(bias_kl), '+')
   }
   return(list(para = list(n=n, p=p, nrep=nrep, snr=snr, rho=rho, type=type),
-              cp = list(edf=cp_edf, hdf=cp_hdf)))
+              cp = list(edf=cp_edf, hdf=cp_hdf),
+              aicc = list(edf=aicc_edf, hdf=aicc_hdf, kl=Errhat_kl)))
 }
-result_fig5 = cp.boss()
+result_fig5 = cp.aicc.boss()
 ## Make the plot
 plot.ic(result_fig5, filename = 'cp_edf_hdf_boss.eps')
+plot.ic(result_fig5, ic = 'aicc', filename = 'aicc_edf_hdf_kl_boss.eps', ignore.edf=TRUE)
 
 ### Figure 6: RMSE along the solution paths of BS, FS and BOSS --------
 plot.solpath.lsmethods <- function(){

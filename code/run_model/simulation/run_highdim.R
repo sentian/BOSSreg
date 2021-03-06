@@ -5,7 +5,7 @@
 para.forhpc.highdim <- function(){
   count = 360
   n = rep(200, 4)
-  p = c(550, 1000, 4000, 10000)
+  p = c(250, 500, 1000, 1500)
   snr = c(0.2, 1.5, 7)
   type = c('Sparse-Ex1', 'Sparse-Ex2', 'Sparse-Ex3', 'Sparse-Ex4', 'Dense')
   rho = c(0, 0.5, 0.9)
@@ -16,7 +16,7 @@ para.forhpc.highdim <- function(){
         for(m in 1:length(rho)){
           count = count + 1
           write.table(c(type[i], n[j], p[j], snr[l], rho[m]),
-                      file = paste(base, "/run_model/simulation/para_forhpc_highdim/generalx_",count,".txt",sep=''), sep = '', col.names = FALSE, row.names = FALSE)
+                      file = paste(base, "/run_model/simulation/para_forhpc/generalx_",count,".txt",sep=''), sep = '', col.names = FALSE, row.names = FALSE)
         }
       }
     }
@@ -74,14 +74,30 @@ source(paste0(getwd(), '/utils.R'))
 # print('evaluation')
 # result = eval.metrics.simplified(data$x, data$y, data$beta, data$sigma, result_cv)
 
-result = run.all.simplified(n, p, rho, snr, type, nrep=1000, p0=54, write.tmp.to.file = TRUE)
+result = run.all.simplified(n, p, rho, snr, type, nrep=1000, p0=6, write.tmp.to.file = TRUE)
+
 ## Save the results
 saveRDS(result, paste0(base, '/results/', pathname, '/', filename, '.rds'))
 
 
 
-
-
-
-
-
+# type = "Sparse-Ex4"
+# n = 200
+# p = 30
+# snr = 7
+# rho = 0.9
+# 
+# x_sigma_beta = gen.x.beta.sigma(n, p, rho, type, snr, 1)
+# x = x_sigma_beta$x
+# beta = x_sigma_beta$beta
+# sigma = x_sigma_beta$sigma
+# y = gen.response(x %*% beta, sigma, 2)
+# 
+# 
+# lar_result = lars(x, y, type="lar", intercept = FALSE)
+# unlist(lar_result$actions)
+# fs_result = lars(x, y, type="stepwise", intercept = FALSE)
+# unlist(fs_result$actions)
+# 
+# fs2_result = fs(x, y, intercept = FALSE)
+# fs2_result$action

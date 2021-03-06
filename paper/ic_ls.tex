@@ -1,0 +1,86 @@
+%!TEX root = ms.tex
+
+\section{Information criteria for BS}
+\label{sec:ic_bs}
+
+The best orthogonalized subset selection (BOSS) method first orthogonalizes an ordered set of predictors, and performs BS upon the orthogonalized predictors. Under an orthogonal $X$, BS essentially ranks the predictors based on the magnitude of their regression coefficients, i.e. the coefficient vector at subset size $k$ is $\hat{\beta}_i(k)=z_i \mathbbm{1}_{(|z_{i}| \ge |z_{(k)}|)}$, where $z=X^T y$ and $z_{(k)}$ is the $k$-th largest coefficient in absolute value. In this section, we study the use of information criteria to select the optimal subset size $k$ for BS under orthogonal predictors, and the results provide the foundations for the selection rule of BOSS. 
+
+Using information criteria that are designed under a prefixed set of predictors to choose the number of predictors among the best models for each number of predictors (as is done in BS) results in inferior performance. \citet{Ye1998} showed that C$_p$-ndf is typically biased, and proposed using C$_p$-edf. We show in this section that the danger of using information criteria in the naive way also exists for other types of information criteria, such as AICc. Since edf for BS does not have an analytical expression, we propose a heuristic degrees of freedom (hdf) that can be calculated via an analytically-based formula. We show via simulations that the subset selected using AICc-hdf (by replacing edf with hdf in \eqref{eq:aicc_edf}) has the best predictive performance compared to other types of information criteria and CV. We present the main results in this section and give the justifications of hdf and AICc in Section \ref{sec:justification_aicc_hdf}.
+
+\subsection{Heuristic degrees of freedom (hdf) for BS under orthogonal predictors}
+\label{sec:hdf}
+
+The edf of BS has an analytical expression only when $X$ is orthogonal and the true model is $\mu=0$ \citep{Ye1998}. \citet{Tibshirani2015} studied the Lagrangian formulation of BS (LBS) and provided an analytical expression for edf without any restrictions on $\mu$ (the only assumption being that $X$ is orthogonal). To distinguish between the two methods, we use df$_C(k)$ and df$_L(\lambda)$ to denote edf of BS for subset size $k$ and edf of LBS for tuning parameter $\lambda$, respectively. 
+
+For each regularization parameter $\lambda \ge 0$, LBS solves
+\begin{equation}
+	\min_\beta \frac{1}{2} \lVert \mathbf{y}-\mathbf{X\beta}\rVert_2^2 + \lambda\lVert \mathbf{\beta} \rVert_0.
+\label{eq:lbestsubset-setup}
+\end{equation} 
+Both LBS \eqref{eq:lbestsubset-setup} and BS \eqref{eq:bestsubset-setup} are LS regressions of $y$ upon a certain subset of $X$. With orthogonal $X$, both problems have analytical solutions: $\hat{\beta}_i(\lambda)=z_i \mathbbm{1}_{(|z_{i}| \ge \sqrt{2\lambda})}$ for \eqref{eq:lbestsubset-setup} and $\hat{\beta}_i(k)=z_i \mathbbm{1}_{(|z_{i}| \ge |z_{(k)}|)}$ for \eqref{eq:bestsubset-setup}, where $z=X^T y$ and $z_{(k)}$ is the $k$-th largest coefficient in absolute value. These two problems are not equivalent, and there is no clear one-to-one correspondence between $\lambda$ in \eqref{eq:lbestsubset-setup} and $k$ in \eqref{eq:bestsubset-setup}. Indeed, for each $\lambda$ there exists a $k$ such that $\hat{\beta}(\lambda) = \hat{\beta}(k)$ where $\hat{\beta}(\lambda)$ is the solution of \eqref{eq:lbestsubset-setup} at $\lambda$ and $\hat{\beta}(k)$ is the solution of \eqref{eq:bestsubset-setup} at $k$, but the reverse does not necessarily hold, since there will be multiple $\lambda$ corresponding to the same solution $\hat{\beta}(k)$. Moreover, with a general $X$, solving \eqref{eq:lbestsubset-setup} does not guarantee recovery of the entire solution path given by solving \eqref{eq:bestsubset-setup} for $k=0,\dots,K$.
+
+Under an orthogonal $X$, \citet{Tibshirani2015} derived an expression for df$_L(\lambda)$ as 
+\begin{equation}
+	\text{df}_L(\lambda) = E(k_L(\lambda)) + \frac{\sqrt{2\lambda}}{\sigma} \sum_{i=1}^{K} \left[\phi\left(\frac{\sqrt{2\lambda}-(X^T \mu)_i}{\sigma}\right) + \phi\left(\frac{-\sqrt{2\lambda}-(X^T \mu)_i}{\sigma}\right) \right],
+	\label{eq:thdf_expression}
+\end{equation}
+where the expected subset size in the expression is given by 
+\begin{equation}
+	E(k_L(\lambda)) = \sum_{i=1}^{K} \left[1-\Phi\left(\frac{\sqrt{2\lambda}-(X^T \mu)_i}{\sigma}\right) + \Phi\left(\frac{-\sqrt{2\lambda}-(X^T \mu)_i}{\sigma}\right) \right].
+	\label{eq:thdf_size_expression}
+\end{equation}
+Given the similarity of problems \eqref{eq:bestsubset-setup} and \eqref{eq:lbestsubset-setup}, we would like to approximate df$_C(k)$ with df$_L(\lambda)$. One implementation of this proceeds as follows. Note that df$_C(k)$ is a discrete function of $k=0,\cdots,K$ while df$_L(\lambda)$ is a continuous function of a real variable $\lambda\ge 0$. We propose an hdf that uses $\text{df}_L(\lambda)$ for a particular value of $\lambda$ depending on $k$ as a proxy for $\text{df}_C(k)$. Based on \eqref{eq:thdf_size_expression}, $\lambda$ and $E(k_L(\lambda))$ have a clear one-to-one correspondence, which implies that we can find a unique $\lambda_k^\star$ such that $E(k_L(\lambda_k^\star)) = k$ for each $k=1,\cdots,K$. The value of hdf is df$_L(\lambda_k^\star)$ obtained by substituting $\lambda^\star_k$ into \eqref{eq:thdf_expression}. We also let hdf$(0)=0$ since df$_C(0)=0$. The implementation process is summarized in Algorithm \ref{alg:hdf}. In place of $\mu$ and $\sigma$, we use the OLS estimates based on the full model, i.e. $\hat{\mu}=XX^T y$, $\hat{\sigma}^2 = \lVert y-\hat{\mu} \rVert_2^2/(n-p)$.
+
+% algorithm of hdf
+\begin{algorithm}
+	\caption{The heuristic df (hdf) for BS under orthogonal predictors}\label{alg:hdf}
+	Input: $X$ (orthogonal), $\sigma$ and $\mu$. For a given subset size $k$, 
+	\begin{enumerate}[label=\arabic*.]
+		\item Based on \eqref{eq:thdf_size_expression}, calculate $\lambda_k^\star$ such that $E(k_L(\lambda_k^\star)) = k$.
+		\item Based on \eqref{eq:thdf_expression}, calculate hdf$(k) = \text{df}_L(\lambda_k^\star)$.
+	\end{enumerate}
+	Repeat the above steps for $k=1,\cdots,K$ and let hdf$(0)=0$, yielding hdf for each subset. 
+	
+\end{algorithm}
+
+
+\subsection{Information criteria for BS under orthogonal predictors}
+\label{sec:aicc_performance_bs}
+
+The hdf makes it feasible to use information criteria to select the optimal subset for BS. For instance, by replacing edf with hdf in the expression of C$_p$-edf and AICc-edf, we have the feasible criteria C$_p$-hdf and AICc-hdf, respectively. In this section, we perform a comprehensive set of simulation studies to compare the performance of different information criteria for BS, and show that AICc-hdf provides the best finite sample performance. We include infeasible versions of the criteria based on the edf (these are infeasible since the edf would not be known in real data applications), since those would correspond to the ideal versions of the criteria. To calculate the edf, we fit the BS procedure on $1000$ replicated realizations of the response generated from the true model after fixing $X$, and estimate the definition \eqref{eq:edf} using the sample covariance. We also consider a numerical estimation of edf that is based on the parametric bootstrap, and we denote it as bdf. The detailed implementation of bdf and the benefit of parametric bootstrap are discussed in \citet{Efron2004}. In our experiment, we use $100$ bootstrapped samples. Also, by analogy to C$_p$ and AICc, we define BIC-edf as
+\begin{equation*}
+\text{BIC-edf} = n \log\left(\frac{\text{RSS}}{n}\right) + \log(n) \cdot \text{edf},
+%\label{eq:bic_edf}
+\end{equation*}
+where the original BIC (or BIC-ndf in our notation) was introduced in \citet{schwarz1978estimating}. In addition to the information criteria, we also include 10-fold CV for comparison. Note that the CV results are only available for $p \le 30$, since orthogonality no longer holds for random subsamples and BS is therefore fitted using the ``leaps'' algorithm.
+
+We consider two sparse true models (denoted as Orth-Sparse-Ex1 and Orth-Sparse-Ex2) that have $p_0=6$ signal predictors (those with non-zero coefficients), and a dense true model (denoted as Orth-Dense) where all predictors have non-zero coefficients. We also consider three signal-to-noise (SNR) ratios, and the SNR is defined as $\text{Var}(x^T \beta)/\sigma^2$. The average oracle $R^2$ (linear regression on the set of true predictors) corresponding to these three SNR values are roughly $20\%$, $50\%$ and $90\%$. We further consider eight combinations of $(n,p)$, resulting in $72$ different scenarios in this experiment. In each scenario, $1000$ replications of the response $y$ are generated by fixing the design matrix $X$. A fitting procedure $\hat{\mu}$ is evaluated via the average RMSE, where 
+\begin{equation*}
+\text{RMSE}(\hat{\mu}) = \sqrt{ \frac{1}{n} \lVert \hat{\mu}-X\beta \rVert_2^2}.
+%\label{eq:l2_loss}
+\end{equation*}
+We summarize the results using two relative measures. The $\%$ worse than best possible BS defines the relative performance of the procedure relative to the BS model, where on a single fit, the subset with the minimum RMSE among all candidates is selected, as if an oracle tells us the best model. The relative efficiency defines the performance of the procedure relative to all other procedures considered in the experiment. It is a measure between $0$ and $1$, and higher value indicates better performance. We also present the sparsistency (number of true positives) and number of extra predictors (number of false positives). The details of the simulation setup and evaluation metrics are discussed in the Supplemental Material Section \ref{sec:simulation_setup_orthx}, and the complete simulation results are presented in the Online Supplemental Material\footnote{The complete results for simulation studies in this paper are available at \url{https://github.com/sentian/BOSSreg}.}. 
+
+% {tab:ic_df_orthx_sparseex1}
+\input{tables/bs_selectrule_Orth-Sparse-Ex1.tex}
+
+% {tab:ic_df_orthx_dense}
+\input{tables/bs_selectrule_Orth-Dense.tex}
+
+A selected set of results is given in Tables \ref{tab:ic_df_orthx_sparseex1} and \ref{tab:ic_df_orthx_dense}. Here ``hsnr'' and ``lsnr'' represent the high and low SNR, respectively. A brief summary of the results is as follows:
+
+\begin{itemize}
+	\item Using information criteria in the naive way (with ndf) can be dangerous, especially when $p$ is large and SNR is high. For example, using ndf in AICc significantly overfits and can be almost $400$ times worse in terms of RMSE than using hdf for $n=200$, high SNR and $p=180$ in the sparse example. Increasing the sample size $n$ does not improve the performance of naive implementation of information criteria, and the overfiting persists.
+	\item AICc-hdf generally does not lose much efficiency and performs similarly in terms of RMSE, in comparison to the infeasible AICc-edf. Increasing the sample size $n$ or SNR improves the performance of both AICc-edf and AICc-hdf. 
+	\item AICc-hdf performs very similarly to AICc-bdf. Since bdf is calculated based on $100$ bootstrapped samples, it is roughly $100$ times more intensive than hdf in computations. 
+	\item AICc-hdf is generally better than 10-fold CV, e.g. when $n$ is large or SNR is high. Note that 10-fold CV is roughly $10$ times heavier in terms of computation than AICc-hdf. It is also worth noticing that these findings are broadly consistent with the results reported by \citet{Taddy2017} for the gamma lasso method. 
+	\item C$_p$-edf performs similarly to AICc-edf. In contrast, when we consider the feasible implementations (ndf/hdf/bdf), i.e. when $\sigma$ is estimated by full OLS, C$_p$ can suffer when $p$ is close to $n$, such as when $n=200$ and $p=180$. 
+	\item Under a sparse true model BIC-hdf performs slightly better than AICc-hdf except when SNR is low and $n=200$, where BIC is considerably worse. Under a dense true model BIC-hdf is always outperformed by AICc-hdf. 
+\end{itemize}
+For the reasons presented above, we conclude that AICc-hdf is the best feasible selection rule for BS on orthogonal predictors, among all that have been considered. 
+
+%We also compare the performance of BS using AICc-hdf with regularization methods via simulations. The results are given in the Online Supplemental Material. The general findings agree with the comparison of BOSS and regularization methods, which will be discussed in Section \ref{sec:boss_performance}.
+
+
+
+%\input{tables/bs_regu.tex}

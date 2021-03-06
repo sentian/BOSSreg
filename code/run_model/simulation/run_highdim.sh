@@ -3,7 +3,7 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-user=ssh.sentian@gmail.com
 #SBATCH --output=/home/st1864/boss/output/highdim/%A_%a.out # master job id %A and array-task job id %a
-#SBATCH --array=361-504
+#SBATCH --array=361-540
 #SBATCH --time=24:00:00
 
 #SBATCH --nodes=1

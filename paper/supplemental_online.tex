@@ -1,0 +1,201 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{multicol,multienum}
+\usepackage{latexsym,amssymb,amsmath}
+\usepackage{indentfirst}
+\usepackage{cases}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{CJK}
+\usepackage{url}
+\usepackage[font={sf,bf},textfont=md]{caption}
+\usepackage{animate}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{interval}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{thmtools, thm-restate}
+\usepackage{bbm}
+\usepackage{verbatim}
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{rotating}
+\usepackage{algorithm}
+\usepackage{enumitem}
+\usepackage{natbib}
+\usepackage[noend]{algpseudocode}
+\usepackage{bbding}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage{bigstrut}
+\usepackage[stable]{footmisc}
+\usepackage{multibib}
+\usepackage{pgffor}
+
+
+\pdfminorversion=4
+
+\addtolength{\oddsidemargin}{-.7in}%
+\addtolength{\evensidemargin}{-.7in}%
+\addtolength{\textwidth}{1.4in}%
+\addtolength{\textheight}{0.8in}%
+\addtolength{\topmargin}{-0.8in}%
+
+\newcommand{\irow}[1]{% inline row vector
+  \big(\begin{smallmatrix}#1\end{smallmatrix}\big)%
+}
+
+\newcommand{\beginsupplement}{%
+        \setcounter{table}{0}
+        \renewcommand{\thetable}{S\arabic{table}}%
+        \setcounter{figure}{0}
+        \renewcommand{\thefigure}{S\arabic{figure}}%
+        \setcounter{page}{0}
+        \renewcommand{\theequation}{S.\arabic{equation}}%
+        \setcounter{equation}{0}
+     }
+
+\newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}} 
+%\newtheorem{theorem}{Theorem}[section]
+\newtheorem{theorem}{Theorem}
+%\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}{Lemma}
+\newtheorem*{remark}{Remark}
+
+\newcommand{\N}{{\mathbb{N}}}  % the natural numbers
+\newcommand{\Z}{{\mathbb{Z}}}  % the integers
+\newcommand{\Q}{{\mathbb{Q}}} % the rational numbers
+\newcommand{\R}{{\mathbb{R}}}  % the real numbers
+\newcommand{\C}{{\mathbb{C}}}  % the complex numbers
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\begin{document}
+
+
+
+\def\spacingset#1{\renewcommand{\baselinestretch}%
+{#1}\small\normalsize} \spacingset{1}
+
+
+\beginsupplement
+\appendix
+\pagenumbering{arabic}
+\begin{center}
+\textbf{\large Complete Simulation Results for \\
+On the Use of Information Criteriz for Subset Selection \\ in Least Squares Regression}
+
+Sen Tian, Clifford M. Hurvich, Jeffrey S. Simonoff
+\end{center}
+
+\begin{itemize}
+	\item Orthogonal $X$, simulation setups are discussed in the Supplemental Material Section B.1. 
+	\begin{itemize}
+		\item The performance of selection rules for BS. The selection rules include C$_p$, AICc, BIC, GCV and 10-fold CV. For each selection rule except CV, there are two columns in the table indicating the degrees of freedoms to use in calculating the information criterion. The ``edf'' (effective degrees of freedom) is estimated using definition (3) by assuming the knowledge of $\mu$ and $\sigma$, and hence it is an infeasible rule. The ``ndf/hdf/bdf'' (naive degrees of freedom /  heuristic degrees of freedom / degrees of freedom based on bootstrap) are feasible selection rules in practice. 
+		\begin{itemize}
+			\item Orth-Sparse-Ex1: tables S1-S2
+			\item Orth-Sparse-Ex2: tables S3-S4
+			\item Orth-Dense: tables S5-S6
+		\end{itemize}
+
+	\end{itemize}
+	\item General $X$, simulation setups are discussed in Supplemental Material Section B.2. 
+	\begin{itemize}
+		\item The performance of BOSS compared to BS, FS and regularization methods ($n>p$). For BOSS, we consider three selection rules, that are AICc-hdf, C$_p$-hdf and CV. For lasso and gamma lasso, we consider AICc and CV. And for the remaining methods, we use CV. Note that for lasso, we use the number of non-zero coefficients $k(\lambda)$ in place of edf in the AICc formula (7). \citet{Zou2007} showed that $k(\lambda)$ is an unbiased estimator of edf for lasso. For gamma lasso, \citet{Taddy2017} suggested a heuristic degrees of freedom to be plugged into (7) in order to use AICc as the selection rule.
+		\begin{itemize}
+			\item Sparse-Ex1: tables S7-S12
+			\item Sparse-Ex2: tables S13-S18
+			\item Sparse-Ex3: tables S19-S24
+			\item Sparse-Ex4: tables S25-S30
+			\item Dense: tables S31-S36
+		\end{itemize}
+		\item The performance of BOSS compared to FS and regularization methods ($n<p$). For FS, we consider EBIC \citep{wang2009forward}, HDBIC and HDHQ \citep{ing2011stepwise}. We also consider the stopping rule, the trimming rule, and a combination of both introduced by \citet{ing2011stepwise} for FS.
+		\begin{itemize}
+			\item Sparse-Ex1: tables S37-S39
+			\item Sparse-Ex2: tables S40-S42
+			\item Sparse-Ex3: tables S43-S45
+			\item Sparse-Ex4: tables S46-S48
+			\item Dense: tables S49-S51
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\clearpage
+
+\input{tables/supplement/bs_ic/Orth-Sparse-Ex1_n200.tex}
+\input{tables/supplement/bs_ic/Orth-Sparse-Ex1_n2000.tex}
+\input{tables/supplement/bs_ic/Orth-Sparse-Ex2_n200.tex}
+\input{tables/supplement/bs_ic/Orth-Sparse-Ex2_n2000.tex}
+\input{tables/supplement/bs_ic/Orth-Dense_n200.tex}
+\input{tables/supplement/bs_ic/Orth-Dense_n2000.tex}
+
+\iffalse
+\input{tables/supplement/bs_regu/Orth-Sparse-Ex1_n200.tex}
+\input{tables/supplement/bs_regu/Orth-Sparse-Ex1_n2000.tex}
+\input{tables/supplement/bs_regu/Orth-Sparse-Ex2_n200.tex}
+\input{tables/supplement/bs_regu/Orth-Sparse-Ex2_n2000.tex}
+\input{tables/supplement/bs_regu/Orth-Dense_n200.tex}
+\input{tables/supplement/bs_regu/Orth-Dense_n2000.tex}
+\fi
+
+\input{tables/supplement/boss/Sparse-Ex1_n200_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex1_n2000_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex1_n200_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex1_n2000_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex1_n200_rho_09.tex}
+\input{tables/supplement/boss/Sparse-Ex1_n2000_rho_09.tex}
+\input{tables/supplement/boss/Sparse-Ex2_n200_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex2_n2000_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex2_n200_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex2_n2000_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex2_n200_rho_09.tex}
+\input{tables/supplement/boss/Sparse-Ex2_n2000_rho_09.tex}
+\input{tables/supplement/boss/Sparse-Ex3_n200_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex3_n2000_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex3_n200_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex3_n2000_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex3_n200_rho_09.tex}
+\input{tables/supplement/boss/Sparse-Ex3_n2000_rho_09.tex}
+\input{tables/supplement/boss/Sparse-Ex4_n200_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex4_n2000_rho_0.tex}
+\input{tables/supplement/boss/Sparse-Ex4_n200_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex4_n2000_rho_05.tex}
+\input{tables/supplement/boss/Sparse-Ex4_n200_rho_09.tex}
+\input{tables/supplement/boss/Sparse-Ex4_n2000_rho_09.tex}
+\input{tables/supplement/boss/Dense_n200_rho_0.tex}
+\input{tables/supplement/boss/Dense_n2000_rho_0.tex}
+\input{tables/supplement/boss/Dense_n200_rho_05.tex}
+\input{tables/supplement/boss/Dense_n2000_rho_05.tex}
+\input{tables/supplement/boss/Dense_n200_rho_09.tex}
+\input{tables/supplement/boss/Dense_n2000_rho_09.tex}
+
+
+\clearpage
+\input{tables/supplement/boss_highdim/Sparse-Ex1_rho_0.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex1_rho_05.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex1_rho_09.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex2_rho_0.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex2_rho_05.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex2_rho_09.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex3_rho_0.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex3_rho_05.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex3_rho_09.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex4_rho_0.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex4_rho_05.tex}
+\input{tables/supplement/boss_highdim/Sparse-Ex4_rho_09.tex}
+\input{tables/supplement/boss_highdim/Dense_rho_0.tex}
+\input{tables/supplement/boss_highdim/Dense_rho_05.tex}
+\input{tables/supplement/boss_highdim/Dense_rho_09.tex}
+
+\clearpage
+\bibliographystyle{chicago}
+\bibliography{reference.bib}
+
+\end{document}
