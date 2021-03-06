@@ -1,0 +1,1 @@
+The file '*run.R*' contains the code to reproduce the results of the real data study in the paper. For the forest fires dataset ('*forestfires.csv*'), we perform the MIO BS using the R package 'bestsubset', since the problem dimension is larger than 30, which is the ad-hoc limit for the 'leaps' algorithm. The code to reproduce the result is '*run_forestfires.R*'.

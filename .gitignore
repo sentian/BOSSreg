@@ -1,5 +1,5 @@
 inst/doc
-#.gitignore
+.gitignore
 .Rproj.user
 .Rhistory*
 .RData
@@ -8,6 +8,6 @@ inst/doc
 .Rbuildignore
 .DS_Store
 *.tar.gz
-README.md
+#README.md
 talk/
 paper_old/
