@@ -1,0 +1,5 @@
+*.R
+*.html
+*.log
+BOSSreg_cache
+BOSSreg_files

@@ -1,0 +1,13 @@
+inst/doc
+#.gitignore
+.Rproj.user
+.Rhistory*
+.RData
+.Ruserdata
+*.Rproj
+.Rbuildignore
+.DS_Store
+*.tar.gz
+README.md
+talk/
+paper_old/
