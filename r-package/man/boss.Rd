@@ -31,10 +31,10 @@ and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 Cp. Default is TRUE.}
 
 \item{mu}{True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via
-least-squares (LS) regression of y upon x.}
+least-squares (LS) regression of y upon x for n>p, and 10-fold CV cross-validated lasso estimate for n<=p.}
 
 \item{sigma}{True standard deviation of the error, used in the calculation of hdf. Default is NULL,
-and is estimated via least-squares (LS) regression of y upon x for n>p and 10-fold cross-validated lasso
+and is estimated via least-squares (LS) regression of y upon x for n>p, and 10-fold cross-validated lasso
 for n<=p.}
 
 \item{...}{Extra parameters to allow flexibility. Currently none allows or requires, just for
@@ -72,15 +72,14 @@ the convinience of call from other parent functions like cv.boss.}
  \item Compute the solution path of BOSS and forward stepwise selection (FS).
  \item Compute various information criteria based on a heuristic degrees of freedom (hdf)
   that can serve as the selection rule to choose the subset given by BOSS.
-  Only work when n>p.
 }
 }
 \details{
 This function computes the full solution path given by BOSS and FS on a given
-  dataset (x,y) with n observations and p predictors. In the case where n>p, it also calculates
+  dataset (x,y) with n observations and p predictors. It also calculates
   the heuristic degrees of freedom for BOSS, and various information criteria, which can further
   be used to select the subset from the candidates. Please refer to the Vignette
-  for implementation details and Tian et al. (2019) for methodology details (links are given below).
+  for implementation details and Tian et al. (2021) for methodology details (links are given below).
 }
 \examples{
 ## Generate a trivial dataset, X has mean 0 and norm 1, y has mean 0
@@ -115,7 +114,7 @@ mu_boss_cp = cbind(1,x) \%*\% beta_boss_cp
 }
 \references{
 \itemize{
-  \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
+  \item Tian, S., Hurvich, C. and Simonoff, J. (2021), On the Use of Information Criteria
   for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
   \item Reid, S., Tibshirani, R. and Friedman, J. (2016), A Study of Error Variance Estimation in Lasso Regression. Statistica Sinica,
   P35-67, JSTOR.

@@ -82,7 +82,7 @@ mu_fs_cv = predict(boss_cv_result, newx=x, method='fs')
 }
 \references{
 \itemize{
-  \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
+  \item Tian, S., Hurvich, C. and Simonoff, J. (2021), On the Use of Information Criteria
   for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
   \item BOSSreg Vignette https://github.com/sentian/BOSSreg/blob/master/r-package/vignettes/BOSSreg.pdf
 }

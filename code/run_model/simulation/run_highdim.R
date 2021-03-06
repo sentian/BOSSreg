@@ -60,44 +60,8 @@ filename = paste0(type, '_n', n, '_p', p, '_', snr_name, '_rho', gsub("[.]","",a
 ## The code and results are stored at different file systems on the server
 source(paste0(getwd(), '/utils.R'))
 
-# ## Generate simulated datasets
-# data = gen.data.generalx(n=n, p=p, rho=rho, snr=snr, type=type)
-
-# ## Cross-valications
-# print('cv')
-# ptm = proc.time()
-# result_cv = run.cv.simplified(data$x, data$y)
-# proc.time() - ptm
-# saveRDS(result_cv, paste0(base, '/tmp/result_cv/', filename, '.rds'))
-# 
-# ## Evaulate the selected subsets for all methods
-# print('evaluation')
-# result = eval.metrics.simplified(data$x, data$y, data$beta, data$sigma, result_cv)
-
 result = run.all.simplified(n, p, rho, snr, type, nrep=1000, p0=6, write.tmp.to.file = TRUE)
 
 ## Save the results
 saveRDS(result, paste0(base, '/results/', pathname, '/', filename, '.rds'))
 
-
-
-# type = "Sparse-Ex4"
-# n = 200
-# p = 30
-# snr = 7
-# rho = 0.9
-# 
-# x_sigma_beta = gen.x.beta.sigma(n, p, rho, type, snr, 1)
-# x = x_sigma_beta$x
-# beta = x_sigma_beta$beta
-# sigma = x_sigma_beta$sigma
-# y = gen.response(x %*% beta, sigma, 2)
-# 
-# 
-# lar_result = lars(x, y, type="lar", intercept = FALSE)
-# unlist(lar_result$actions)
-# fs_result = lars(x, y, type="stepwise", intercept = FALSE)
-# unlist(fs_result$actions)
-# 
-# fs2_result = fs(x, y, intercept = FALSE)
-# fs2_result$action

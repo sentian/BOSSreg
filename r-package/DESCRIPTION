@@ -1,8 +1,8 @@
 Package: BOSSreg
 Type: Package
 Title: Best Orthogonalized Subset Selection (BOSS)
-Version: 0.2.0.9000
-Date: 2019-12-15
+Version: 0.2.0
+Date: 2021-3-6
 Authors@R: 
     c(person(given = "Sen",
              family = "Tian",
@@ -17,7 +17,7 @@ Authors@R:
              role = "aut",
              email = "jsimonof@stern.nyu.edu"))
 Maintainer: Sen Tian <stian@stern.nyu.edu>
-Description: Best Orthogonalized Subset Selection (BOSS) is a least-squares (LS) based subset selection method, that performs best subset selection upon an orthogonalized basis of ordered predictors, with the computational effort of a single ordinary LS fit. This package provides a highly optimized implementation of BOSS and estimates a heuristic degrees of freedom for BOSS, which can be plugged into an information criterion (IC) such as AICc in order to select the subset from candidates. It provides various choices of IC, including AIC, BIC, AICc, Cp and GCV. It also implements the forward stepwise selection (FS) with no additional computational cost, where the subset of FS is selected via cross-validation (CV). CV is also an option for BOSS. For details see: Tian, Hurvich and Simonoff (2019), "On the Use of Information Criteria for Subset Selection in Least Squares Regression", <arXiv:1911.10191>.
+Description: Best Orthogonalized Subset Selection (BOSS) is a least-squares (LS) based subset selection method, that performs best subset selection upon an orthogonalized basis of ordered predictors, with the computational effort of a single ordinary LS fit. This package provides a highly optimized implementation of BOSS and estimates a heuristic degrees of freedom for BOSS, which can be plugged into an information criterion (IC) such as AICc in order to select the subset from candidates. It provides various choices of IC, including AIC, BIC, AICc, Cp and GCV. It also implements the forward stepwise selection (FS) with no additional computational cost, where the subset of FS is selected via cross-validation (CV). CV is also an option for BOSS. For details see: Tian, Hurvich and Simonoff (2021), "On the Use of Information Criteria for Subset Selection in Least Squares Regression", <arXiv:1911.10191>.
 Depends: R (>= 3.5.0)
 License: GPL (>=2)
 Encoding: UTF-8

@@ -7,7 +7,7 @@ library(xtable)
 # The default directory on my machine is 'code/', change it to its parent directory 'BOSSreg/'
 setwd("..")
 base = getwd()
-base_tables = paste0(base, '/paper_new/tables')
+base_tables = paste0(base, '/paper/tables')
 ## Specify the directory to read the results
 base_results = paste0(base, '/code/run_model/simulation/results')
 ## Create the directory to save the tables
@@ -317,127 +317,18 @@ table.bs.selectrule.new(type = 'Orth-Dense',
                         label = "tab:ic_df_orthx_dense",
                         scale.box = 0.7)
 
-### Table 3: BS compared to other methods --------
-table.bs.regu <- function(title, scale.box){
+### Table 3: BOSS compared to other methods when n>p --------
+table.boss.regu <- function(title, label, high.dim=FALSE, scale.box=0.43){
   # Parameters
-  n = c(200, 2000)
-  p = c(30, 180)
-  snr = c(7, 0.2)
-  names(snr) = c('hsnr', 'lsnr')
-  nrep = 1000
-  type = c('Orth-Sparse-Ex1', 'Orth-Sparse-Ex2', 'Orth-Dense')
-  
-  output = df.summary.result(n, p, snr, type, 
-                             methods = list(c('bs', 'ic', 'aicc', 'hdf'), c('lasso', 'ic', 'aicc'), c('sparsenet', 'cv')),
-                             type.table = 'maintext.method')
-  
-  output = cbind(rep(c("\\multirow{4}[4]{*}{n=200}", "", "\\cmidrule{2-12}", "", "\\midrule \\multirow{4}[4]{*}{n=2000}", "", "\\cmidrule{2-12}", ""), 3),
-                 rep(c("\\multirow{2}[2]{*}{hsnr}", "", "\\multirow{2}[2]{*}{lsnr}", ""), 6),
-                 rep(c("p=30", "p=180"), 12),
-                 output)
-  command = c(paste("\\toprule \n",
-                    "\\multicolumn{1}{|r}{} & \\multicolumn{1}{r}{} &       & \\multicolumn{3}{c|}{Orth-Sparse-Ex1}   & \\multicolumn{3}{c|}{Orth-Sparse-Ex2}             & \\multicolumn{3}{c|}{Orth-Dense} \\\\\n",
-                    "\\cmidrule{4-12}\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & BS    & LASSO & SparseNet & BS    & LASSO & SparseNet & BS    & LASSO & SparseNet  \\\\\n",
-                    "\\midrule \n",
-                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{9}{c|}{\\% worse than the best possible BS}  \\\\\n",
-                    "\\midrule \n"),
-              paste("\\midrule \n",
-                    "\\multicolumn{1}{|r}{} & \\multicolumn{1}{r}{} &       & \\multicolumn{9}{c|}{Relative efficiency} \\\\\n",
-                    "\\midrule \n"),
-              paste("\\midrule \n",
-                    "\\multicolumn{1}{|r}{} & \\multicolumn{1}{r}{} &       & \\multicolumn{9}{c|}{Sparsistency (number of extra variables)} \\\\\n",
-                    "\\midrule \n"),
-              paste("\\bottomrule \n"
-              )
-  )
-  print(xtable(output,
-               align = "l|c|c|c|ccc|ccc|ccc|",  # align and put a vertical line (first "l" again represents column of row numbers)
-               label = 'tab:bs_regularization',
-               caption = title),
-        #size = size, #Change size; useful for bigger tables "normalsize" "footnotesize"
-        scalebox = scale.box,
-        caption.placement = "top",
-        include.rownames = FALSE, 
-        include.colnames = FALSE, 
-        hline.after = NULL, 
-        floating = TRUE, # whether \begin{Table} should be created (TRUE) or not (FALSE)
-        sanitize.text.function = force, # Important to treat content of first column as latex function
-        add.to.row = list(pos = list(-1,
-                                     8,
-                                     16,
-                                     nrow(output)),
-                          command = command
-        ),
-        file = paste0(base_tables, "/bs_regu.tex"), compress = FALSE
-  )
-}
-table.bs.regu(title = "The performance of BS compared to regularization methods. The selection rules are AICc-hdf for BS, 
-		AICc for LASSO and 10-fold CV for SparseNet, respectively.", scale.box = 0.7)
-
-
-### Table 4: LBS and BS, selection rule is Cp-edf --------
-# output: bs_lbs.tex
-table.bs.lbs <- function(title, scale.box=0.7){
-  # Parameters
-  n = c(200, 2000)
-  p = c(30, 180)
-  snr = c(7, 0.2)
-  names(snr) = c('hsnr', 'lsnr')
-  nrep = 1000
-  type = c('Orth-Sparse-Ex1', 'Orth-Sparse-Ex2', 'Orth-Dense')
-  
-  output = df.summary.result(n, p, snr, type, 
-                             methods = list(c('bs', 'ic', 'cp', 'edf'), c('lbs', 'ic', 'cp', 'edf')),
-                             type.table = 'maintext.method')
-
-  output = cbind(rep(c("\\multirow{4}[4]{*}{n=200}", "", "\\cmidrule{2-9}", "", "\\midrule \\multirow{4}[4]{*}{n=2000}", "", "\\cmidrule{2-9}", ""), 3),
-                 rep(c("\\multirow{2}[2]{*}{hsnr}", "", "\\multirow{2}[2]{*}{lsnr}", ""), 6),
-                 rep(c("p=30", "p=180"), 12),
-                 output)
-  command = c(paste("\\toprule \n",
-                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{2}{c|}{Orth-Sparse-Ex1} & \\multicolumn{2}{c|}{Orth-Sparse-Ex2} & \\multicolumn{2}{c|}{Orth-Dense} \\\\\n",
-                    "\\cmidrule{4-9}\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & BS    & LBS   & BS    & LBS   & BS    & LBS  \\\\\n",
-                    "\\midrule \n",
-                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{6}{c|}{\\% worse than the best possible BS} \\\\\n",
-                    "\\midrule \n"),
-              paste("\\midrule \n",
-                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{6}{c|}{Relative efficiency} \\\\\n",
-                    "\\midrule \n"),
-              paste("\\midrule \n",
-                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{6}{c|}{Sparsistency (number of extra variables)} \\\\\n",
-                    "\\midrule \n"),
-              paste("\\bottomrule \n"
-              )
-  )
-  print(xtable(output,
-               align = "l|c|c|c|cc|cc|cc|",  # align and put a vertical line (first "l" again represents column of row numbers)
-               label = 'tab:lbs_bs',
-               caption = title),
-        #size = size, #Change size; useful for bigger tables "normalsize" "footnotesize"
-        scalebox = scale.box,
-        caption.placement = "top",
-        include.rownames = FALSE, 
-        include.colnames = FALSE, 
-        hline.after = NULL, 
-        floating = TRUE, # whether \begin{Table} should be created (TRUE) or not (FALSE)
-        sanitize.text.function = force, # Important to treat content of first column as latex function
-        add.to.row = list(pos = list(-1,
-                                     8,
-                                     16,
-                                     nrow(output)),
-                          command = command
-        ),
-        file = paste0(base_tables, "/lbs_bs.tex"), compress = FALSE
-  )
-}
-table.bs.lbs("The performance of BS and LBS. The selection rule for both methods is C$_p$-edf. We assume knowledge of $\\mu$ and $\\sigma$.")
-
-### Table 5: BOSS compared to other methods --------
-# output: boss_regu.tex
-table.boss.regu <- function(title, scale.box=0.43){
-  # Parameters
-  n = c(200, 2000)
-  p = c(30, 180)
+  if(high.dim){
+    n = c(200, 500)
+    p = c(550, 1000)
+    filename = paste0(base_tables, "/boss_regu_highdim.tex")
+  }else{
+    n = c(200, 2000)
+    p = c(30, 180)
+    filename = paste0(base_tables, "/boss_regu.tex")
+  }
   snr = c(7, 0.2)
   names(snr) = c('hsnr', 'lsnr')
   rho = c(0.5, 0.9)
@@ -471,7 +362,7 @@ table.boss.regu <- function(title, scale.box=0.43){
   )
   print(xtable(output,
                align = "l|c|c|c|c|ccccc|ccccc|ccccc|",  # align and put a vertical line (first "l" again represents column of row numbers)
-               label = 'tab:boss_regu',
+               label = label,
                caption = title),
         #size = size, #Change size; useful for bigger tables "normalsize" "footnotesize"
         scalebox = scale.box,
@@ -487,13 +378,20 @@ table.boss.regu <- function(title, scale.box=0.43){
                                      nrow(output)),
                           command = command
         ),
-        file = paste0(base_tables, "/boss_regu.tex"), compress = FALSE
+        file = filename, compress = FALSE
   )
 }
-table.boss.regu("The performance of BOSS compared to other methods. Selection rules are for 'AICc-hdf/CV' for BOSS, 
-                AICc for LASSO and CV for the remaining methods in the table, respectively.")
+table.boss.regu(title = "The performance of BOSS compared to other methods for n>p. Selection rules are for 'AICc-hdf/CV' for BOSS, 
+                AICc for LASSO and CV for the remaining methods in the table, respectively.",
+                label = "tab:boss_regu")
 
-### Table 6: Real data examples ---------
+### Table 4: BOSS compared to other methods when n<p --------
+table.boss.regu(title = "The performance of BOSS compared to other methods for n<p. Selection rules are for 'AICc-hdf/CV' for BOSS, 
+                AICc for lasso and CV for the remaining methods in the table, respectively.", 
+                high.dim = TRUE,
+                label = "tab:boss_regu_highdim")
+
+### Table 5: Real data examples ---------
 table.realdata <- function(title, scale.box){
   ## Read the results
   result = readRDS(paste0(base, '/code/run_model/realdata/results/boston_hitters_college_auto.rds'))
@@ -545,7 +443,67 @@ table.realdata(title = "Performance of subset selection methods on real datasets
                The intercept term is always fitted and is not counted in the number of predictors. 
                Minimal values for the metrics for each dataset are given in bold face."
               , scale.box = 0.9)
-### Supplemental material: BS, selection rules --------
+
+### Table S1: LBS and BS, selection rule is Cp-edf --------
+# output: bs_lbs.tex
+table.bs.lbs <- function(title, scale.box=0.7){
+  # Parameters
+  n = c(200, 2000)
+  p = c(30, 180)
+  snr = c(7, 0.2)
+  names(snr) = c('hsnr', 'lsnr')
+  nrep = 1000
+  type = c('Orth-Sparse-Ex1', 'Orth-Sparse-Ex2', 'Orth-Dense')
+  
+  output = df.summary.result(n, p, snr, type, 
+                             methods = list(c('bs', 'ic', 'cp', 'edf'), c('lbs', 'ic', 'cp', 'edf')),
+                             type.table = 'maintext.method')
+  
+  output = cbind(rep(c("\\multirow{4}[4]{*}{n=200}", "", "\\cmidrule{2-9}", "", "\\midrule \\multirow{4}[4]{*}{n=2000}", "", "\\cmidrule{2-9}", ""), 3),
+                 rep(c("\\multirow{2}[2]{*}{hsnr}", "", "\\multirow{2}[2]{*}{lsnr}", ""), 6),
+                 rep(c("p=30", "p=180"), 12),
+                 output)
+  command = c(paste("\\toprule \n",
+                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{2}{c|}{Orth-Sparse-Ex1} & \\multicolumn{2}{c|}{Orth-Sparse-Ex2} & \\multicolumn{2}{c|}{Orth-Dense} \\\\\n",
+                    "\\cmidrule{4-9}\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & BS    & LBS   & BS    & LBS   & BS    & LBS  \\\\\n",
+                    "\\midrule \n",
+                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{6}{c|}{\\% worse than the best possible BS} \\\\\n",
+                    "\\midrule \n"),
+              paste("\\midrule \n",
+                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{6}{c|}{Relative efficiency} \\\\\n",
+                    "\\midrule \n"),
+              paste("\\midrule \n",
+                    "\\multicolumn{1}{|c}{} & \\multicolumn{1}{c}{} &       & \\multicolumn{6}{c|}{Sparsistency (number of extra variables)} \\\\\n",
+                    "\\midrule \n"),
+              paste("\\bottomrule \n"
+              )
+  )
+  print(xtable(output,
+               align = "l|c|c|c|cc|cc|cc|",  # align and put a vertical line (first "l" again represents column of row numbers)
+               label = 'tab:lbs_bs',
+               caption = title),
+        #size = size, #Change size; useful for bigger tables "normalsize" "footnotesize"
+        scalebox = scale.box,
+        caption.placement = "top",
+        include.rownames = FALSE, 
+        include.colnames = FALSE, 
+        hline.after = NULL, 
+        floating = TRUE, # whether \begin{Table} should be created (TRUE) or not (FALSE)
+        sanitize.text.function = force, # Important to treat content of first column as latex function
+        add.to.row = list(pos = list(-1,
+                                     8,
+                                     16,
+                                     nrow(output)),
+                          command = command
+        ),
+        file = paste0(base_tables, "/lbs_bs.tex"), compress = FALSE
+  )
+}
+table.bs.lbs("The performance of BS and LBS. The selection rule for both methods is C$_p$-edf. We assume knowledge of $\\mu$ and $\\sigma$.")
+
+
+
+### Online supplemental material: BS, selection rules --------
 table.bs.selectrule.supplement <- function(scale.box = 0.55){
   # Parameters
   p = c(14, 30, 60, 180)
@@ -612,7 +570,7 @@ table.bs.selectrule.supplement <- function(scale.box = 0.55){
 }
 table.bs.selectrule.supplement()
 
-### Supplemental material: BS and regularization methods --------
+### Online supplemental material: BS and regularization methods --------
 table.bs.regu.supplement <- function(scale.box = 0.75){
   # Parameters
   p = c(14, 30, 60, 180)
@@ -673,7 +631,7 @@ table.bs.regu.supplement <- function(scale.box = 0.75){
 }
 table.bs.regu.supplement()
 
-### Supplemental material: BOSS, FS, BS and regularization methods --------
+### Online supplemental material: BOSS, FS, BS and regularization methods --------
 # output: supplement/boss/*.tex
 table.boss.regu.supplement <- function(scale.box=0.7){
   

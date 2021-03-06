@@ -3,26 +3,18 @@ Best Orthogonalized Subset Selection (BOSS) is a least-squares (LS) based subset
 
 This repository contains an R package **BOSSreg** that provides a highly optimized implementation of BOSS and an heuristic degrees of freedom, which can be further plugged into an information criterion such as AICc in order to selection the subset from candidates. Various choices of information criteria are provided including AICc, Cp, GCV, AIC and BIC. The R package also implements forward stepwise regression (FS) with no additional computational cost, where the subset of FS is selected via cross-validation (CV). CV is also an option for BOSS.
 
-It also contains all the code to reproduce the results in the paper,
-[Tian, S., Hurvich, C. and Simonoff, J. (2019): "On the Use of Information Criteria for Subset Selection in Least Squares Regression"](https://arxiv.org/abs/1911.10191).
+It also contains the code to reproduce the results in the paper,
+[Tian, S., Hurvich, C. and Simonoff, J. (2021): "On the Use of Information Criteria for Subset Selection in Least Squares Regression"](https://arxiv.org/abs/1911.10191).
 
-Note that the implementation of FS in **BOSSreg** is built upon the implementation of FS in the R package [**bestsubset**](https://github.com/ryantibs/best-subset). We simplify the expressions and write all the main functions in C++ using the efficient Armadillo library. Hence, we kill more overhead computations and expect a faster implementation of FS than the **bestsubset** package. It's also worth pointing out that the **bestsubset** package offers an efficient implementation of BS that can fit on high dimensional data (breaks the ad-hoc limit of dimension being around 30 given by the traditional **leaps** algorithm).
-
-### Updates of the R package
-* v0.2.0.9000 (available on github but not yet on CRAN)
-  * added argument `maxstep` to stop FS and BOSS at a specified step size
-  * extended the estimation of hdf to the scenario of p>=n
-  * modified function `boss` to account for p>n
-  * modified function `cv.boss` to account for p>n (only validates subset with sizes up to min(n - n/n.folds, maxstep))
-  * corrected the format of estimated coefficient matrix to be sparse matrix, when intercept is estimated
+Note that the implementation of FS in **BOSSreg** is built upon the implementation of FS in the R package [**bestsubset**](https://github.com/ryantibs/best-subset). We simplify the expressions and write all the main functions in C++ using the efficient Armadillo library. We expect a slightly faster implementation of FS compared to the **bestsubset** package. It's also worth pointing out that the **bestsubset** package offers an efficient implementation of BS that can fit on high dimensional data (breaks the ad-hoc limit of dimension being around 30 given by the traditional **leaps** algorithm). Some of the results in the paper utilize this package.
 
 ### Install the R package
-To install the latest version of the package (v0.2.0.9000, see r-package/NEWS.md for updates in the new version), run the following:
+To install the latest version of the package (v0.2.0, see r-package/NEWS.md for updates in each release), run the following:
 ```
 library(devtools)
 install_github(repo="sentian/BOSSreg", subdir="r-package")
 ```
-Alternatively, a stable version (v0.1.0) can be installed from CRAN
+Alternatively, a stable version (v0.2.0) can be installed from CRAN
 ```
 install.packages("BOSSreg", repos = "http://cran.rstudio.com")
 ```

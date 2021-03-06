@@ -1,5 +1,5 @@
-### This file fits the models on the forest fire dataset, available from https://archive.ics.uci.edu/ml/datasets/Forest+Fires
-### This file was called by run_forestfire.sh, in order to be run on an HPC server parallelly
+### This file fits the models on the forest fires dataset, available from https://archive.ics.uci.edu/ml/datasets/Forest+Fires
+### This file was called by run_forestfires.sh, in order to be run on an HPC server parallelly
 ### Final results are stored in the directory '../results/realdata'
 
 ## Since the dimension p=55, we fit BS via MIO algorithm that was proposed by Bertsimas et. al. (2015)
@@ -121,7 +121,7 @@ base = '/scratch/st1864/boss' # the basis of the directory to store all the outp
 ## Environment parameters: which partition of the leave-one-out to run
 i = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
-dir.create(paste0(base, '/tmp/forestfire'), showWarnings = FALSE, recursive = TRUE)
+dir.create(paste0(base, '/tmp/forestfires'), showWarnings = FALSE, recursive = TRUE)
 
 ## Read and process the data
 data = read.table(paste0(getwd(), '/forestfires.csv'), sep = ",", quote = "\"", header = T)
@@ -135,7 +135,7 @@ if(num == 10){
   end = nrow(x)[1]
 }
 result = lapply(start:end, function(i){rd.result(x, y, i, 66)})
-saveRDS(result, paste0(base, '/tmp/forestfire/', i, '.rds'))
+saveRDS(result, paste0(base, '/tmp/forestfires/', i, '.rds'))
 
 ### Combine all the results --------
 # torun = FALSE
@@ -143,9 +143,9 @@ saveRDS(result, paste0(base, '/tmp/forestfire/', i, '.rds'))
 #   dir.create(paste0(base, '/results/realdata'), showWarnings = FALSE, recursive = TRUE)
 #   
 #   base = '/scratch/st1864/boss' # the basis of the directory to store all the outputs
-#   tmp = lapply(1:517, function(i){readRDS(paste0(base, '/tmp/forestfire/', i, '.rds'))})
+#   tmp = lapply(1:517, function(i){readRDS(paste0(base, '/tmp/forestfires/', i, '.rds'))})
 #   result = lapply(1:3, do.call(c, lapply(tmp, '[[', i)))
 #   names(result) = c('error', 'numvar', 'time')
-#   saveRDS(result, paste0(base, '/results/realdata/forestfire.rds'))
+#   saveRDS(result, paste0(base, '/results/realdata/forestfires.rds'))
 # }
 

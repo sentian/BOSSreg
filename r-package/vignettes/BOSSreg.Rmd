@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 references:
-  - id: Tian2019
+  - id: Tian2021
     title: On the Use of Information Criteria for Subset Selection in Least Squares Regression
     author:
     - family: Tian
@@ -20,7 +20,7 @@ references:
       given: Jeffrey S.
     URL: 'https://arxiv.org/abs/1911.10191'
     issued:
-      year: 2019
+      year: 2021
 ---
 
 ```{r setup, include = FALSE}
@@ -58,7 +58,7 @@ which can then be used as a selection rule for BOSS. AICc-hdf is defined as
 \begin{equation*}
 \text{AICc-hdf} = n \log\left(\frac{\text{RSS}}{n}\right) + n \frac{n+\text{hdf}}{n-{hdf}-2}.
 \end{equation*}
-More details can be referred to @Tian2019.
+More details can be referred to @Tian2021.
 
 This vignette is structured as follows. We start by simulating a dataset. We then introduce the components, 
 functionalities and basic usage of the package. This is followed by a discussion contrasting BOSS and forward stepwise regression (FS).

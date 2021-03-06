@@ -381,7 +381,7 @@ run.cv <- function(x, y, seed=66, orthx){
               betahat = betahat))
 }
 
-## Simplifed relaxed lasso
+## Simplified relaxed lasso
 ## The following functions are copied directly from the R package 'bestsubset'
 ## https://github.com/ryantibs/best-subset/blob/master/bestsubset/R/lasso.R
 ## In this way, one doesn't require installing Gurobi which is required by the package
@@ -679,7 +679,7 @@ eval.metrics.srlasso <- function(x, y, beta, result.cv){
 }
 
 
-## Simplifed version of run.cv
+## Simplified version of run.cv
 ## Remove the orthogonal X case
 ## Remove BS, Relaxed LASSO (keep the simplified version) from the comparison
 run.cv.simplified <- function(x, y, seed=66){

@@ -9,7 +9,7 @@ para.forhpc <- function(orthx){
   p = c(14, 30, 60, 180)
   snr = c(0.2, 1.5, 7)
   if(orthx){
-    type = c('Orth-Sparse-Ex1', 'Orth-Sparse-Ex2', 'Orth-Dense')
+    type = c(paste0('Orth-Sparse-Ex', seq(1,2)), 'Orth-Dense')
     for(i in 1:length(type)){
       for(j in 1:length(n)){
         for(k in 1:length(p)){
@@ -23,7 +23,7 @@ para.forhpc <- function(orthx){
       }
     }
   }else{
-    type = c('Sparse-Ex1', 'Sparse-Ex2', 'Sparse-Ex3', 'Sparse-Ex4', 'Dense')
+    type = c(paste0('Sparse-Ex', seq(1,4)), 'Dense')
     rho = c(0, 0.5, 0.9)
     for(i in 1:length(type)){
       for(j in 1:length(n)){
@@ -108,7 +108,7 @@ if(orthx){
   bdf_bs = NULL
 }
 
-## Cross-valications
+## Cross-valication
 print('cv')
 ptm = proc.time()
 result_cv = run.cv(data$x, data$y, orthx=orthx)
@@ -116,7 +116,7 @@ proc.time() - ptm
 saveRDS(result_cv, paste0(base, '/tmp/result_cv/', filename, '.rds'))
 
 
-## Evaulate the selected subsets for all methods
+## Evaluate the selected subsets for all methods
 print('evaluation')
 result = eval.metrics(data$x, data$y, data$beta, data$sigma, result_cv, bdf_bs, orthx)
 

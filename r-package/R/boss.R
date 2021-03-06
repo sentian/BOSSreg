@@ -4,7 +4,6 @@
 #'  \item Compute the solution path of BOSS and forward stepwise selection (FS).
 #'  \item Compute various information criteria based on a heuristic degrees of freedom (hdf)
 #'   that can serve as the selection rule to choose the subset given by BOSS.
-#'   Only work when n>p.
 #'}
 #' @param x A matrix of predictors, with \code{nrow(x)=length(y)=n} observations and
 #'   \code{ncol(x)=p} predictors. Intercept shall NOT be included.
@@ -16,9 +15,9 @@
 #'   and information criteria (IC) for BOSS. IC includes AIC, BIC, AICc, BICc, GCV,
 #'   Cp. Default is TRUE.
 #' @param mu True mean vector, used in the calculation of hdf. Default is NULL, and is estimated via
-#'   least-squares (LS) regression of y upon x.
+#'   least-squares (LS) regression of y upon x for n>p, and 10-fold CV cross-validated lasso estimate for n<=p.
 #' @param sigma True standard deviation of the error, used in the calculation of hdf. Default is NULL,
-#'   and is estimated via least-squares (LS) regression of y upon x for n>p and 10-fold cross-validated lasso
+#'   and is estimated via least-squares (LS) regression of y upon x for n>p, and 10-fold cross-validated lasso
 #'   for n<=p.
 #' @param ... Extra parameters to allow flexibility. Currently none allows or requires, just for
 #'   the convinience of call from other parent functions like cv.boss.
@@ -51,15 +50,15 @@
 #' }
 #'
 #' @details This function computes the full solution path given by BOSS and FS on a given
-#'   dataset (x,y) with n observations and p predictors. In the case where n>p, it also calculates
+#'   dataset (x,y) with n observations and p predictors. It also calculates
 #'   the heuristic degrees of freedom for BOSS, and various information criteria, which can further
 #'   be used to select the subset from the candidates. Please refer to the Vignette
-#'   for implementation details and Tian et al. (2019) for methodology details (links are given below).
+#'   for implementation details and Tian et al. (2021) for methodology details (links are given below).
 #'
 #' @author Sen Tian
 #' @references
 #' \itemize{
-#'   \item Tian, S., Hurvich, C. and Simonoff, J. (2019), On the Use of Information Criteria
+#'   \item Tian, S., Hurvich, C. and Simonoff, J. (2021), On the Use of Information Criteria
 #'   for Subset Selection in Least Squares Regression. https://arxiv.org/abs/1911.10191
 #'   \item Reid, S., Tibshirani, R. and Friedman, J. (2016), A Study of Error Variance Estimation in Lasso Regression. Statistica Sinica,
 #'   P35-67, JSTOR.
@@ -201,32 +200,16 @@ boss <- function(x, y, maxstep=min(nrow(x)-intercept-1, ncol(x)), intercept=TRUE
 #'
 #' If \code{select.boss} is unspecified, the function returns the optimal coefficient
 #' vector selected by AICc-hdf (other choice of IC can be specified in the argument \code{ic}).
-#' The only exception is when n>=p, where hdf is not well defined, and the entire coefficient matrix
-#' is returned.
 #'
 #' @example R/example/eg.boss.R
 #' @importFrom stats coef
 #' @export
 coef.boss <- function(object, ic=c('aicc','bicc','aic','bic','gcv','cp'), select.boss=NULL, ...){
-  # # for fs, return the full coef matrix if not specified the columns
-  # if(is.null(select.fs)){
-  #   select.fs = 1:ncol(object$beta_fs)
-  # }else if(select.fs == 0){
-  #   select.fs = 1:ncol(object$beta_fs)
-  # }
-  # select.fs[select.fs > ncol(object$beta_fs)] = ncol(object$beta_fs)
-  # beta_fs_opt = object$beta_fs[, select.fs, drop=FALSE]
-
   # for boss, the default is to return coef selected by AICc
   if(is.null(select.boss)){
     if(is.null(object$IC_boss)){
-      # if we are in the case where n>=p
-      if(dim(object$beta_boss)[1]+1 >= dim(object$beta_boss)[2]){
-        warning('hdf does not work when n>=p, full coef matrix returned')
-      }else{
-        # this is where hdf.ic.boss is flagged FALSE
-        warning("rerun boss with argument 'hdf.ic.boss=TRUE', and call coef.boss again")
-      }
+      # this is where hdf.ic.boss is flagged FALSE
+      warning("boss was called with argument 'hdf.ic.boss=FALSE', the full coef matrix is returned here")
       select.boss = 1:ncol(object$beta_boss)
     }else{
       ic = match.arg(ic)
@@ -238,7 +221,6 @@ coef.boss <- function(object, ic=c('aicc','bicc','aic','bic','gcv','cp'), select
   select.boss[select.boss > ncol(object$beta_boss)] = ncol(object$beta_boss)
   beta_boss_opt = object$beta_boss[, select.boss, drop=FALSE]
 
-  # return(list(fs=beta_fs_opt, boss=beta_boss_opt))
   return(beta_boss_opt)
 }
 
